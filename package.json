@@ -1,0 +1,19 @@
+{
+  "name": "agogos",
+  "version": "1.0.0",
+  "description": "A scriptable image/model processing software",
+  "main": "main.js",
+  "scripts": {
+    "start":"node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SardineFish/AGOGOS.git"
+  },
+  "author": "SardineFish",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/SardineFish/AGOGOS/issues"
+  },
+  "homepage": "https://github.com/SardineFish/AGOGOS#readme"
+}
