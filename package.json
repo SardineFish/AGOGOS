@@ -2,9 +2,10 @@
   "name": "agogos",
   "version": "1.0.0",
   "description": "A scriptable image/model processing software",
-  "main": "main.js",
+  "main": "./build/main.js",
   "scripts": {
-    "start":"node main.js"
+    "start": "npx electron .",
+    "build:watch": "npx tsc -w"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,12 @@
   "bugs": {
     "url": "https://github.com/SardineFish/AGOGOS/issues"
   },
-  "homepage": "https://github.com/SardineFish/AGOGOS#readme"
+  "homepage": "https://github.com/SardineFish/AGOGOS#readme",
+  "dependencies": {
+    "linq": "^3.1.0",
+    "typescript": "^3.0.3"
+  },
+  "devDependencies": {
+    "electron": "^2.0.9"
+  }
 }
