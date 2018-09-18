@@ -1,0 +1,49 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Open Sans", Segoe UI, Microsoft YaHei UI, Tahoma, Geneva, Verdana, sans-serif;
+}
+.Resizer{
+    position: relative;
+    display: block;
+}
+.Resizer::after{
+    display: block;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+    content: " ";
+}
+.Resizer:hover::after {
+    background-color: rgba(0,0,0,0.3);
+    transition: background-color 0.2s;
+}
+.Resizer.horizontal{
+    cursor: row-resize;
+}
+.Resizer.horizontal::after {
+    width: 100%;
+    height: 8px;
+    top: -4px;
+}
+.Resizer.vertical{
+    cursor: col-resize;
+}
+.Resizer.vertical::after {
+    height: 100%;
+    width: 8px;
+    left: -4px;
+}
+.pane{
+    height: 100%;
+    width: 100%;
+}
+#mid{
+    background: #F8BBD0;
+}
+#work-dir{
+    background: #BBDEFB;
+}
+#res-lib{
+    background: #B2EBF2;
+}
