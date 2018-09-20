@@ -3,6 +3,7 @@ import program from "commander";
 import fs from "fs";
 import path from "path";
 import { Startup, ChannelStartup } from "./ipc";
+require("electron-reload")(app.getAppPath());
 
 const pkg = require('../package.json');
 
@@ -28,6 +29,7 @@ app.on("ready", () =>
 
     ipcMain.on("ping", (event: Event, args: any) =>
     {
+        console.log(app.getAppPath());
         console.log(args);
         event.returnValue = "pong";
         event.sender.send(ChannelStartup, <Startup>{ workDir: workDir });

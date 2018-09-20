@@ -8,6 +8,7 @@ const commander_1 = __importDefault(require("commander"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const ipc_1 = require("./ipc");
+require("electron-reload")(electron_1.app.getAppPath());
 const pkg = require('../package.json');
 commander_1.default
     .version(pkg.version);
@@ -23,6 +24,7 @@ electron_1.app.on("ready", () => {
     let window = new electron_1.BrowserWindow({ width: 1280, height: 720 });
     window.loadFile("./res/html/index.html");
     electron_1.ipcMain.on("ping", (event, args) => {
+        console.log(electron_1.app.getAppPath());
         console.log(args);
         event.returnValue = "pong";
         event.sender.send(ipc_1.ChannelStartup, { workDir: workDir });
