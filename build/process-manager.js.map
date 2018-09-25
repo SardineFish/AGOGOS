@@ -1,0 +1,1 @@
+{"version":3,"file":"process-manager.js","sourceRoot":"","sources":["../src/process-manager.ts"],"names":[],"mappings":";;AAEA,MAAM,cAAc;IAIT,UAAU,CAAC,IAAY;QAE1B,OAAO,IAAI,CAAC,SAAS,CAAC,GAAG,CAAC,IAAI,CAAC,CAAC;IACpC,CAAC;CACJ;AACD,kBAAe,IAAI,cAAc,EAAE,CAAC"}
