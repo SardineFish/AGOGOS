@@ -4,24 +4,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importDefault(require("react"));
-const process_node_1 = require("./process-node");
 const linq_1 = __importDefault(require("linq"));
-const utility_1 = require("./utility");
 const meta_data_1 = require("./meta-data");
 const react_dom_1 = __importDefault(require("react-dom"));
 const lib_1 = require("./lib");
 class ValueEditor extends react_1.default.Component {
-    render() {
-        return (react_1.default.createElement("span", { className: ["editor"].concat(this.props.className ? [this.props.className] : []).join(" ") },
+    onPortMouseDown(port) {
+        if (this.props.onConnectStart) {
+            this.props.onConnectStart({
+                process: this.props.node,
+                property: this.props.propertyName,
+                port: port
+            });
+        }
+    }
+    onPortMouseUp(port) {
+        if (this.props.connecting && this.props.onConnectEnd)
+            this.props.onConnectEnd({
+                process: this.props.node,
+                property: this.props.propertyName,
+                port: port
+            });
+    }
+    doRender(element) {
+        return (react_1.default.createElement("span", { className: ["editor", `editor-${this.props.propertyName}`].concat(this.props.className ? [this.props.className] : []).join(" ") },
             this.props.allowInput ?
-                (react_1.default.createElement("span", { className: "editor-input" })) : null,
+                (react_1.default.createElement("span", { className: "port-input", onMouseDown: () => this.onPortMouseDown("input"), onMouseUp: () => this.onPortMouseUp("input") })) : null,
             react_1.default.createElement("span", { className: "editor-label" }, this.props.label),
-            this.props.children,
+            element,
             this.props.allowOutput ?
-                (react_1.default.createElement("span", { className: "editor-output" })) : null));
+                (react_1.default.createElement("span", { className: "port-output", onMouseDown: () => this.onPortMouseDown("output"), onMouseUp: () => this.onPortMouseUp("output") })) : null));
     }
 }
-class EditorString extends react_1.default.Component {
+class EditorString extends ValueEditor {
     constructor(props) {
         super(props);
         this.input = react_1.default.createRef();
@@ -34,11 +49,10 @@ class EditorString extends react_1.default.Component {
     }
     render() {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (react_1.default.createElement(ValueEditor, { className: this.props.className, label: this.props.label, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput },
-            react_1.default.createElement("input", Object.assign({ type: "text", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { value: this.props.editvalue })))));
+        return this.doRender((react_1.default.createElement("input", Object.assign({ type: "text", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { value: this.props.editvalue })))));
     }
 }
-class EditorNumber extends react_1.default.Component {
+class EditorNumber extends ValueEditor {
     constructor(props) {
         super(props);
         this.input = react_1.default.createRef();
@@ -51,11 +65,10 @@ class EditorNumber extends react_1.default.Component {
     }
     render() {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (react_1.default.createElement(ValueEditor, { className: this.props.className, label: this.props.label, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput },
-            react_1.default.createElement("input", Object.assign({ type: "number", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { value: this.props.editvalue })))));
+        return this.doRender((react_1.default.createElement("input", Object.assign({ type: "number", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { value: this.props.editvalue })))));
     }
 }
-class EditorBoolean extends react_1.default.Component {
+class EditorBoolean extends ValueEditor {
     constructor(props) {
         super(props);
         this.input = react_1.default.createRef();
@@ -68,31 +81,34 @@ class EditorBoolean extends react_1.default.Component {
     }
     render() {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (react_1.default.createElement(ValueEditor, { className: this.props.className, label: this.props.label, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput },
-            react_1.default.createElement("input", Object.assign({ type: "checkbox", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { checked: this.props.editvalue })))));
+        return this.doRender((react_1.default.createElement("input", Object.assign({ type: "checkbox", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { checked: this.props.editvalue })))));
     }
 }
-class EditorObject extends react_1.default.Component {
+class EditorObject extends ValueEditor {
     constructor(props) {
         super(props);
-        this.input = react_1.default.createRef();
-    }
-    componentDidMount() {
-    }
-    onChange(e) {
     }
     render() {
-        return (react_1.default.createElement(ValueEditor, { className: this.props.className, label: this.props.label },
-            react_1.default.createElement("span", { className: "editor-content" }, this.props.editvalue.name)));
+        return this.doRender(react_1.default.createElement("span", { className: "editor-content" }, this.props.editvalue.name));
     }
 }
 class ReactProcessNode extends react_1.default.Component {
     constructor(props) {
         super(props);
         this.drag = false;
+        this.state = {
+            portFilter: props.portFilter,
+            connecting: props.connecting
+        };
+        this.nodeRef = react_1.default.createRef();
     }
     onValueChange(key, e) {
-        this.props.node[key] = e;
+        if (key === "name" && this.props.onNameChange) {
+            this.props.onNameChange(e);
+            this.props.node.name = e;
+        }
+        else
+            this.props.node.properties.get(key).value = e;
     }
     onMouseDown(e) {
         if (e.button === 0) {
@@ -115,28 +131,42 @@ class ReactProcessNode extends react_1.default.Component {
     }
     componentDidMount() {
         window.addEventListener("mousemove", (e) => this.onMouseMove(e));
+        if (this.props.refCallback) {
+            this.props.refCallback(this);
+        }
+    }
+    getPortPos(key, port) {
+        let rect = this.nodeRef.current.querySelector(`.editor-${key} .port-${port}`).getBoundingClientRect();
+        return lib_1.vec2(rect.left + 5, rect.top + 5);
     }
     render() {
-        const outputType = meta_data_1.getType(this.props.node, process_node_1.KeyProcess);
-        return (react_1.default.createElement("div", { className: "node-wrapper" },
-            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.node.nodeName),
-            react_1.default.createElement("div", { className: "node-content" }, utility_1.getKeys(this.props.node)
-                .filter((key) => meta_data_1.getType(this.props.node, key))
+        const outputType = this.props.node.processOutput.type;
+        return (react_1.default.createElement("div", { className: "node-wrapper", ref: this.nodeRef },
+            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.node.name),
+            react_1.default.createElement("div", { className: "node-content" }, Array.from(this.props.node.properties.keys())
                 .map((key, idx) => {
-                switch (meta_data_1.getType(this.props.node, key)) {
+                switch (this.props.node.properties.get(key).type) {
                     case meta_data_1.BuildinTypes.string:
-                        return (react_1.default.createElement(EditorString, { label: key, editvalue: this.props.node[key], key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e) }));
+                        return (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.number:
-                        return (react_1.default.createElement(EditorNumber, { label: key, editvalue: this.props.node[key], key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e) }));
+                        return (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.boolean:
-                        return (react_1.default.createElement(EditorBoolean, { label: key, editvalue: this.props.node[key], key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e) }));
+                        return (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                 }
             })),
             react_1.default.createElement("div", { className: "node-output" }, linq_1.default.from([
-                { key: meta_data_1.BuildinTypes.string, handler: () => (react_1.default.createElement(EditorString, { label: "Output", editvalue: "", allowOutput: true })) },
-                { key: meta_data_1.BuildinTypes.number, handler: () => (react_1.default.createElement(EditorNumber, { label: "Output", editvalue: NaN, allowOutput: true })) },
-                { key: meta_data_1.BuildinTypes.boolean, handler: () => (react_1.default.createElement(EditorBoolean, { label: "Output", editvalue: false, allowOutput: true })) },
-                { key: outputType, handler: () => (react_1.default.createElement(EditorObject, { label: "Output", editvalue: null, type: outputType, allowOutput: true })) },
+                {
+                    key: meta_data_1.BuildinTypes.string, handler: () => (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: "output", label: "Output", ref: "output", editvalue: "", allowOutput: true, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }))
+                },
+                {
+                    key: meta_data_1.BuildinTypes.number, handler: () => (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: "output", label: "Output", ref: "output", editvalue: NaN, allowOutput: true, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }))
+                },
+                {
+                    key: meta_data_1.BuildinTypes.boolean, handler: () => (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: "output", label: "Output", ref: "output", editvalue: false, allowOutput: true, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }))
+                },
+                {
+                    key: outputType, handler: () => (react_1.default.createElement(EditorObject, { node: this.props.node, propertyName: "output", label: "Output", ref: "output", editvalue: null, type: outputType, allowOutput: true, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }))
+                },
             ])
                 .where(proc => proc.key === outputType)
                 .firstOrDefault()
@@ -144,12 +174,39 @@ class ReactProcessNode extends react_1.default.Component {
     }
 }
 exports.ReactProcessNode = ReactProcessNode;
-function renderProcessNode(node, onDragMoveStart, onDragMove) {
+function renderProcessNode(node, onDragMoveStart, onDragMove, onConnectStart, onConnectEnd, refCallback) {
     let element = document.createElement("div");
     element.className = "process-node";
-    const reactElement = (react_1.default.createElement(ReactProcessNode, { node: node, onDragMoveStart: onDragMoveStart, onDragMove: onDragMove }));
+    const reactElement = (react_1.default.createElement(ReactProcessNode, { node: node, onDragMoveStart: onDragMoveStart, onDragMove: onDragMove, onConnectStart: onConnectStart, onConnectEnd: onConnectEnd, refCallback: refCallback }));
     console.log(react_dom_1.default.render(reactElement, element));
     return element;
 }
 exports.renderProcessNode = renderProcessNode;
+class ConnectLine extends react_1.default.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            from: this.props.from,
+            to: this.props.to
+        };
+    }
+    componentDidMount() {
+        if (this.props.refCallback)
+            this.props.refCallback(this);
+    }
+    render() {
+        return (react_1.default.createElement("svg", { style: { overflow: "visible", margin: 0, padding: 0, width: "1px", height: "1px", left: 0, top: 0, display: "block", pointerEvents: "none" } },
+            react_1.default.createElement("line", { x1: this.state.from.x, y1: this.state.from.y, x2: this.state.to.x, y2: this.state.to.y, stroke: "black", width: "10px" })));
+    }
+}
+exports.ConnectLine = ConnectLine;
+function RenderConnectLine(props) {
+    return new Promise((resolver) => {
+        let element = document.createElement("div");
+        element.className = "connect-line-wrapper";
+        const reactElement = (react_1.default.createElement(ConnectLine, { from: props.from, to: props.to, refCallback: (ref) => resolver({ line: ref, element: element }) }));
+        react_dom_1.default.render(reactElement, element);
+    });
+}
+exports.RenderConnectLine = RenderConnectLine;
 //# sourceMappingURL=process-editor.js.map

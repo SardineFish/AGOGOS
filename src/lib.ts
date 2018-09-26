@@ -1,3 +1,5 @@
+import { ProcessNodeData } from "./lib-renderer";
+
 
 export class Vector2
 {
@@ -18,3 +20,14 @@ export class Vector2
     }
 }
 export const vec2 = (x: number, y: number) => new Vector2(x, y);
+
+export interface EndPoint
+{
+    process: ProcessNodeData;
+    property: string;
+    port: string;
+}
+export interface Connection{
+    source: EndPoint;
+    target: EndPoint;
+}

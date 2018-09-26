@@ -1,13 +1,15 @@
 import React, { HTMLProps, RefObject, ChangeEventHandler, ChangeEvent, MouseEvent, DragEvent, MouseEventHandler } from "react";
-import { ProcessNode, TestProcessNode, KeyProcess } from "./process-node";
+import { TestProcessNode, KeyProcess } from "./process-node";
 import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import ReactDOM from "react-dom";
-import { Vector2, vec2 } from "./lib";
+import { Vector2, vec2, EndPoint } from "./lib";
+import { RenderedConnection } from "./components";
+import { ProcessNodeData } from "./lib-renderer";
 
 type EditorValueChangeCallback<T> = (value: T) => void;
-type EditorValueLinkCallback = (value: any) => void;
+type RefCallback<T> = (ref: T) => void;
 type EventHandler<T> = (e: T) => void;
 export interface DragMoveEvent
 {
@@ -16,62 +18,90 @@ export interface DragMoveEvent
     x: number;
     y: number;
 }
+export interface ConnectEvent
+{
+    source: EndPoint;
+    target: EndPoint;
+}
 interface ProcessNodeProps extends HTMLProps<HTMLDivElement>
 {
-    node: ProcessNode;
+    node: ProcessNodeData;
     onDragMove?: EventHandler<DragMoveEvent>;
     onDragMoveStart?: EventHandler<DragMoveEvent>;
-    x?: number,
-    y?: number
+    connecting?: boolean;
+    portFilter?: string;
+    onNameChange?: EventHandler<string>;
+    onConnectEnd?: EventHandler<EndPoint>;
+    onConnectStart?: EventHandler<EndPoint>;
+    refCallback?: RefCallback<ReactProcessNode>;
 }
 
-interface ValueEditorProps
+interface EditorProps<T>
 {
     label: string;
     className?: string;
     allowInput?: boolean;
     allowOutput?: boolean;
-}
-
-interface EditorProps<T> extends ValueEditorProps
-{
+    node: ProcessNodeData;
+    propertyName: string;
     key?: string | number;
+    type?: string;
     editvalue: T;
     editable?: boolean;
     onChange?: EditorValueChangeCallback<T>;
-}
-interface ObjectEditorProps extends EditorProps<ProcessNode>
-{
-    type: typeof ProcessNode;
+    connecting?: boolean;
+    portFilter?: string;
+    onConnectEnd?: EventHandler<EndPoint>;
+    onConnectStart?: EventHandler<EndPoint>;
 }
 interface ProcessNodeState
 {
-    x: number;
-    y: number;
+    connecting: boolean;
+    portFilter: string;
 }
-class ValueEditor extends React.Component<ValueEditorProps>
+class ValueEditor<T> extends React.Component<EditorProps<T>>
 {
-    render()
+    onPortMouseDown(port:"input"|"output")
+    {
+        if (this.props.onConnectStart)
+        {
+            this.props.onConnectStart({
+                process: this.props.node,
+                property: this.props.propertyName,
+                port: port
+            });
+        }
+    }
+    onPortMouseUp(port: "input" | "output")
+    {
+        if (this.props.connecting && this.props.onConnectEnd)
+            this.props.onConnectEnd({
+                process: this.props.node,
+                property: this.props.propertyName,
+                port: port
+            });
+    }
+    doRender(element:JSX.Element)
     {
         return (
-            <span className={["editor"].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
+            <span className={["editor",`editor-${this.props.propertyName}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
                 {
                     this.props.allowInput ?
-                        (<span className="editor-input"></span>) : null
+                        (<span className="port-input" onMouseDown={()=>this.onPortMouseDown("input")} onMouseUp={()=>this.onPortMouseUp("input")}></span>) : null
                 }
                 <span className="editor-label">{this.props.label}</span>
                 {
-                    this.props.children
+                    element
                 }
                 {
                     this.props.allowOutput ?
-                        (<span className="editor-output"></span>) : null
+                        (<span className="port-output" onMouseDown={() => this.onPortMouseDown("output")} onMouseUp={() => this.onPortMouseUp("output")}></span>) : null
                 }
             </span>
         )
     }
 }
-class EditorString extends React.Component<EditorProps<string>>
+class EditorString extends ValueEditor<string>
 {
     input: RefObject<HTMLInputElement>;
     constructor(props: EditorProps<string>)
@@ -90,20 +120,18 @@ class EditorString extends React.Component<EditorProps<string>>
     render()
     {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (
-            <ValueEditor className={this.props.className} label={this.props.label} allowInput={this.props.allowInput} allowOutput={this.props.allowOutput}>
-                <input
-                    type="text"
-                    className="editor-content"
-                    onChange={(e) => this.onChange(e)}
-                    ref={this.input}
-                    {...(editable ? {} : { value: this.props.editvalue })} />
-            </ValueEditor>
-        );
+        return this.doRender((
+            <input
+                type="text"
+                className="editor-content"
+                onChange={(e) => this.onChange(e)}
+                ref={this.input}
+                {...(editable ? {} : { value: this.props.editvalue })} />
+        ));
     }
 }
 
-class EditorNumber extends React.Component<EditorProps<number>>
+class EditorNumber extends ValueEditor<number>
 {
     input: RefObject<HTMLInputElement>;
     constructor(props: EditorProps<number>)
@@ -122,20 +150,18 @@ class EditorNumber extends React.Component<EditorProps<number>>
     render()
     {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (
-            <ValueEditor className={this.props.className} label={this.props.label} allowInput={this.props.allowInput} allowOutput={this.props.allowOutput}>
-                <input
-                    type="number"
-                    className="editor-content"
-                    onChange={(e) => this.onChange(e)}
-                    ref={this.input}
-                    {...(editable ? {} : { value: this.props.editvalue })} />
-            </ValueEditor>
-        )
+        return this.doRender((
+            <input
+                type="number"
+                className="editor-content"
+                onChange={(e) => this.onChange(e)}
+                ref={this.input}
+                {...(editable ? {} : { value: this.props.editvalue })} />
+        ));
     }
 }
 
-class EditorBoolean extends React.Component<EditorProps<boolean>>
+class EditorBoolean extends ValueEditor<boolean>
 {
     input: RefObject<HTMLInputElement>;
     constructor(props: EditorProps<boolean>)
@@ -154,42 +180,29 @@ class EditorBoolean extends React.Component<EditorProps<boolean>>
     render()
     {
         const editable = this.props.editable === undefined ? true : this.props.editable;
-        return (
-            <ValueEditor className={this.props.className} label={this.props.label} allowInput={this.props.allowInput} allowOutput={this.props.allowOutput}>
-                <input
-                    type="checkbox"
-                    className="editor-content"
-                    onChange={(e) => this.onChange(e)}
-                    ref={this.input}
-                    {...(editable ? {} : { checked: this.props.editvalue })} />
-            </ValueEditor>
-        )
+        return this.doRender((
+            <input
+                type="checkbox"
+                className="editor-content"
+                onChange={(e) => this.onChange(e)}
+                ref={this.input}
+                {...(editable ? {} : { checked: this.props.editvalue })} />
+        ));
     }
 }
 
-class EditorObject extends React.Component<ObjectEditorProps>
+class EditorObject extends ValueEditor<ProcessNodeData>
 {
     input: RefObject<HTMLInputElement>;
-    constructor(props: ObjectEditorProps)
+    constructor(props: EditorProps<ProcessNodeData>)
     {
         super(props);
-        this.input = React.createRef();
-    }
-    componentDidMount()
-    {
-
-    }
-    onChange(e: ChangeEvent<HTMLInputElement>)
-    {
-
     }
     render()
     {
-        return (
-            <ValueEditor className={this.props.className} label={this.props.label}>
-                <span className="editor-content">{this.props.editvalue.name}</span>
-            </ValueEditor>
-        )
+        return this.doRender(
+            <span className="editor-content">{this.props.editvalue.name}</span>
+        );
     }
 }
 
@@ -198,12 +211,24 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
     constructor(props:ProcessNodeProps)
     {
         super(props);
+        this.state = {
+            portFilter: props.portFilter,
+            connecting: props.connecting
+        };
+        this.nodeRef = React.createRef();
     }
     drag: boolean = false;
     holdPos: Vector2;
+    nodeRef: RefObject<HTMLDivElement>;
     onValueChange(key: string, e: any)
     {
-        this.props.node[key] = e;
+        if (key === "name" && this.props.onNameChange)
+        {
+            this.props.onNameChange(e);
+            this.props.node.name = e;
+        }
+        else
+            this.props.node.properties.get(key).value = e;
     }
     onMouseDown(e: MouseEvent<HTMLElement>)
     {
@@ -233,28 +258,67 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
     }
     componentDidMount()
     {
-        window.addEventListener("mousemove", (e:any)=>this.onMouseMove(e));   
+        window.addEventListener("mousemove", (e: any) => this.onMouseMove(e));
+        if (this.props.refCallback)
+        {
+            this.props.refCallback(this);
+        }
+    }
+    getPortPos(key: string, port: string): Vector2
+    {
+        let rect = this.nodeRef.current!.querySelector(`.editor-${key} .port-${port}`).getBoundingClientRect();
+        return vec2(rect.left + 5, rect.top + 5);
     }
     render()
     {
-        const outputType = getType(this.props.node, KeyProcess);
+        const outputType = this.props.node.processOutput.type;
         return (
-            <div className="node-wrapper">
-                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.nodeName}</header>
+            <div className="node-wrapper" ref={this.nodeRef}>
+                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.name}</header>
                 <div className="node-content">
                     {
-                        getKeys(this.props.node)
-                            .filter((key) => getType(this.props.node, key))
+                        Array.from(this.props.node.properties.keys())
                             .map((key, idx) =>
                             {
-                                switch (getType(this.props.node, key))
+                                switch (this.props.node.properties.get(key).type)
                                 {
                                     case BuildinTypes.string:
-                                        return (<EditorString label={key} editvalue={this.props.node[key]} key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}></EditorString>);
+                                        return (<EditorString
+                                            node={this.props.node}
+                                            propertyName={key}
+                                            label={key}
+                                            ref={key}
+                                            editvalue={this.props.node.properties.get(key).value}
+                                            key={idx} allowInput
+                                            onChange={(e) => this.onValueChange(key, e)}
+                                            connecting={this.props.connecting}
+                                            portFilter={this.props.portFilter}
+                                            onConnectStart={this.props.onConnectStart}
+                                            onConnectEnd={this.props.onConnectEnd}/>);
                                     case BuildinTypes.number:
-                                        return (<EditorNumber label={key} editvalue={this.props.node[key]} key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}></EditorNumber>);
+                                        return (<EditorNumber
+                                            node={this.props.node}
+                                            propertyName={key}
+                                            label={key}
+                                            ref={key}
+                                            editvalue={this.props.node.properties.get(key).value}
+                                            key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
+                                            connecting={this.props.connecting}
+                                            portFilter={this.props.portFilter}
+                                            onConnectStart={this.props.onConnectStart}
+                                            onConnectEnd={this.props.onConnectEnd}/>);
                                     case BuildinTypes.boolean:
-                                        return (<EditorBoolean label={key} editvalue={this.props.node[key]} key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}></EditorBoolean>);
+                                        return (<EditorBoolean
+                                            node={this.props.node}
+                                            propertyName={key}
+                                            label={key}
+                                            ref={key}
+                                            editvalue={this.props.node.properties.get(key).value}
+                                            key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
+                                            connecting={this.props.connecting}
+                                            portFilter={this.props.portFilter}
+                                            onConnectStart={this.props.onConnectStart}
+                                            onConnectEnd={this.props.onConnectEnd}/>);
                                 }
                             })
                     }
@@ -262,10 +326,51 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                 <div className="node-output">
                     {
                         linq.from([
-                            { key: BuildinTypes.string, handler: () => (<EditorString label="Output" editvalue="" allowOutput />) },
-                            { key: BuildinTypes.number, handler: () => (<EditorNumber label="Output" editvalue={NaN} allowOutput />) },
-                            { key: BuildinTypes.boolean, handler: () => (<EditorBoolean label="Output" editvalue={false} allowOutput />) },
-                            { key: outputType, handler: () => (<EditorObject label="Output" editvalue={null} type={outputType} allowOutput />) },
+                            {
+                                key: BuildinTypes.string, handler: () => (<EditorString
+                                    node={this.props.node}
+                                    propertyName="output"
+                                    label="Output"
+                                    ref="output"
+                                    editvalue=""
+                                    allowOutput
+                                    onConnectStart={this.props.onConnectStart}
+                                    onConnectEnd={this.props.onConnectEnd} />)
+                            },
+                            {
+                                key: BuildinTypes.number, handler: () => (<EditorNumber
+                                    node={this.props.node}
+                                    propertyName="output"
+                                    label="Output"
+                                    ref="output"
+                                    editvalue={NaN}
+                                    allowOutput
+                                    onConnectStart={this.props.onConnectStart}
+                                    onConnectEnd={this.props.onConnectEnd}/>)
+                            },
+                            {
+                                key: BuildinTypes.boolean, handler: () => (<EditorBoolean
+                                    node={this.props.node}
+                                    propertyName="output"
+                                    label="Output"
+                                    ref="output"
+                                    editvalue={false}
+                                    allowOutput
+                                    onConnectStart={this.props.onConnectStart}
+                                    onConnectEnd={this.props.onConnectEnd}/>)
+                            },
+                            {
+                                key: outputType, handler: () => (<EditorObject
+                                    node={this.props.node}
+                                    propertyName="output"
+                                    label="Output"
+                                    ref="output"
+                                    editvalue={null}
+                                    type={outputType}
+                                    allowOutput
+                                    onConnectStart={this.props.onConnectStart}
+                                    onConnectEnd={this.props.onConnectEnd} />)
+                            },
                         ])
                             .where(proc => proc.key === outputType)
                             .firstOrDefault()
@@ -279,13 +384,74 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
 
 
 
-export function renderProcessNode(node: ProcessNode,onDragMoveStart?:EventHandler<DragMoveEvent>, onDragMove?:EventHandler<DragMoveEvent>): HTMLElement
+export function renderProcessNode(node: ProcessNodeData, onDragMoveStart?: EventHandler<DragMoveEvent>, onDragMove?: EventHandler<DragMoveEvent>,onConnectStart?:EventHandler<EndPoint>, onConnectEnd?:EventHandler<EndPoint>, refCallback?: RefCallback<ReactProcessNode>): HTMLElement
 {
     let element = document.createElement("div");
     element.className = "process-node";
     const reactElement = (
-        <ReactProcessNode node={node} onDragMoveStart={onDragMoveStart} onDragMove={onDragMove}></ReactProcessNode>
+        <ReactProcessNode
+            node={node}
+            onDragMoveStart={onDragMoveStart}
+            onDragMove={onDragMove}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
+            refCallback={refCallback}/>
     );
     console.log(ReactDOM.render(reactElement, element));
     return element;
+}
+
+interface ConnectLineProps
+{
+    from: Vector2;
+    to: Vector2;
+    refCallback?: (ref: ConnectLine) => void;
+}
+
+export class ConnectLine extends React.Component<ConnectLineProps, ConnectLineProps>
+{
+    constructor(props: ConnectLineProps)
+    {
+        super(props);
+        this.state = {
+            from: this.props.from,
+            to: this.props.to
+        };
+    }
+    componentDidMount()
+    {
+        if (this.props.refCallback)
+            this.props.refCallback(this);
+    }
+    render()
+    {
+        return (
+            <svg style={{overflow:"visible",margin:0,padding:0,width:"1px",height:"1px",left:0,top:0,display:"block",pointerEvents:"none"}}>
+                <line
+                    x1={this.state.from.x}
+                    y1={this.state.from.y}
+                    x2={this.state.to.x}
+                    y2={this.state.to.y}
+                    stroke="black"
+                    width="10px"
+                />
+            </svg>
+        )
+    }
+}
+export function RenderConnectLine(props: ConnectLineProps): Promise<{line: ConnectLine,element:HTMLElement }>
+{
+    return new Promise((resolver) =>
+    {
+        let element = document.createElement("div");
+        element.className = "connect-line-wrapper";
+        const reactElement = (
+            <ConnectLine
+                from={props.from}
+                to={props.to}
+                refCallback={(ref) => resolver({ line: ref, element: element })}
+            />
+        );
+        ReactDOM.render(reactElement, element);
+    });
 }
