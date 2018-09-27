@@ -92,6 +92,10 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
             element: null
         };
         let pos = this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port));
+        this.processes.forEach(obj =>
+        {
+            obj.renderer.setState({ connecting: true });
+        })
         //this.connecting = true;
         
         RenderConnectLine({
@@ -108,7 +112,13 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     }
     endConnection(endpoint: EndPoint)
     {
-        
+        this.pendingConnection.obj.target = endpoint;
+        this.pendingConnection.renderer.setState({
+            to: this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port))
+        });
+        this.connections.push(this.pendingConnection);
+        this.pendingConnection = null;
+        this.connecting = false;
     }
     updateConnectionLine(line: RenderedConnection)
     {

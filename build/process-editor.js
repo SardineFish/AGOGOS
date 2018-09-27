@@ -147,11 +147,11 @@ class ReactProcessNode extends react_1.default.Component {
                 .map((key, idx) => {
                 switch (this.props.node.properties.get(key).type) {
                     case meta_data_1.BuildinTypes.string:
-                        return (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.number:
-                        return (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.boolean:
-                        return (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: key, label: key, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.props.connecting, portFilter: this.props.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                 }
             })),
             react_1.default.createElement("div", { className: "node-output" }, linq_1.default.from([
@@ -195,8 +195,20 @@ class ConnectLine extends react_1.default.Component {
             this.props.refCallback(this);
     }
     render() {
+        const k = 0.4;
+        const cp1 = lib_1.vec2((this.state.to.x - this.state.from.x) * k + this.state.from.x, this.state.from.y);
+        const cp2 = lib_1.vec2((this.state.to.x - this.state.from.x) * (-k) + this.state.to.x, this.state.to.y);
         return (react_1.default.createElement("svg", { style: { overflow: "visible", margin: 0, padding: 0, width: "1px", height: "1px", left: 0, top: 0, display: "block", pointerEvents: "none" } },
-            react_1.default.createElement("line", { x1: this.state.from.x, y1: this.state.from.y, x2: this.state.to.x, y2: this.state.to.y, stroke: "black", width: "10px" })));
+            react_1.default.createElement("path", { d: `M ${this.state.from.x},${this.state.from.y} C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${this.state.to.x},${this.state.to.y}`, stroke: "black", width: "1", fill: "transparent" })));
+        /*
+                <line
+                    x1={this.state.from.x}
+                    y1={this.state.from.y}
+                    x2={this.state.to.x}
+                    y2={this.state.to.y}
+                    stroke="black"
+                    width="10px"
+                /> */
     }
 }
 exports.ConnectLine = ConnectLine;

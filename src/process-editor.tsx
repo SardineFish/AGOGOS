@@ -287,12 +287,13 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             node={this.props.node}
                                             propertyName={key}
                                             label={key}
+                                            allowOutput
                                             ref={key}
                                             editvalue={this.props.node.properties.get(key).value}
                                             key={idx} allowInput
                                             onChange={(e) => this.onValueChange(key, e)}
-                                            connecting={this.props.connecting}
-                                            portFilter={this.props.portFilter}
+                                            connecting={this.state.connecting}
+                                            portFilter={this.state.portFilter}
                                             onConnectStart={this.props.onConnectStart}
                                             onConnectEnd={this.props.onConnectEnd}/>);
                                     case BuildinTypes.number:
@@ -300,11 +301,12 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             node={this.props.node}
                                             propertyName={key}
                                             label={key}
+                                            allowOutput
                                             ref={key}
                                             editvalue={this.props.node.properties.get(key).value}
                                             key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
-                                            connecting={this.props.connecting}
-                                            portFilter={this.props.portFilter}
+                                            connecting={this.state.connecting}
+                                            portFilter={this.state.portFilter}
                                             onConnectStart={this.props.onConnectStart}
                                             onConnectEnd={this.props.onConnectEnd}/>);
                                     case BuildinTypes.boolean:
@@ -312,11 +314,12 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             node={this.props.node}
                                             propertyName={key}
                                             label={key}
+                                            allowOutput
                                             ref={key}
                                             editvalue={this.props.node.properties.get(key).value}
                                             key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
-                                            connecting={this.props.connecting}
-                                            portFilter={this.props.portFilter}
+                                            connecting={this.state.connecting}
+                                            portFilter={this.state.portFilter}
                                             onConnectStart={this.props.onConnectStart}
                                             onConnectEnd={this.props.onConnectEnd}/>);
                                 }
@@ -425,8 +428,20 @@ export class ConnectLine extends React.Component<ConnectLineProps, ConnectLinePr
     }
     render()
     {
+        const k = 0.4;
+        const cp1 = vec2((this.state.to.x - this.state.from.x) * k + this.state.from.x, this.state.from.y);
+        const cp2 = vec2((this.state.to.x - this.state.from.x) * (-k) + this.state.to.x, this.state.to.y);
         return (
-            <svg style={{overflow:"visible",margin:0,padding:0,width:"1px",height:"1px",left:0,top:0,display:"block",pointerEvents:"none"}}>
+            <svg style={{ overflow: "visible", margin: 0, padding: 0, width: "1px", height: "1px", left: 0, top: 0, display: "block", pointerEvents: "none" }}>
+                <path
+                    d={`M ${this.state.from.x},${this.state.from.y} C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${this.state.to.x},${this.state.to.y}`}
+                    stroke="black"
+                    width="1"
+                    fill="transparent"
+                />
+            </svg>
+        );
+        /*
                 <line
                     x1={this.state.from.x}
                     y1={this.state.from.y}
@@ -434,9 +449,7 @@ export class ConnectLine extends React.Component<ConnectLineProps, ConnectLinePr
                     y2={this.state.to.y}
                     stroke="black"
                     width="10px"
-                />
-            </svg>
-        )
+                /> */
     }
 }
 export function RenderConnectLine(props: ConnectLineProps): Promise<{line: ConnectLine,element:HTMLElement }>
