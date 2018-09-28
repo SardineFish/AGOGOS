@@ -112,9 +112,14 @@ class ProcessSpace extends react_1.default.Component {
     }
     componentDidMount() {
         this.viewport = this.refs["viewport"];
-        this.addProcess(process_manager_1.default.getProcessData(new process_node_1.TestProcessNode()));
-        this.addProcess(process_manager_1.default.getProcessData(new process_node_1.TestProcessNode()));
-        this.addProcess(process_manager_1.default.getProcessData(new process_node_1.TestProcessNode()));
+        process_manager_1.default.addProcess("TestProcessNode", process_node_1.TestProcessNode);
+        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
+        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
+        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
+        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
+        /*this.addProcess(processManager.getProcessData(new TestProcessNode()));
+        this.addProcess(processManager.getProcessData(new TestProcessNode()));
+        this.addProcess(processManager.getProcessData(new TestProcessNode()));*/
         window.addEventListener("mousemove", (e) => this.onWindowMouseMove(e));
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }

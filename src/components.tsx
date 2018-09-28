@@ -155,9 +155,14 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     componentDidMount()
     {
         this.viewport = this.refs["viewport"] as ViewPort;
+        processManager.addProcess("TestProcessNode", TestProcessNode);
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        /*this.addProcess(processManager.getProcessData(new TestProcessNode()));
         this.addProcess(processManager.getProcessData(new TestProcessNode()));
-        this.addProcess(processManager.getProcessData(new TestProcessNode()));
-        this.addProcess(processManager.getProcessData(new TestProcessNode()));
+        this.addProcess(processManager.getProcessData(new TestProcessNode()));*/
         window.addEventListener("mousemove", (e) => this.onWindowMouseMove(e));
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }
