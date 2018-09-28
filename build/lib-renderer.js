@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const electron_1 = require("electron");
+const ipc_1 = require("./ipc");
 class PropertyData {
 }
 exports.PropertyData = PropertyData;
@@ -15,4 +17,8 @@ class ObjectData {
     }
 }
 exports.ObjectData = ObjectData;
+function GetProjectSettings() {
+    return electron_1.ipcRenderer.sendSync(ipc_1.ChannelProjectSettings);
+}
+exports.GetProjectSettings = GetProjectSettings;
 //# sourceMappingURL=lib-renderer.js.map

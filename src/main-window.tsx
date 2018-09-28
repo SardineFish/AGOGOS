@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { Pane, ProcessSpace} from "./components";
 import linq from "linq";
+import { GetProjectSettings } from "./lib-renderer";
 
 interface AppArgs
 {
@@ -78,9 +79,8 @@ const $ = (selector: string) => document.querySelector(selector);
 
 ipcRenderer.once(ChannelStartup, (event: Event, args: Startup) =>
 {
-
     const element = (
-        <App workDir={args.workDir}></App>
+        <App workDir={GetProjectSettings().projectDirectory}></App>
     );
     ReactDOM.render(element, $("#root"));
 });

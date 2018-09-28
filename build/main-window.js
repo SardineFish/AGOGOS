@@ -20,6 +20,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
+const lib_renderer_1 = require("./lib-renderer");
 function getDirData(dirPath) {
     return linq_1.default.from(fs_1.default.readdirSync(dirPath).map((name) => {
         let p = path_1.default.resolve(dirPath, name);
@@ -58,7 +59,7 @@ class App extends React.Component {
 }
 const $ = (selector) => document.querySelector(selector);
 electron_1.ipcRenderer.once(ipc_1.ChannelStartup, (event, args) => {
-    const element = (React.createElement(App, { workDir: args.workDir }));
+    const element = (React.createElement(App, { workDir: lib_renderer_1.GetProjectSettings().projectDirectory }));
     ReactDOM.render(element, $("#root"));
 });
 electron_1.ipcRenderer.send("ping", "ping");

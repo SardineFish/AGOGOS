@@ -1,4 +1,5 @@
 import { ProcessNodeData } from "./lib-renderer";
+import { getJsonIgnore } from "./meta-data";
 
 
 export class Vector2
@@ -30,4 +31,22 @@ export interface EndPoint
 export interface Connection{
     source: EndPoint;
     target: EndPoint;
+}
+function ObjectCast(obj: any): any
+{
+    let out: any = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key) && getJsonIgnore(obj,key)) {
+            const element = obj[key];
+            if (element instanceof Object)
+                out[key] = ObjectCast(element);
+            else
+                out[key] = element;
+        }
+    }
+    return out;
+}
+export function JSONStringrify(obj: any): string
+{
+    return JSON.stringify(ObjectCast(obj));
 }
