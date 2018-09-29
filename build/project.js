@@ -15,6 +15,7 @@ const fs_1 = __importDefault(require("fs"));
 const meta_data_1 = require("./meta-data");
 const lib_1 = require("./lib");
 const PackageJSONFile = "package.json";
+const AGOGOSFolder = ".agogos";
 class AGOGOSProject extends package_json_1.IPackageJSON {
     constructor(path) {
         super();
@@ -22,6 +23,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
         this.projectDirectory = path;
     }
     get packageJSONPath() { return path_1.default.join(this.projectDirectory, PackageJSONFile); }
+    get agogosFolder() { return path_1.default.join(this.projectDirectory, AGOGOSFolder); }
     open() {
         return new Promise((resolve, reject) => {
             fs_1.default.readFile(this.packageJSONPath, (err, data) => {
@@ -35,7 +37,30 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
                         this[key] = packageJson[key];
                     }
                 }
-                resolve(this);
+                this.checkAGOGOSFolder().then(resolve);
+            });
+        });
+    }
+    checkAGOGOSFolder() {
+        return new Promise((resolve, reject) => {
+            fs_1.default.exists(this.agogosFolder, exists => {
+                if (!exists)
+                    fs_1.default.mkdir(this.agogosFolder, err => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(this);
+                    });
+                else
+                    fs_1.default.stat(this.agogosFolder, (err, stats) => {
+                        if (err)
+                            reject(err);
+                        else if (!stats.isDirectory())
+                            reject(new Error("Invalid project."));
+                        else
+                            resolve(this);
+                    });
             });
         });
     }

@@ -75,7 +75,16 @@ function loadMenu() {
         label: "Window",
         role: "windowMenu"
     }));
+    menu.append(new electron_1.MenuItem({
+        label: "Tool",
+        submenu: [
+            {
+                label: "Development Tools",
+                accelerator: "F12",
+            }
+        ]
+    }));
     //
-    electron_1.Menu.setApplicationMenu(menu);
+    //Menu.setApplicationMenu(menu);
 }
 //# sourceMappingURL=main.js.map

@@ -47,6 +47,7 @@ function loadRenderer()
     let window = new BrowserWindow({ width: 1280, height: 720 });
     window.loadFile("./res/html/index.html");
 
+
     ipcMain.on("ping", (event: Event, args: any) =>
     {
         event.returnValue = "pong";
@@ -88,6 +89,15 @@ function loadMenu()
         label: "Window",
         role: "windowMenu"
     }));
+    menu.append(new MenuItem({
+        label: "Tool",
+        submenu: [
+            {
+                label: "Development Tools",
+                accelerator: "F12",
+            }
+        ]
+    }));
     //
-    Menu.setApplicationMenu(menu);
+    //Menu.setApplicationMenu(menu);
 }

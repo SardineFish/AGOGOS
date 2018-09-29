@@ -22,10 +22,11 @@ const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
 const lib_renderer_1 = require("./lib-renderer");
 function getDirData(dirPath) {
-    return linq_1.default.from(fs_1.default.readdirSync(dirPath).map((name) => {
+    return linq_1.default.from(fs_1.default.readdirSync(dirPath).filter(name => !name.startsWith(".")).map((name) => {
         let p = path_1.default.resolve(dirPath, name);
         let isDir = fs_1.default.statSync(p).isDirectory();
         return {
+            extend: false,
             name: name,
             children: isDir ? [] : undefined,
             data: p,
@@ -39,11 +40,22 @@ class App extends React.Component {
         this.state = {
             workDir: this.props.workDir,
             dirData: {
+                extend: true,
                 name: props.workDir,
                 children: getDirData(this.props.workDir),
+                icon: (React.createElement("span", { className: "node-icon directory" })),
                 data: this.props.workDir
             }
         };
+    }
+    onFolderExtend(nodeData) {
+        if (!nodeData.children || nodeData.children.length > 0)
+            return nodeData;
+        nodeData.children = getDirData(nodeData.data);
+        return nodeData;
+    }
+    onProjectContextMenu(e) {
+        lib_renderer_1.PopupProjectMenu(e.parent.data);
     }
     render() {
         return (React.createElement("div", null,
@@ -51,7 +63,7 @@ class App extends React.Component {
                 React.createElement("div", { id: "left-side" },
                     React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
                         React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
-                            React.createElement(react_tree_viewer_1.TreeViewer, { extend: true, data: this.state.dirData, tabSize: 10, onExtend: (state) => console.log(state.nodeData.children = getDirData(state.nodeData.data)) })),
+                            React.createElement(react_tree_viewer_1.TreeViewer, { data: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
                         React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
                 React.createElement("div", { id: "mid", className: "pane" },
                     React.createElement(components_1.ProcessSpace, { id: "process-space" })))));
