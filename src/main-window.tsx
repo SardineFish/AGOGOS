@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import SplitPane from "react-split-pane";
 import { TreeViewer, NodeData } from "../../react-tree-viewer";
 import ViewPort from "../../react-free-viewport"
-import { ipcRenderer, Event, app } from "electron";
+import { ipcRenderer, Event, app, Menu, MenuItem } from "electron";
 import { ChannelStartup, Startup } from "./ipc";
 import fs from "fs";
 import path from "path";

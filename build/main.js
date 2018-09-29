@@ -12,19 +12,21 @@ const project_1 = require("./project");
 require("electron-reload")(electron_1.app.getAppPath());
 const pkg = require('../package.json');
 commander_1.default
-    .version(pkg.version);
+    .version(pkg.version)
+    .option("--remote-debugging-port")
+    .arguments("<appPath>");
 commander_1.default
     .arguments("<dir>");
 commander_1.default.parse(process.argv);
+let workDir = path_1.default.normalize(commander_1.default.args[commander_1.default.args.length - 1]);
+console.log(workDir);
+if (!fs_1.default.existsSync(workDir))
+    commander_1.default.help();
 //console.log(program.args);
 let agogosProject;
 loadProject();
 function loadProject() {
     electron_1.app.on("ready", () => {
-        let workDir = path_1.default.normalize(commander_1.default.args[0]);
-        console.log(workDir);
-        if (!fs_1.default.existsSync(workDir))
-            commander_1.default.help();
         agogosProject = new project_1.AGOGOSProject(workDir);
         agogosProject.open()
             .then(() => loadRenderer())
@@ -33,16 +35,47 @@ function loadProject() {
     });
 }
 function loadRenderer() {
+    loadMenu();
     let window = new electron_1.BrowserWindow({ width: 1280, height: 720 });
     window.loadFile("./res/html/index.html");
     electron_1.ipcMain.on("ping", (event, args) => {
-        console.log(electron_1.app.getAppPath());
-        console.log(args);
         event.returnValue = "pong";
         event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory });
     });
     electron_1.ipcMain.on(ipc_1.ChannelProjectSettings, (event, args) => {
         event.returnValue = agogosProject;
     });
+}
+function loadMenu() {
+    let menu = new electron_1.Menu();
+    menu.append(new electron_1.MenuItem({
+        label: "File",
+        submenu: [
+            {
+                label: "New File",
+            },
+            {
+                label: "New Project",
+            },
+            {
+                label: "Open Project"
+            },
+            {
+                label: "Save Project",
+                click: () => agogosProject.save(),
+                accelerator: "CommandOrControl+Shift+S",
+            }
+        ]
+    }));
+    menu.append(new electron_1.MenuItem({
+        label: "Edit",
+        role: "editMenu"
+    }));
+    menu.append(new electron_1.MenuItem({
+        label: "Window",
+        role: "windowMenu"
+    }));
+    //
+    electron_1.Menu.setApplicationMenu(menu);
 }
 //# sourceMappingURL=main.js.map

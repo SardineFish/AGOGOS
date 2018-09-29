@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Event } from "electron";
+import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem } from "electron";
 import program from "commander";
 import fs from "fs";
 import path from "path";
@@ -9,12 +9,19 @@ require("electron-reload")(app.getAppPath());
 const pkg = require('../package.json');
 
 program
-    .version(pkg.version);
+    .version(pkg.version)
+    .option("--remote-debugging-port")
+    .arguments("<appPath>");
 
 program
     .arguments("<dir>");
 
 program.parse(process.argv);
+
+let workDir = path.normalize(program.args[program.args.length - 1]);
+console.log(workDir);
+if (!fs.existsSync(workDir))
+    program.help();
 
 //console.log(program.args);
 
@@ -26,10 +33,6 @@ function loadProject()
 {
     app.on("ready", () =>
     {
-        let workDir = path.normalize(program.args[0]);
-        console.log(workDir);
-        if (!fs.existsSync(workDir))
-            program.help();
         agogosProject = new AGOGOSProject(workDir);
         agogosProject.open()
             .then(() => loadRenderer())
@@ -40,13 +43,12 @@ function loadProject()
 }
 function loadRenderer()
 {
+    loadMenu();
     let window = new BrowserWindow({ width: 1280, height: 720 });
     window.loadFile("./res/html/index.html");
 
     ipcMain.on("ping", (event: Event, args: any) =>
     {
-        console.log(app.getAppPath());
-        console.log(args);
         event.returnValue = "pong";
         event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory });
     });
@@ -54,4 +56,38 @@ function loadRenderer()
     {
         event.returnValue = agogosProject; 
     });
+}
+function loadMenu()
+{
+
+    let menu = new Menu();
+    menu.append(new MenuItem({
+        label: "File",
+        submenu: [
+            {
+                label: "New File",
+            },
+            {
+                label: "New Project",
+            },
+            {
+                label: "Open Project"
+            },
+            {
+                label: "Save Project",
+                click: () => agogosProject.save(),
+                accelerator:"CommandOrControl+Shift+S",
+            }
+        ]
+    }));
+    menu.append(new MenuItem({
+        label: "Edit",
+        role: "editMenu"
+    }));
+    menu.append(new MenuItem({
+        label: "Window",
+        role: "windowMenu"
+    }));
+    //
+    Menu.setApplicationMenu(menu);
 }

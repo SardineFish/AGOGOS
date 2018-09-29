@@ -18,7 +18,7 @@ exports.vec2 = (x, y) => new Vector2(x, y);
 function ObjectCast(obj) {
     let out = {};
     for (const key in obj) {
-        if (obj.hasOwnProperty(key) && meta_data_1.getJsonIgnore(obj, key)) {
+        if (obj.hasOwnProperty(key) && !meta_data_1.getJsonIgnore(obj, key)) {
             const element = obj[key];
             if (element instanceof Object)
                 out[key] = ObjectCast(element);

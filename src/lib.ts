@@ -36,7 +36,7 @@ function ObjectCast(obj: any): any
 {
     let out: any = {};
     for (const key in obj) {
-        if (obj.hasOwnProperty(key) && getJsonIgnore(obj,key)) {
+        if (obj.hasOwnProperty(key) && !getJsonIgnore(obj,key)) {
             const element = obj[key];
             if (element instanceof Object)
                 out[key] = ObjectCast(element);
