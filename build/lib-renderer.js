@@ -36,4 +36,12 @@ function PopupProjectMenu(context) {
     ]).popup({});
 }
 exports.PopupProjectMenu = PopupProjectMenu;
+function diffProjectFilesRenderer(files, fileNode) {
+    return null;
+    for (let i = 0; i < files.children.length; i++) {
+        for (let j = 0; j < fileNode.children.length; j++) {
+        }
+    }
+}
+exports.diffProjectFilesRenderer = diffProjectFilesRenderer;
 //# sourceMappingURL=lib-renderer.js.map

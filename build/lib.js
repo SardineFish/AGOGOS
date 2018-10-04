@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const meta_data_1 = require("./meta-data");
+const linq_1 = __importDefault(require("linq"));
 class Vector2 {
     constructor(x, y) {
         this.x = x;
@@ -32,4 +36,62 @@ function JSONStringrify(obj) {
     return JSON.stringify(ObjectCast(obj));
 }
 exports.JSONStringrify = JSONStringrify;
+function diffFiles(oldFiles, newFiles) {
+    oldFiles = linq_1.default.from(oldFiles).orderBy(f => f.name).toArray();
+    newFiles = linq_1.default.from(newFiles).orderBy(f => f.name).toArray();
+    let diffResult = diff(oldFiles, newFiles);
+    let remove = linq_1.default.from(diffResult).where(r => r.operation === "remove").firstOrDefault();
+    let add = linq_1.default.from(diffResult).where(r => r.operation === "add").firstOrDefault();
+    if (add) {
+        if (remove)
+            return { newItem: add.newItem, oldItem: remove.oldItem, operation: "change" };
+        return add;
+    }
+    else
+        return remove;
+}
+exports.diffFiles = diffFiles;
+function diff(listOld, listNew) {
+    let valueGraph = [];
+    let operate = [];
+    let ans = [];
+    for (let i = 0; i <= listOld.length; i++) {
+        valueGraph[i] = [];
+        operate[i] = [];
+        for (let j = 0; j <= listNew.length; j++) {
+            valueGraph[i][j] = Number.MAX_SAFE_INTEGER;
+        }
+    }
+    valueGraph[0][0] = 0;
+    for (let k = 0; k < listOld.length + listNew.length; k++) {
+        for (let i = 0, j = k; i <= k && i < listOld.length && j >= 0; i++, j--) {
+            if (listOld[i] === listNew[j]) {
+                valueGraph[i + 1][j + 1] = valueGraph[i][j];
+                operate[i + 1][j + 1] = "keep";
+            }
+            if (valueGraph[i + 1][j] > valueGraph[i][j] + 1) {
+                valueGraph[i + 1][j] = valueGraph[i][j] + 1;
+                operate[i + 1][j] = "remove";
+            }
+            if (valueGraph[i][j + 1] >= valueGraph[i][j] + 1) {
+                valueGraph[i][j + 1] = valueGraph[i][j] + 1;
+                operate[i][j + 1] = "add";
+            }
+        }
+    }
+    for (let i = listOld.length, j = listNew.length; i > 0 || j > 0;) {
+        switch (operate[i][j]) {
+            case "keep":
+                i--, j--;
+                break;
+            case "remove":
+                ans.push({ oldItem: listOld[--i], operation: "remove" });
+                break;
+            case "add":
+                ans.push({ newItem: listNew[--j], operation: "add" });
+        }
+    }
+    return ans.reverse();
+}
+exports.diff = diff;
 //# sourceMappingURL=lib.js.map

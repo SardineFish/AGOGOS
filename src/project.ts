@@ -1,9 +1,13 @@
 import npm from "npm";
 import { IPackageJSON } from "./package-json";
-import path from "path";
+import Path from "path";
 import fs, { exists, statSync, stat } from "fs";
 import { jsonIgnore } from "./meta-data";
-import { JSONStringrify } from "./lib";
+import { JSONStringrify, diffFiles } from "./lib";
+import { promisify } from "util";
+import linq from "linq";
+
+type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
@@ -12,90 +16,139 @@ export class AGOGOSProject extends IPackageJSON
 {
     @jsonIgnore(true)
     public projectDirectory: string = "/";
-    get packageJSONPath() { return path.join(this.projectDirectory, PackageJSONFile); }
-    get agogosFolder() { return path.join(this.projectDirectory, AGOGOSFolder); }
+    @jsonIgnore(true)
+    public projectFiles: ProjectFile;
+
+    public fileWatchCallback: FileWatchCallback;
+
+    get packageJSONPath() { return Path.join(this.projectDirectory, PackageJSONFile); }
+    get agogosFolder() { return Path.join(this.projectDirectory, AGOGOSFolder); }
     constructor(path: string)
     {
         super();
         this.projectDirectory = path;
+        this.projectFiles = {
+            name: Path.basename(this.projectDirectory),
+            path: this.projectDirectory,
+            type: "folder",
+            children: []
+        };
     }
-    public open(): Promise<AGOGOSProject>
+    public async open(): Promise<AGOGOSProject>
     {
-        return new Promise((resolve, reject) =>
+        let data = await promisify(fs.readFile)(this.packageJSONPath);
+        let packageJson = JSON.parse(data.toString());
+        for (const key in packageJson)
         {
-            fs.readFile(this.packageJSONPath, (err, data) =>
+            if (packageJson.hasOwnProperty(key))
             {
-                if (err)
-                {
-                    reject(err);
-                    return;
-                }
-                let packageJson = JSON.parse(data.toString());
-                for (const key in packageJson)
-                {
-                    if (packageJson.hasOwnProperty(key))
-                    {
-                        this[key] = packageJson[key];
-                    }
-                }
-                this.checkAGOGOSFolder().then(resolve);
-            });
-        });
-    }
-    public checkAGOGOSFolder(): Promise<AGOGOSProject>
-    {
-        return new Promise((resolve, reject) =>
+                this[key] = packageJson[key];
+            }
+        }
+        await this.checkAGOGOSFolder();
+        await this.scanFiles();
+        return await this.startWatch((operation,oldFile,newFile) =>
         {
-            fs.exists(this.agogosFolder, exists =>
-            {
-                if (!exists)
-                    fs.mkdir(this.agogosFolder, err =>
-                    {
-                        if (err)
-                        {
-                            reject(err);
-                            return;
-                        }
-                        resolve(this);
-                    });
-                else
-                    fs.stat(this.agogosFolder, (err, stats) =>
-                    {
-                        if (err)
-                            reject(err);
-                        else if (!stats.isDirectory())
-                            reject(new Error("Invalid project."));
-                        else
-                            resolve(this);
-                    });
-            }) 
+            if (this.fileWatchCallback)
+                this.fileWatchCallback(operation, oldFile, newFile);
         });
     }
-    public init(name: string): Promise<AGOGOSProject>
+    public async checkAGOGOSFolder(): Promise<AGOGOSProject>
     {
-        return new Promise((resolve, reject) =>
+        if (await promisify(fs.exists)(this.agogosFolder))
         {
-            if (fs.existsSync(this.packageJSONPath))
-                reject(new Error("Project existed."));
-            this.name = name;
-            return this.save()
-                .then(resolve)
-                .catch(reject);
-        });
+            if (!(await promisify(fs.stat)(this.agogosFolder)).isDirectory())
+                throw new Error("Invalid project.");
+        }
+        else
+        {
+            await promisify(fs.mkdir)(this.agogosFolder);
+        }
+        return this;
     }
-    public save(): Promise<AGOGOSProject>
+    public async init(name: string): Promise<AGOGOSProject>
     {
-        return new Promise((resolve, reject) =>
-        {
-            fs.writeFile(this.packageJSONPath, JSONStringrify(this), (err) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                    return;
-                }
-                resolve(this);
-            });
-        });
+        if (fs.existsSync(this.packageJSONPath))
+            throw new Error("Project existed.");
+        this.name = name;
+        await this.save();
+        return await this.open();
     }
+    public async save(): Promise<AGOGOSProject>
+    {
+        await promisify(fs.writeFile)(this.packageJSONPath, JSONStringrify(this));
+        return this;
+    }
+    public async scanFiles(): Promise<AGOGOSProject>
+    {
+        this.projectFiles.children = await ScanFilesRecursive(this.projectDirectory, /\..*/);
+        return this;
+    }
+    public startWatch(callback: FileWatchCallback): AGOGOSProject
+    {
+        watchFilesRecursive(this.projectFiles, /\..*/, callback);
+        return this;
+    }
+}
+export interface ProjectFile
+{
+    name: string;
+    type: "file" | "folder" | string;
+    path: string;
+    children?: ProjectFile[];
+    watcher?: fs.FSWatcher;
+}
+async function ScanFilesRecursive(rootPath: string, ignore: RegExp): Promise<ProjectFile[]>
+{
+    let files = await ScanFiles(rootPath, ignore);
+    files
+        .filter(f => f.type === "folder")
+        .forEach(async (f) => f.children = await ScanFilesRecursive(f.path, ignore));
+    return files;
+}
+async function ScanFiles(directory: string, ignore:RegExp): Promise<ProjectFile[]>
+{
+    let files = await promisify(fs.readdir)(directory);
+    return files.filter(f => !ignore.test(f))
+        .map(f =>
+        {
+            let p = Path.join(directory, f);
+            let isDir = fs.statSync(p).isDirectory();
+            return {
+                name: f,
+                type: isDir ? "folder" : "file",
+                path: Path.join(directory, f),
+                children: isDir ? [] : null
+            };
+        });
+}
+function watchFilesRecursive(file: ProjectFile, ignore: RegExp, callback: FileWatchCallback)
+{
+    if (file.type !== "folder")
+        return;
+    if (file.watcher)
+        file.watcher.close();
+    file.watcher = fs.watch(file.path, { recursive: false }, async (event, filename: string) =>
+    {
+        let newName = Path.basename(filename);
+        let oldChildrens = file.children;
+        let subFiles = await ScanFiles(file.path, ignore);
+        file.children = subFiles;
+
+        if (subFiles.length > file.children.length)
+            callback("add", null, linq.from(subFiles).where(f => f.name === newName).firstOrDefault());
+        else if (subFiles.length < file.children.length)
+            callback("delete", linq.from(oldChildrens).where(f => f.name === newName).firstOrDefault(), null);
+        else if (subFiles.length == file.children.length)
+        {
+            let diffReslt = diffFiles(oldChildrens, subFiles);
+            if (diffReslt.operation === "change")
+                callback("rename", diffReslt.oldItem, diffReslt.newItem);
+            
+            //callback("rename", linq.from(oldChildrens).where(f=>f.name === ))
+        }
+        file.children = subFiles;
+    });
+    if (file.children)
+        file.children.forEach(f => watchFilesRecursive(f, ignore, callback));
 }

@@ -44,6 +44,9 @@ function loadRenderer() {
     });
     electron_1.ipcMain.on(ipc_1.ChannelProjectSettings, (event, args) => {
         event.returnValue = agogosProject;
+        agogosProject.fileWatchCallback = () => {
+            event.sender.send(ipc_1.ChannelFileChanged, agogosProject.projectFiles);
+        };
     });
 }
 function loadMenu() {

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem } from "electron";
 import program from "commander";
 import fs from "fs";
 import path from "path";
-import { Startup, ChannelStartup, ChannelProjectSettings } from "./ipc";
+import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged } from "./ipc";
 import { AGOGOSProject } from "./project";
 require("electron-reload")(app.getAppPath());
 
@@ -55,7 +55,11 @@ function loadRenderer()
     });
     ipcMain.on(ChannelProjectSettings, (event: Event, args: any) =>
     {
-        event.returnValue = agogosProject; 
+        event.returnValue = agogosProject;
+        agogosProject.fileWatchCallback = () =>
+        {
+            event.sender.send(ChannelFileChanged, agogosProject.projectFiles);
+        }
     });
 }
 function loadMenu()
