@@ -28,7 +28,7 @@ class ProcessManager
             }
         }
         data.processOutput = { type: getType(process, KeyProcess), value: null };
-        console.log(JSON.stringify(data));
+        //console.log(JSON.stringify(data));
         return data;
     }
     public addProcess(name:string, ProcessType: typeof ProcessNode)

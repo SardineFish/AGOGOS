@@ -1,8 +1,11 @@
 import { promisify } from "util";
 import { ipcRenderer, ipcMain } from "electron";
+import { AGOGOSProject, ProjectFile } from "./project";
 export interface Startup
 {
     workDir: string;
+    /*project: AGOGOSProject;*/
+    projectFile: ProjectFile;
 }
 export const ChannelStartup = "startup";
 export const ChannelProjectSettings = "proj-settings";
@@ -29,4 +32,11 @@ export async function waitIpcMain<T>(channel: string, timeout: number = 500): Pr
         });
         promisify(setTimeout)(timeout).then(() => reject(new Error("Ipc Timeout.")));
     });
+}
+
+export interface FileChangeArgs
+{
+    operation: "add" | "delete" | "change",
+    oldFileName: string,
+    newFileName: string
 }

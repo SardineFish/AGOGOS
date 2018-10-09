@@ -26,12 +26,10 @@ if (!fs_1.default.existsSync(workDir))
 let agogosProject;
 loadProject();
 function loadProject() {
-    electron_1.app.on("ready", () => {
+    electron_1.app.on("ready", async () => {
         agogosProject = new project_1.AGOGOSProject(workDir);
-        agogosProject.open()
-            .then(() => loadRenderer())
-            .catch(err => agogosProject.init(path_1.default.basename(workDir))
-            .then(() => loadRenderer()));
+        await agogosProject.open();
+        loadRenderer();
     });
 }
 function loadRenderer() {
@@ -40,12 +38,16 @@ function loadRenderer() {
     window.loadFile("./res/html/index.html");
     electron_1.ipcMain.on("ping", (event, args) => {
         event.returnValue = "pong";
-        event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory });
+        event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
     });
     electron_1.ipcMain.on(ipc_1.ChannelProjectSettings, (event, args) => {
         event.returnValue = agogosProject;
-        agogosProject.fileWatchCallback = () => {
-            event.sender.send(ipc_1.ChannelFileChanged, agogosProject.projectFiles);
+        agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
+            event.sender.send(ipc_1.ChannelFileChanged, {
+                operation: operation,
+                oldFileName: oldFile.path ? path_1.default.resolve(oldFile.path) : null,
+                newFileName: newFile.path ? path_1.default.resolve(newFile.path) : null
+            });
         };
     });
 }

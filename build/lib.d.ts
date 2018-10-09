@@ -25,3 +25,7 @@ export interface DiffResult<T> {
     operation: "add" | "remove" | "change";
 }
 export declare function diff<T>(listOld: T[], listNew: T[]): DiffResult<T>[];
+export declare function locateDirectory(root: ProjectFile, targetPath: string): ProjectFile;
+export declare function switchCase<T>(value: string, cases: {
+    [key: string]: T;
+}): T;

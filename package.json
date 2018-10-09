@@ -5,7 +5,7 @@
   "main": "./build/main.js",
   "scripts": {
     "start": "npx electron . F:\\Project\\other\\agogos",
-    "start:debug": "npx electron --remote-debugging-port=9222 . 'F:\\Project\\other\\agogos'",
+    "start:debug": "npx electron --remote-debugging-port=9222 . F:\\Project\\other\\agogos",
     "build:watch": "npx tsc -w"
   },
   "repository": {

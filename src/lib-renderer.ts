@@ -52,3 +52,7 @@ export function diffProjectFilesRenderer(files: ProjectFile, fileNode: NodeData)
         }
     }
 }
+export interface ProjectFileData extends NodeData, ProjectFile
+{
+    children?: ProjectFileData[];
+}

@@ -21,6 +21,17 @@ const path_1 = __importDefault(require("path"));
 const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
 const lib_renderer_1 = require("./lib-renderer");
+const lib_1 = require("./lib");
+function toProjectFileData(root) {
+    let { children, ...other } = root;
+    return {
+        extend: false,
+        data: root.path,
+        icon: (React.createElement("span", { className: lib_1.switchCase(root.type, { "file": `node-icon file ${path_1.default.extname(root.path).replace(".", "")}`, "folder": "node-icon directory" }) })),
+        children: children ? children.map(child => toProjectFileData(child)) : null,
+        ...other
+    };
+}
 function getDirData(dirPath) {
     return linq_1.default.from(fs_1.default.readdirSync(dirPath).filter(name => !name.startsWith(".")).map((name) => {
         let p = path_1.default.resolve(dirPath, name);
@@ -49,6 +60,7 @@ class App extends React.Component {
         };
     }
     onFolderExtend(nodeData) {
+        return nodeData;
         if (!nodeData.children || nodeData.children.length > 0)
             return nodeData;
         nodeData.children = getDirData(nodeData.data);
@@ -57,13 +69,29 @@ class App extends React.Component {
     onProjectContextMenu(e) {
         lib_renderer_1.PopupProjectMenu(e.parent.data);
     }
+    componentDidMount() {
+        let projectFileData = toProjectFileData(this.props.projectFile);
+        projectFileData.icon = (React.createElement("span", { className: "node-icon directory" }));
+        projectFileData.name = projectFileData.path;
+        projectFileData.extend = true;
+        this.setState({
+            dirData: projectFileData
+        });
+        electron_1.ipcRenderer.on(ipc_1.ChannelFileChanged, (event, args) => {
+            let relativeOld = args.oldFileName ? path_1.default.relative(this.props.workDir, args.oldFileName) : null;
+            let relativeNew = args.newFileName ? path_1.default.relative(this.props.workDir, args.newFileName) : null;
+            if (args.operation === "add") {
+            }
+        });
+    }
     render() {
+        let data = this.state.dirData;
         return (React.createElement("div", null,
             React.createElement(react_split_pane_1.default, { split: "vertical", minSize: 50, defaultSize: 300, allowResize: true },
                 React.createElement("div", { id: "left-side" },
                     React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
                         React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
-                            React.createElement(react_tree_viewer_1.TreeViewer, { data: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
+                            React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
                         React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
                 React.createElement("div", { id: "mid", className: "pane" },
                     React.createElement(components_1.ProcessSpace, { id: "process-space" })))));
@@ -71,7 +99,7 @@ class App extends React.Component {
 }
 const $ = (selector) => document.querySelector(selector);
 electron_1.ipcRenderer.once(ipc_1.ChannelStartup, (event, args) => {
-    const element = (React.createElement(App, { workDir: lib_renderer_1.GetProjectSettings().projectDirectory }));
+    const element = (React.createElement(App, { workDir: args.workDir, projectFile: args.projectFile }));
     ReactDOM.render(element, $("#root"));
 });
 electron_1.ipcRenderer.send("ping", "ping");

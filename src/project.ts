@@ -81,12 +81,12 @@ export class AGOGOSProject extends IPackageJSON
     }
     public async scanFiles(): Promise<AGOGOSProject>
     {
-        this.projectFiles.children = await ScanFilesRecursive(this.projectDirectory, /\..*/);
+        this.projectFiles.children = await ScanFilesRecursive(this.projectDirectory, /^\..*$/);
         return this;
     }
     public startWatch(callback: FileWatchCallback): AGOGOSProject
     {
-        watchFilesRecursive(this.projectFiles, /\..*/, callback);
+        watchFilesRecursive(this.projectFiles, /^\..*$/, callback);
         return this;
     }
 }
@@ -135,11 +135,11 @@ function watchFilesRecursive(file: ProjectFile, ignore: RegExp, callback: FileWa
         let subFiles = await ScanFiles(file.path, ignore);
         file.children = subFiles;
 
-        if (subFiles.length > file.children.length)
+        if (subFiles.length > oldChildrens.length)
             callback("add", null, linq.from(subFiles).where(f => f.name === newName).firstOrDefault());
-        else if (subFiles.length < file.children.length)
+        else if (subFiles.length < oldChildrens.length)
             callback("delete", linq.from(oldChildrens).where(f => f.name === newName).firstOrDefault(), null);
-        else if (subFiles.length == file.children.length)
+        else if (subFiles.length == oldChildrens.length)
         {
             let diffReslt = diffFiles(oldChildrens, subFiles);
             if (diffReslt.operation === "change")

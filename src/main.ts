@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem } from "electron";
 import program from "commander";
 import fs from "fs";
 import path from "path";
-import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged } from "./ipc";
+import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged, FileChangeArgs } from "./ipc";
 import { AGOGOSProject } from "./project";
 require("electron-reload")(app.getAppPath());
 
@@ -31,14 +31,11 @@ loadProject();
 
 function loadProject()
 {
-    app.on("ready", () =>
+    app.on("ready", async () =>
     {
         agogosProject = new AGOGOSProject(workDir);
-        agogosProject.open()
-            .then(() => loadRenderer())
-            .catch(err => agogosProject.init(path.basename(workDir))
-                .then(() => loadRenderer()));
-        
+        await agogosProject.open();
+        loadRenderer();
     });
 }
 function loadRenderer()
@@ -51,14 +48,18 @@ function loadRenderer()
     ipcMain.on("ping", (event: Event, args: any) =>
     {
         event.returnValue = "pong";
-        event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory });
+        event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
     });
     ipcMain.on(ChannelProjectSettings, (event: Event, args: any) =>
     {
         event.returnValue = agogosProject;
-        agogosProject.fileWatchCallback = () =>
+        agogosProject.fileWatchCallback = (operation, oldFile, newFile) =>
         {
-            event.sender.send(ChannelFileChanged, agogosProject.projectFiles);
+            event.sender.send(ChannelFileChanged, <FileChangeArgs>{
+                operation: operation,
+                oldFileName: oldFile.path ? path.resolve(oldFile.path) : null,
+                newFileName: newFile.path ? path.resolve(newFile.path) : null
+            });
         }
     });
 }

@@ -1,6 +1,7 @@
 import { ProcessNodeData } from "./lib-renderer";
 import { getJsonIgnore } from "./meta-data";
 import { ProjectFile } from "./project";
+import Path from "path";
 import linq from "linq";
 
 export class Vector2
@@ -125,4 +126,23 @@ export function diff<T>(listOld: T[], listNew: T[]): DiffResult<T>[]
         }
     }
     return ans.reverse();
+}
+export function locateDirectory(root: ProjectFile, targetPath: string): ProjectFile
+{
+    let relative = Path.relative(root.path, targetPath);
+    let pathSlice = relative.split(Path.sep);
+    let file = root;
+    for (let i = 0; i < pathSlice.length - 1; i++)
+    {
+        file = file.children.filter(f => f.name === pathSlice[i])[0];
+    }
+    return file;
+}
+export function switchCase<T>(value: string, cases: { [key: string]: T }):T
+{
+    for (const key in cases)
+    {
+        if (key === value)
+            return cases[key];
+    }
 }
