@@ -400,9 +400,10 @@ export function renderProcessNode(node: ProcessNodeData, onDragMoveStart?: Event
             onConnectEnd={onConnectEnd}
             refCallback={refCallback}/>
     );
-    //console.log(ReactDOM.render(reactElement, element));
+    ReactDOM.render(reactElement, element)
     return element;
 }
+
 
 interface ConnectLineProps
 {

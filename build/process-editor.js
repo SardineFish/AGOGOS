@@ -178,7 +178,7 @@ function renderProcessNode(node, onDragMoveStart, onDragMove, onConnectStart, on
     let element = document.createElement("div");
     element.className = "process-node";
     const reactElement = (react_1.default.createElement(ReactProcessNode, { node: node, onDragMoveStart: onDragMoveStart, onDragMove: onDragMove, onConnectStart: onConnectStart, onConnectEnd: onConnectEnd, refCallback: refCallback }));
-    //console.log(ReactDOM.render(reactElement, element));
+    react_dom_1.default.render(reactElement, element);
     return element;
 }
 exports.renderProcessNode = renderProcessNode;

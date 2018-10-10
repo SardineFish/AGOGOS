@@ -24,8 +24,10 @@ export interface DiffResult<T> {
     newItem?: T;
     operation: "add" | "remove" | "change";
 }
-export declare function diff<T>(listOld: T[], listNew: T[]): DiffResult<T>[];
+export declare function diff<T>(listOld: T[], listNew: T[], cmpFunc?: (a: T, b: T) => boolean): DiffResult<T>[];
 export declare function locateDirectory(root: ProjectFile, targetPath: string): ProjectFile;
 export declare function switchCase<T>(value: string, cases: {
     [key: string]: T;
 }): T;
+export declare function foreachAsync<T>(list: T[], callback: (item: T, idx: number) => Promise<any>): Promise<T[]>;
+export declare function mapAsync<TIn, TOut>(list: TIn[], func: (item: TIn, idx: number) => Promise<TOut>): Promise<TOut[]>;

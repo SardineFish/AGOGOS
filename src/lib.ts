@@ -56,7 +56,7 @@ export function diffFiles(oldFiles: ProjectFile[], newFiles: ProjectFile[]): Dif
 {
     oldFiles = linq.from(oldFiles).orderBy(f => f.name).toArray();
     newFiles = linq.from(newFiles).orderBy(f => f.name).toArray();
-    let diffResult = diff(oldFiles, newFiles);
+    let diffResult = diff(oldFiles, newFiles, (a, b) => a.name === b.name);
     let remove = linq.from(diffResult).where(r => r.operation === "remove").firstOrDefault();
     let add = linq.from(diffResult).where(r => r.operation === "add").firstOrDefault();
     if (add)
@@ -74,7 +74,7 @@ export interface DiffResult<T>
     newItem?: T;
     operation: "add" | "remove" | "change";
 }
-export function diff<T>(listOld: T[], listNew: T[]): DiffResult<T>[]
+export function diff<T>(listOld: T[], listNew: T[], cmpFunc?:(a:T,b:T)=>boolean): DiffResult<T>[]
 {
     let valueGraph: number[][] = [];
     let operate: ("add" | "remove" | "keep" | "change")[][] = [];
@@ -91,12 +91,36 @@ export function diff<T>(listOld: T[], listNew: T[]): DiffResult<T>[]
     valueGraph[0][0] = 0;
     for (let k = 0; k < listOld.length + listNew.length; k++)
     {
-        for (let i = 0, j = k; i <= k && i < listOld.length && j >= 0; i++ , j--)
+        let j = Math.min(k, listNew.length);
+        let i = k - j;
+        for (; i <= k && i <= listOld.length && j >= 0; i++ , j--)
         {
-            if (listOld[i] === listNew[j])
+            // Add only
+            if (i >= listOld.length)
+            {
+                if (valueGraph[i][j + 1] >= valueGraph[i][j] + 1)
+                {
+                    valueGraph[i][j + 1] = valueGraph[i][j] + 1;
+                    operate[i][j + 1] = "add";
+                }
+                continue;
+            }
+            // Delete only
+            if (j >= listNew.length)
+            {
+                if (valueGraph[i + 1][j] > valueGraph[i][j] + 1)
+                {
+                    valueGraph[i + 1][j] = valueGraph[i][j] + 1;
+                    operate[i + 1][j] = "remove";
+                }
+                continue;
+            }
+            
+
+            if (cmpFunc ? cmpFunc(listOld[i], listNew[j]) : listOld[i] === listNew[j])
             {
                 valueGraph[i + 1][j + 1] = valueGraph[i][j];
-                operate[i+1][j+1] = "keep";
+                operate[i + 1][j + 1] = "keep";
             }
             if (valueGraph[i + 1][j] > valueGraph[i][j] + 1)
             {
@@ -145,4 +169,22 @@ export function switchCase<T>(value: string, cases: { [key: string]: T }):T
         if (key === value)
             return cases[key];
     }
+}
+
+export async function foreachAsync<T>(list: T[], callback: (item: T, idx: number) => Promise<any>): Promise<T[]>
+{
+    for (let i = 0; i < list.length; i++)
+    {
+        await callback(list[i], i);
+    }
+    return list;
+}
+export async function mapAsync<TIn, TOut>(list: TIn[], func: (item: TIn, idx: number) => Promise<TOut>): Promise<TOut[]>
+{
+    let result: TOut[] = [];
+    for (let i = 0; i < list.length; i++)
+    {
+        result[i] = await func(list[i], i);
+    }
+    return result;
 }

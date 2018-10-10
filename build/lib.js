@@ -40,7 +40,7 @@ exports.JSONStringrify = JSONStringrify;
 function diffFiles(oldFiles, newFiles) {
     oldFiles = linq_1.default.from(oldFiles).orderBy(f => f.name).toArray();
     newFiles = linq_1.default.from(newFiles).orderBy(f => f.name).toArray();
-    let diffResult = diff(oldFiles, newFiles);
+    let diffResult = diff(oldFiles, newFiles, (a, b) => a.name === b.name);
     let remove = linq_1.default.from(diffResult).where(r => r.operation === "remove").firstOrDefault();
     let add = linq_1.default.from(diffResult).where(r => r.operation === "add").firstOrDefault();
     if (add) {
@@ -52,7 +52,7 @@ function diffFiles(oldFiles, newFiles) {
         return remove;
 }
 exports.diffFiles = diffFiles;
-function diff(listOld, listNew) {
+function diff(listOld, listNew, cmpFunc) {
     let valueGraph = [];
     let operate = [];
     let ans = [];
@@ -65,8 +65,26 @@ function diff(listOld, listNew) {
     }
     valueGraph[0][0] = 0;
     for (let k = 0; k < listOld.length + listNew.length; k++) {
-        for (let i = 0, j = k; i <= k && i < listOld.length && j >= 0; i++, j--) {
-            if (listOld[i] === listNew[j]) {
+        let j = Math.min(k, listNew.length);
+        let i = k - j;
+        for (; i <= k && i <= listOld.length && j >= 0; i++, j--) {
+            // Add only
+            if (i >= listOld.length) {
+                if (valueGraph[i][j + 1] >= valueGraph[i][j] + 1) {
+                    valueGraph[i][j + 1] = valueGraph[i][j] + 1;
+                    operate[i][j + 1] = "add";
+                }
+                continue;
+            }
+            // Delete only
+            if (j >= listNew.length) {
+                if (valueGraph[i + 1][j] > valueGraph[i][j] + 1) {
+                    valueGraph[i + 1][j] = valueGraph[i][j] + 1;
+                    operate[i + 1][j] = "remove";
+                }
+                continue;
+            }
+            if (cmpFunc ? cmpFunc(listOld[i], listNew[j]) : listOld[i] === listNew[j]) {
                 valueGraph[i + 1][j + 1] = valueGraph[i][j];
                 operate[i + 1][j + 1] = "keep";
             }
@@ -112,4 +130,19 @@ function switchCase(value, cases) {
     }
 }
 exports.switchCase = switchCase;
+async function foreachAsync(list, callback) {
+    for (let i = 0; i < list.length; i++) {
+        await callback(list[i], i);
+    }
+    return list;
+}
+exports.foreachAsync = foreachAsync;
+async function mapAsync(list, func) {
+    let result = [];
+    for (let i = 0; i < list.length; i++) {
+        result[i] = await func(list[i], i);
+    }
+    return result;
+}
+exports.mapAsync = mapAsync;
 //# sourceMappingURL=lib.js.map

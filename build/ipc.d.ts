@@ -12,4 +12,5 @@ export interface FileChangeArgs {
     operation: "add" | "delete" | "change";
     oldFileName: string;
     newFileName: string;
+    newFile: ProjectFile;
 }

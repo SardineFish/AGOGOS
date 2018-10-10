@@ -48,19 +48,16 @@ function loadRenderer()
     ipcMain.on("ping", (event: Event, args: any) =>
     {
         event.returnValue = "pong";
-        event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
-    });
-    ipcMain.on(ChannelProjectSettings, (event: Event, args: any) =>
-    {
-        event.returnValue = agogosProject;
         agogosProject.fileWatchCallback = (operation, oldFile, newFile) =>
         {
             event.sender.send(ChannelFileChanged, <FileChangeArgs>{
                 operation: operation,
                 oldFileName: oldFile.path ? path.resolve(oldFile.path) : null,
-                newFileName: newFile.path ? path.resolve(newFile.path) : null
+                newFileName: newFile.path ? path.resolve(newFile.path) : null,
+                newFile: agogosProject.projectFiles
             });
         }
+        event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
     });
 }
 function loadMenu()

@@ -73,7 +73,8 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
         return this;
     }
     startWatch(callback) {
-        watchFilesRecursive(this.projectFiles, /^\..*$/, callback);
+        watchFile(this.projectFiles, /^\..*$/, callback);
+        //watchFilesRecursive(this.projectFiles, /^\..*$/, callback);
         return this;
     }
 }
@@ -86,15 +87,17 @@ __decorate([
 exports.AGOGOSProject = AGOGOSProject;
 async function ScanFilesRecursive(rootPath, ignore) {
     let files = await ScanFiles(rootPath, ignore);
-    files
+    await lib_1.foreachAsync(files.filter(f => f.type === "folder"), async (f) => f.children = await ScanFilesRecursive(f.path, ignore));
+    /*files
         .filter(f => f.type === "folder")
-        .forEach(async (f) => f.children = await ScanFilesRecursive(f.path, ignore));
+        .forEach(async (f) => f.children = await ScanFilesRecursive(f.path, ignore));*/
     return files;
 }
 async function ScanFiles(directory, ignore) {
     let files = await util_1.promisify(fs_1.default.readdir)(directory);
-    return files.filter(f => !ignore.test(f))
-        .map(f => {
+    return linq_1.default.from(files)
+        .where(f => !ignore.test(f))
+        .select(f => {
         let p = path_1.default.join(directory, f);
         let isDir = fs_1.default.statSync(p).isDirectory();
         return {
@@ -103,6 +106,36 @@ async function ScanFiles(directory, ignore) {
             path: path_1.default.join(directory, f),
             children: isDir ? [] : null
         };
+    })
+        .orderBy(f => f.type === "folder" ? 0 : 1)
+        .toArray();
+}
+function watchFile(file, ignore, callback) {
+    if (file.type !== "folder")
+        return;
+    if (file.watcher)
+        file.watcher.close();
+    file.watcher = fs_1.default.watch(file.path, { recursive: true }, async (event, filename) => {
+        if (event === "change")
+            return;
+        let fullname = path_1.default.resolve(path_1.default.join(file.path, filename));
+        let name = path_1.default.basename(fullname);
+        let parentFolder = lib_1.locateDirectory(file, fullname);
+        let subFiles = await ScanFiles(parentFolder.path, ignore);
+        let oldChildrens = parentFolder.children;
+        parentFolder.children = subFiles;
+        if (subFiles.length > oldChildrens.length)
+            callback("add", null, linq_1.default.from(subFiles).where(f => f.name === name).firstOrDefault());
+        else if (subFiles.length < oldChildrens.length)
+            callback("delete", linq_1.default.from(oldChildrens).where(f => f.name === name).firstOrDefault(), null);
+        else if (subFiles.length == oldChildrens.length) {
+            let diffReslt = lib_1.diffFiles(oldChildrens, subFiles);
+            if (!diffReslt)
+                return;
+            if (diffReslt.operation === "change")
+                callback("rename", diffReslt.oldItem, diffReslt.newItem);
+            //callback("rename", linq.from(oldChildrens).where(f=>f.name === ))
+        }
     });
 }
 function watchFilesRecursive(file, ignore, callback) {
@@ -111,6 +144,8 @@ function watchFilesRecursive(file, ignore, callback) {
     if (file.watcher)
         file.watcher.close();
     file.watcher = fs_1.default.watch(file.path, { recursive: false }, async (event, filename) => {
+        if (event === "change")
+            return;
         let newName = path_1.default.basename(filename);
         let oldChildrens = file.children;
         let subFiles = await ScanFiles(file.path, ignore);
@@ -128,6 +163,6 @@ function watchFilesRecursive(file, ignore, callback) {
         file.children = subFiles;
     });
     if (file.children)
-        file.children.forEach(f => watchFilesRecursive(f, ignore, callback));
+        file.children.filter(child => child.type === "folder").forEach(f => watchFilesRecursive(f, ignore, callback));
 }
 //# sourceMappingURL=project.js.map

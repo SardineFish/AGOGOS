@@ -38,17 +38,15 @@ function loadRenderer() {
     window.loadFile("./res/html/index.html");
     electron_1.ipcMain.on("ping", (event, args) => {
         event.returnValue = "pong";
-        event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
-    });
-    electron_1.ipcMain.on(ipc_1.ChannelProjectSettings, (event, args) => {
-        event.returnValue = agogosProject;
         agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
             event.sender.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
                 oldFileName: oldFile.path ? path_1.default.resolve(oldFile.path) : null,
-                newFileName: newFile.path ? path_1.default.resolve(newFile.path) : null
+                newFileName: newFile.path ? path_1.default.resolve(newFile.path) : null,
+                newFile: agogosProject.projectFiles
             });
         };
+        event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
     });
 }
 function loadMenu() {

@@ -54,21 +54,11 @@ class App extends React.Component<AppArgs, any>
         super(props);
         this.state = {
             workDir: this.props.workDir,
-            dirData: {
-                extend: true,
-                name: props.workDir,
-                children: getDirData(this.props.workDir),
-                icon: (<span className="node-icon directory"></span>),
-                data: this.props.workDir
-            } as NodeData 
+            dirData: null
         };
     }
     onFolderExtend(nodeData: NodeData)
     {
-        return nodeData;
-        if (!nodeData.children || nodeData.children.length > 0)
-            return nodeData;
-        nodeData.children = getDirData(nodeData.data as string);
         return nodeData;
     }
     onProjectContextMenu(e: NodeMouseEvent)
@@ -91,7 +81,8 @@ class App extends React.Component<AppArgs, any>
             let relativeNew = args.newFileName ? path.relative(this.props.workDir, args.newFileName) : null;
             if (args.operation === "add")
             {
-                
+                let file = locateDirectory(projectFileData, relativeNew);
+                file.children.push()
             }
         });
     }
