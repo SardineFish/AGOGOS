@@ -22,6 +22,7 @@ const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
 const lib_renderer_1 = require("./lib-renderer");
 const lib_1 = require("./lib");
+const project_1 = require("./project");
 function toProjectFileData(root) {
     let { children, ...other } = root;
     return {
@@ -70,10 +71,26 @@ class App extends React.Component {
         electron_1.ipcRenderer.on(ipc_1.ChannelFileChanged, (event, args) => {
             let relativeOld = args.oldFileName ? path_1.default.relative(this.props.workDir, args.oldFileName) : null;
             let relativeNew = args.newFileName ? path_1.default.relative(this.props.workDir, args.newFileName) : null;
+            let dir;
             if (args.operation === "add") {
-                let file = lib_1.locateDirectory(projectFileData, relativeNew);
-                file.children.push();
+                dir = project_1.ProjFile.getDirectory(projectFileData, relativeNew);
+                let file = project_1.ProjFile.getFile(args.newFile, relativeNew);
+                dir.children.push(toProjectFileData(file));
             }
+            else if (args.operation === "rename") {
+                dir = project_1.ProjFile.getDirectory(projectFileData, relativeOld);
+                let file = project_1.ProjFile.getFile(projectFileData, relativeOld);
+                file.path = args.newFileName;
+                file.name = path_1.default.basename(args.newFileName);
+            }
+            else if (args.operation === "delete") {
+                dir = project_1.ProjFile.getDirectory(projectFileData, relativeOld);
+                dir.children = dir.children.filter(child => child.path !== args.oldFileName);
+            }
+            else
+                return;
+            dir.children = project_1.ProjFile.orderFiles(dir.children);
+            this.setState({ dirData: projectFileData });
         });
     }
     render() {

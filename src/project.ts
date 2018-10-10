@@ -3,7 +3,7 @@ import { IPackageJSON } from "./package-json";
 import Path from "path";
 import fs, { exists, statSync, stat } from "fs";
 import { jsonIgnore } from "./meta-data";
-import { JSONStringrify, diffFiles, foreachAsync, locateDirectory } from "./lib";
+import { JSONStringrify, diffFiles, foreachAsync } from "./lib";
 import { promisify } from "util";
 import linq from "linq";
 
@@ -99,6 +99,43 @@ export interface ProjectFile
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
 }
+export class ProjFile
+{
+    public static getDirectory(root: ProjectFile, path: string, pathType: "relative" | "absolute" = "relative"): ProjectFile
+    {
+        let relativePath = path;
+        if (pathType === "absolute")
+            relativePath = Path.relative(root.path, path);
+        let pathSlice = relativePath.split(Path.sep);
+        let file = root;
+        for (let i = 0; i < pathSlice.length - 1; i++)
+        {
+            file = file.children.filter(f => f.name === pathSlice[i])[0];
+        }
+        return file;
+    }
+
+    public static getFile(root: ProjectFile, path: string, pathType: "relative" | "absolute" = "relative"): ProjectFile
+    {
+        let relativePath = path;
+        if (pathType === "absolute")
+            relativePath = Path.relative(root.path, path);
+        let pathSlice = relativePath.split(Path.sep);
+        let file = root;
+        for (let i = 0; i < pathSlice.length; i++)
+        {
+            file = file.children.filter(f => f.name === pathSlice[i])[0];
+        }
+        return file;
+    }
+
+    public static orderFiles(files: ProjectFile[]): ProjectFile[]
+    {
+        return linq.from(files)
+            .orderBy(f => f.type === "folder" ? "0" + f.name : f.name)
+            .toArray();
+    }
+}
 async function ScanFilesRecursive(rootPath: string, ignore: RegExp): Promise<ProjectFile[]>
 {
     let files = await ScanFiles(rootPath, ignore);
@@ -111,7 +148,8 @@ async function ScanFilesRecursive(rootPath: string, ignore: RegExp): Promise<Pro
 async function ScanFiles(directory: string, ignore:RegExp): Promise<ProjectFile[]>
 {
     let files = await promisify(fs.readdir)(directory);
-    return linq.from(files)
+    return ProjFile.orderFiles(
+        linq.from(files)
         .where(f => !ignore.test(f))
         .select(f =>
         {
@@ -124,8 +162,7 @@ async function ScanFiles(directory: string, ignore:RegExp): Promise<ProjectFile[
                 children: isDir ? [] : null
             };
         })
-        .orderBy(f => f.type === "folder" ? 0 : 1)
-        .toArray();
+        .toArray());
 }
 function watchFile(file: ProjectFile, ignore: RegExp, callback: FileWatchCallback)
 {
@@ -139,7 +176,7 @@ function watchFile(file: ProjectFile, ignore: RegExp, callback: FileWatchCallbac
             return;
         let fullname = Path.resolve(Path.join(file.path, filename));
         let name = Path.basename(fullname);
-        let parentFolder = locateDirectory(file, fullname);
+        let parentFolder = ProjFile.getDirectory(file, filename);
         let subFiles = await ScanFiles(parentFolder.path, ignore);
         let oldChildrens = parentFolder.children;
         parentFolder.children = subFiles;

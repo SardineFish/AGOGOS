@@ -36,7 +36,7 @@ export async function waitIpcMain<T>(channel: string, timeout: number = 500): Pr
 
 export interface FileChangeArgs
 {
-    operation: "add" | "delete" | "change";
+    operation: "add" | "delete" | "rename";
     oldFileName: string;
     newFileName: string;
     newFile: ProjectFile;

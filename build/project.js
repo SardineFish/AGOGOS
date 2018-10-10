@@ -85,6 +85,36 @@ __decorate([
     meta_data_1.jsonIgnore(true)
 ], AGOGOSProject.prototype, "projectFiles", void 0);
 exports.AGOGOSProject = AGOGOSProject;
+class ProjFile {
+    static getDirectory(root, path, pathType = "relative") {
+        let relativePath = path;
+        if (pathType === "absolute")
+            relativePath = path_1.default.relative(root.path, path);
+        let pathSlice = relativePath.split(path_1.default.sep);
+        let file = root;
+        for (let i = 0; i < pathSlice.length - 1; i++) {
+            file = file.children.filter(f => f.name === pathSlice[i])[0];
+        }
+        return file;
+    }
+    static getFile(root, path, pathType = "relative") {
+        let relativePath = path;
+        if (pathType === "absolute")
+            relativePath = path_1.default.relative(root.path, path);
+        let pathSlice = relativePath.split(path_1.default.sep);
+        let file = root;
+        for (let i = 0; i < pathSlice.length; i++) {
+            file = file.children.filter(f => f.name === pathSlice[i])[0];
+        }
+        return file;
+    }
+    static orderFiles(files) {
+        return linq_1.default.from(files)
+            .orderBy(f => f.type === "folder" ? "0" + f.name : f.name)
+            .toArray();
+    }
+}
+exports.ProjFile = ProjFile;
 async function ScanFilesRecursive(rootPath, ignore) {
     let files = await ScanFiles(rootPath, ignore);
     await lib_1.foreachAsync(files.filter(f => f.type === "folder"), async (f) => f.children = await ScanFilesRecursive(f.path, ignore));
@@ -95,7 +125,7 @@ async function ScanFilesRecursive(rootPath, ignore) {
 }
 async function ScanFiles(directory, ignore) {
     let files = await util_1.promisify(fs_1.default.readdir)(directory);
-    return linq_1.default.from(files)
+    return ProjFile.orderFiles(linq_1.default.from(files)
         .where(f => !ignore.test(f))
         .select(f => {
         let p = path_1.default.join(directory, f);
@@ -107,8 +137,7 @@ async function ScanFiles(directory, ignore) {
             children: isDir ? [] : null
         };
     })
-        .orderBy(f => f.type === "folder" ? 0 : 1)
-        .toArray();
+        .toArray());
 }
 function watchFile(file, ignore, callback) {
     if (file.type !== "folder")
@@ -120,7 +149,7 @@ function watchFile(file, ignore, callback) {
             return;
         let fullname = path_1.default.resolve(path_1.default.join(file.path, filename));
         let name = path_1.default.basename(fullname);
-        let parentFolder = lib_1.locateDirectory(file, fullname);
+        let parentFolder = ProjFile.getDirectory(file, filename);
         let subFiles = await ScanFiles(parentFolder.path, ignore);
         let oldChildrens = parentFolder.children;
         parentFolder.children = subFiles;

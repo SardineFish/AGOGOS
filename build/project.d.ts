@@ -23,4 +23,9 @@ export interface ProjectFile {
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
 }
+export declare class ProjFile {
+    static getDirectory(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;
+    static getFile(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;
+    static orderFiles(files: ProjectFile[]): ProjectFile[];
+}
 export {};

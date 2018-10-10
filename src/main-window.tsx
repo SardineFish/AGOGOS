@@ -10,8 +10,8 @@ import path from "path";
 import { Pane, ProcessSpace} from "./components";
 import linq from "linq";
 import { GetProjectSettings, PopupProjectMenu, ProjectFileData } from "./lib-renderer";
-import { locateDirectory, switchCase } from "./lib";
-import { ProjectFile, AGOGOSProject } from "./project";
+import { switchCase } from "./lib";
+import { ProjectFile, AGOGOSProject, ProjFile } from "./project";
 
 interface AppArgs
 {
@@ -19,7 +19,11 @@ interface AppArgs
     //project: AGOGOSProject;
     projectFile?: ProjectFile;
 }
-
+interface AppState
+{
+    workDir: string;
+    dirData: ProjectFileData;
+}
 function toProjectFileData(root: ProjectFile): ProjectFileData
 {
     let { children, ...other } = root;
@@ -47,7 +51,7 @@ function getDirData(dirPath: string): NodeData[]
     })).orderBy(node => fs.statSync(node.data).isDirectory() ? 0 : 1).toArray();
 }
 
-class App extends React.Component<AppArgs, any>
+class App extends React.Component<AppArgs, AppState>
 {
     constructor(props:AppArgs)
     {
@@ -79,11 +83,29 @@ class App extends React.Component<AppArgs, any>
         {
             let relativeOld = args.oldFileName ? path.relative(this.props.workDir, args.oldFileName) : null;
             let relativeNew = args.newFileName ? path.relative(this.props.workDir, args.newFileName) : null;
+            let dir: ProjectFileData;
             if (args.operation === "add")
             {
-                let file = locateDirectory(projectFileData, relativeNew);
-                file.children.push()
+                dir = ProjFile.getDirectory(projectFileData, relativeNew) as ProjectFileData;
+                let file = ProjFile.getFile(args.newFile, relativeNew);
+                dir.children.push(toProjectFileData(file));
             }
+            else if (args.operation === "rename")
+            {
+                dir = ProjFile.getDirectory(projectFileData, relativeOld) as ProjectFileData;
+                let file = ProjFile.getFile(projectFileData, relativeOld);
+                file.path = args.newFileName;
+                file.name = path.basename(args.newFileName);
+            }
+            else if (args.operation === "delete")
+            {
+                dir = ProjFile.getDirectory(projectFileData, relativeOld) as ProjectFileData;
+                dir.children = dir.children.filter(child => child.path !== args.oldFileName);
+            }
+            else
+                return;
+            dir.children = ProjFile.orderFiles(dir.children);
+            this.setState({ dirData: projectFileData });
         });
     }
     render()

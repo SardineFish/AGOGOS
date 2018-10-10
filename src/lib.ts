@@ -151,17 +151,6 @@ export function diff<T>(listOld: T[], listNew: T[], cmpFunc?:(a:T,b:T)=>boolean)
     }
     return ans.reverse();
 }
-export function locateDirectory(root: ProjectFile, targetPath: string): ProjectFile
-{
-    let relative = Path.relative(root.path, targetPath);
-    let pathSlice = relative.split(Path.sep);
-    let file = root;
-    for (let i = 0; i < pathSlice.length - 1; i++)
-    {
-        file = file.children.filter(f => f.name === pathSlice[i])[0];
-    }
-    return file;
-}
 export function switchCase<T>(value: string, cases: { [key: string]: T }):T
 {
     for (const key in cases)

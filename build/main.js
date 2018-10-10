@@ -41,8 +41,8 @@ function loadRenderer() {
         agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
             event.sender.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
-                oldFileName: oldFile.path ? path_1.default.resolve(oldFile.path) : null,
-                newFileName: newFile.path ? path_1.default.resolve(newFile.path) : null,
+                oldFileName: oldFile ? path_1.default.resolve(oldFile.path) : null,
+                newFileName: newFile ? path_1.default.resolve(newFile.path) : null,
                 newFile: agogosProject.projectFiles
             });
         };

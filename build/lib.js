@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const meta_data_1 = require("./meta-data");
-const path_1 = __importDefault(require("path"));
 const linq_1 = __importDefault(require("linq"));
 class Vector2 {
     constructor(x, y) {
@@ -113,16 +112,6 @@ function diff(listOld, listNew, cmpFunc) {
     return ans.reverse();
 }
 exports.diff = diff;
-function locateDirectory(root, targetPath) {
-    let relative = path_1.default.relative(root.path, targetPath);
-    let pathSlice = relative.split(path_1.default.sep);
-    let file = root;
-    for (let i = 0; i < pathSlice.length - 1; i++) {
-        file = file.children.filter(f => f.name === pathSlice[i])[0];
-    }
-    return file;
-}
-exports.locateDirectory = locateDirectory;
 function switchCase(value, cases) {
     for (const key in cases) {
         if (key === value)

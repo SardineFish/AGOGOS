@@ -52,8 +52,8 @@ function loadRenderer()
         {
             event.sender.send(ChannelFileChanged, <FileChangeArgs>{
                 operation: operation,
-                oldFileName: oldFile.path ? path.resolve(oldFile.path) : null,
-                newFileName: newFile.path ? path.resolve(newFile.path) : null,
+                oldFileName: oldFile ? path.resolve(oldFile.path) : null,
+                newFileName: newFile ? path.resolve(newFile.path) : null,
                 newFile: agogosProject.projectFiles
             });
         }
