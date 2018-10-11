@@ -26,6 +26,7 @@ if (!fs.existsSync(workDir))
 //console.log(program.args);
 
 let agogosProject: AGOGOSProject;
+let mainWindow: BrowserWindow;
 
 loadProject();
 
@@ -41,8 +42,8 @@ function loadProject()
 function loadRenderer()
 {
     loadMenu();
-    let window = new BrowserWindow({ width: 1280, height: 720 });
-    window.loadFile("./res/html/index.html");
+    mainWindow = new BrowserWindow({ width: 1280, height: 720 });
+    mainWindow.loadFile("./res/html/index.html");
 
 
     ipcMain.on("ping", (event: Event, args: any) =>
@@ -64,42 +65,54 @@ function loadMenu()
 {
 
     let menu = new Menu();
-    menu.append(new MenuItem({
-        label: "File",
-        submenu: [
-            {
-                label: "New File",
-            },
-            {
-                label: "New Project",
-            },
-            {
-                label: "Open Project"
-            },
-            {
-                label: "Save Project",
-                click: () => agogosProject.save(),
-                accelerator:"CommandOrControl+Shift+S",
-            }
-        ]
-    }));
-    menu.append(new MenuItem({
-        label: "Edit",
-        role: "editMenu"
-    }));
-    menu.append(new MenuItem({
-        label: "Window",
-        role: "windowMenu"
-    }));
-    menu.append(new MenuItem({
-        label: "Tool",
-        submenu: [
-            {
-                label: "Development Tools",
-                accelerator: "F12",
-            }
-        ]
-    }));
-    //
-    //Menu.setApplicationMenu(menu);
+    menu = Menu.buildFromTemplate([
+        {
+            label: "File",
+            submenu: [
+                {
+                    label: "New File",
+                },
+                {
+                    label: "New Project",
+                },
+                {
+                    label: "Open Project"
+                },
+                {
+                    label: "Save Project",
+                    click: () => agogosProject.save(),
+                    accelerator: "CommandOrControl+Shift+S",
+                }
+            ]
+        },
+        {
+            label: "Edit",
+            role: "editMenu"
+        },
+        {
+            label: "Window",
+            role: "windowMenu"
+        },
+        {
+            label: "Tool",
+            submenu: [
+                {
+                    label: "Development Tools",
+                    accelerator: "F12",
+                    click: () => mainWindow.webContents.toggleDevTools()
+                }
+            ]
+        },
+        {
+            label: "Project",
+            submenu: [
+                {
+                    label: "Build Project",
+                    accelerator: "CommandOrControl+Shift+B",
+                    click: () => agogosProject.tsCompiler.compile()
+                }
+            ]
+        }
+    ]);
+    Menu.setApplicationMenu(menu);
 }

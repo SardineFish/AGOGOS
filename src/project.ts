@@ -6,11 +6,13 @@ import { jsonIgnore } from "./meta-data";
 import { JSONStringrify, diffFiles, foreachAsync } from "./lib";
 import { promisify } from "util";
 import linq from "linq";
+import * as typescript from "typescript";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
+const ProjectBuildOutputFolder = "build";
 
 export class AGOGOSProject extends IPackageJSON
 {
@@ -20,6 +22,9 @@ export class AGOGOSProject extends IPackageJSON
     public projectFiles: ProjectFile;
 
     public fileWatchCallback: FileWatchCallback;
+
+    @jsonIgnore(true)
+    public tsCompiler: TSCompiler;
 
     get packageJSONPath() { return Path.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return Path.join(this.projectDirectory, AGOGOSFolder); }
@@ -45,8 +50,10 @@ export class AGOGOSProject extends IPackageJSON
                 this[key] = packageJson[key];
             }
         }
+        this.tsCompiler = new TSCompiler(this.projectDirectory, Path.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
+        await this.tsCompiler.init();
         return await this.startWatch((operation,oldFile,newFile) =>
         {
             if (this.fileWatchCallback)
@@ -72,6 +79,8 @@ export class AGOGOSProject extends IPackageJSON
             throw new Error("Project existed.");
         this.name = name;
         await this.save();
+        
+
         return await this.open();
     }
     public async save(): Promise<AGOGOSProject>
@@ -89,6 +98,76 @@ export class AGOGOSProject extends IPackageJSON
         watchFile(this.projectFiles, /^\..*$/, callback);
         //watchFilesRecursive(this.projectFiles, /^\..*$/, callback);
         return this;
+    }
+}
+class TSCompiler
+{
+    public ts: typescript.Program;
+    public srcDirectory: string;
+    public outDirectory: string;
+    public tsConfig: typescript.CompilerOptions;
+    public get configPath() { return Path.resolve(this.srcDirectory, "tsconfig.json"); }
+    constructor(srcDir:string, outDir:string)
+    {
+        this.srcDirectory = srcDir;
+        this.outDirectory = outDir;
+        this.tsConfig = {
+            target: typescript.ScriptTarget.ESNext,
+            module: typescript.ModuleKind.CommonJS,
+            strict: true,
+            strictNullChecks: false,
+            outDir: outDir,
+            rootDir: srcDir,
+            experimentalDecorators: true
+        };
+        this.ts = typescript.createProgram([this.srcDirectory], this.tsConfig);
+    }
+    public async init(): Promise<TSCompiler>
+    {
+        if (!await promisify(fs.exists)(this.configPath))
+        {
+            await promisify(fs.writeFile)(this.configPath, JSON.stringify({
+                compilerOptions: {
+                    target: "esnext",
+                    module: "commonjs",
+                    strict: true,
+                    strictNullChecks: false,
+                    outDir: this.outDirectory,
+                    rootDir: this.srcDirectory,
+                    experimentalDecorators: true
+                },
+            }));
+        }
+        this.tsConfig = typescript.parseJsonConfigFileContent(
+            typescript.readConfigFile(this.configPath, typescript.sys.readFile).config,
+            typescript.sys,
+            this.srcDirectory
+        ).options;
+        return this;
+    }
+    startWatch()
+    {
+        let createProgram = typescript.createSemanticDiagnosticsBuilderProgram;
+    }
+    compile()
+    {
+        let parseResult = typescript.parseJsonConfigFileContent(
+            typescript.readConfigFile(this.configPath, typescript.sys.readFile).config,
+            typescript.sys,
+            this.srcDirectory
+        );
+
+        let compileHost = typescript.createCompilerHost(parseResult.options);
+
+        this.ts = typescript.createProgram({
+            rootNames: parseResult.fileNames,
+            options: parseResult.options,
+            host: compileHost,
+            
+        });
+        let emitResult = this.ts.emit();
+        let diagnostics = emitResult.diagnostics;
+        
     }
 }
 export interface ProjectFile

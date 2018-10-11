@@ -8,6 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const package_json_1 = require("./package-json");
 const path_1 = __importDefault(require("path"));
@@ -16,8 +23,10 @@ const meta_data_1 = require("./meta-data");
 const lib_1 = require("./lib");
 const util_1 = require("util");
 const linq_1 = __importDefault(require("linq"));
+const typescript = __importStar(require("typescript"));
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
+const ProjectBuildOutputFolder = "build";
 class AGOGOSProject extends package_json_1.IPackageJSON {
     constructor(path) {
         super();
@@ -40,8 +49,10 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
                 this[key] = packageJson[key];
             }
         }
+        this.tsCompiler = new TSCompiler(this.projectDirectory, path_1.default.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
+        await this.tsCompiler.init();
         return await this.startWatch((operation, oldFile, newFile) => {
             if (this.fileWatchCallback)
                 this.fileWatchCallback(operation, oldFile, newFile);
@@ -84,7 +95,58 @@ __decorate([
 __decorate([
     meta_data_1.jsonIgnore(true)
 ], AGOGOSProject.prototype, "projectFiles", void 0);
+__decorate([
+    meta_data_1.jsonIgnore(true)
+], AGOGOSProject.prototype, "tsCompiler", void 0);
 exports.AGOGOSProject = AGOGOSProject;
+class TSCompiler {
+    get configPath() { return path_1.default.resolve(this.srcDirectory, "tsconfig.json"); }
+    constructor(srcDir, outDir) {
+        this.srcDirectory = srcDir;
+        this.outDirectory = outDir;
+        this.tsConfig = {
+            target: typescript.ScriptTarget.ESNext,
+            module: typescript.ModuleKind.CommonJS,
+            strict: true,
+            strictNullChecks: false,
+            outDir: outDir,
+            rootDir: srcDir,
+            experimentalDecorators: true
+        };
+        this.ts = typescript.createProgram([this.srcDirectory], this.tsConfig);
+    }
+    async init() {
+        if (!await util_1.promisify(fs_1.default.exists)(this.configPath)) {
+            await util_1.promisify(fs_1.default.writeFile)(this.configPath, JSON.stringify({
+                compilerOptions: {
+                    target: "esnext",
+                    module: "commonjs",
+                    strict: true,
+                    strictNullChecks: false,
+                    outDir: this.outDirectory,
+                    rootDir: this.srcDirectory,
+                    experimentalDecorators: true
+                },
+            }));
+        }
+        this.tsConfig = typescript.parseJsonConfigFileContent(typescript.readConfigFile(this.configPath, typescript.sys.readFile).config, typescript.sys, this.srcDirectory).options;
+        return this;
+    }
+    startWatch() {
+        let createProgram = typescript.createSemanticDiagnosticsBuilderProgram;
+    }
+    compile() {
+        let parseResult = typescript.parseJsonConfigFileContent(typescript.readConfigFile(this.configPath, typescript.sys.readFile).config, typescript.sys, this.srcDirectory);
+        let compileHost = typescript.createCompilerHost(parseResult.options);
+        this.ts = typescript.createProgram({
+            rootNames: parseResult.fileNames,
+            options: parseResult.options,
+            host: compileHost,
+        });
+        let emitResult = this.ts.emit();
+        let diagnostics = emitResult.diagnostics;
+    }
+}
 class ProjFile {
     static getDirectory(root, path, pathType = "relative") {
         let relativePath = path;

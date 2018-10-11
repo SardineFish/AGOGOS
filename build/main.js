@@ -24,6 +24,7 @@ if (!fs_1.default.existsSync(workDir))
     commander_1.default.help();
 //console.log(program.args);
 let agogosProject;
+let mainWindow;
 loadProject();
 function loadProject() {
     electron_1.app.on("ready", async () => {
@@ -34,8 +35,8 @@ function loadProject() {
 }
 function loadRenderer() {
     loadMenu();
-    let window = new electron_1.BrowserWindow({ width: 1280, height: 720 });
-    window.loadFile("./res/html/index.html");
+    mainWindow = new electron_1.BrowserWindow({ width: 1280, height: 720 });
+    mainWindow.loadFile("./res/html/index.html");
     electron_1.ipcMain.on("ping", (event, args) => {
         event.returnValue = "pong";
         agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
@@ -51,43 +52,55 @@ function loadRenderer() {
 }
 function loadMenu() {
     let menu = new electron_1.Menu();
-    menu.append(new electron_1.MenuItem({
-        label: "File",
-        submenu: [
-            {
-                label: "New File",
-            },
-            {
-                label: "New Project",
-            },
-            {
-                label: "Open Project"
-            },
-            {
-                label: "Save Project",
-                click: () => agogosProject.save(),
-                accelerator: "CommandOrControl+Shift+S",
-            }
-        ]
-    }));
-    menu.append(new electron_1.MenuItem({
-        label: "Edit",
-        role: "editMenu"
-    }));
-    menu.append(new electron_1.MenuItem({
-        label: "Window",
-        role: "windowMenu"
-    }));
-    menu.append(new electron_1.MenuItem({
-        label: "Tool",
-        submenu: [
-            {
-                label: "Development Tools",
-                accelerator: "F12",
-            }
-        ]
-    }));
-    //
-    //Menu.setApplicationMenu(menu);
+    menu = electron_1.Menu.buildFromTemplate([
+        {
+            label: "File",
+            submenu: [
+                {
+                    label: "New File",
+                },
+                {
+                    label: "New Project",
+                },
+                {
+                    label: "Open Project"
+                },
+                {
+                    label: "Save Project",
+                    click: () => agogosProject.save(),
+                    accelerator: "CommandOrControl+Shift+S",
+                }
+            ]
+        },
+        {
+            label: "Edit",
+            role: "editMenu"
+        },
+        {
+            label: "Window",
+            role: "windowMenu"
+        },
+        {
+            label: "Tool",
+            submenu: [
+                {
+                    label: "Development Tools",
+                    accelerator: "F12",
+                    click: () => mainWindow.webContents.toggleDevTools()
+                }
+            ]
+        },
+        {
+            label: "Project",
+            submenu: [
+                {
+                    label: "Build Project",
+                    accelerator: "CommandOrControl+Shift+B",
+                    click: () => agogosProject.tsCompiler.compile()
+                }
+            ]
+        }
+    ]);
+    electron_1.Menu.setApplicationMenu(menu);
 }
 //# sourceMappingURL=main.js.map
