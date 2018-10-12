@@ -2,6 +2,7 @@
 import { IPackageJSON } from "./package-json";
 import fs from "fs";
 import * as typescript from "typescript";
+import { IPCHost } from "./ipc";
 declare type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 export declare class AGOGOSProject extends IPackageJSON {
     projectDirectory: string;
@@ -19,15 +20,12 @@ export declare class AGOGOSProject extends IPackageJSON {
     startWatch(callback: FileWatchCallback): AGOGOSProject;
 }
 declare class TSCompiler {
-    ts: typescript.Program;
+    compileProcess: IPCHost;
     srcDirectory: string;
     outDirectory: string;
-    tsConfig: typescript.CompilerOptions;
-    readonly configPath: string;
-    constructor(srcDir: string, outDir: string);
-    init(): Promise<TSCompiler>;
-    startWatch(): void;
-    compile(): void;
+    constructor(src: string, out: string);
+    init(): Promise<void>;
+    compile(): Promise<ReadonlyArray<typescript.Diagnostic>>;
 }
 export interface ProjectFile {
     name: string;

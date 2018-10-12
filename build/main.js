@@ -25,29 +25,36 @@ if (!fs_1.default.existsSync(workDir))
 //console.log(program.args);
 let agogosProject;
 let mainWindow;
+let mainWindowEvent;
 loadProject();
 function loadProject() {
     electron_1.app.on("ready", async () => {
         agogosProject = new project_1.AGOGOSProject(workDir);
         await agogosProject.open();
-        loadRenderer();
+        await loadRenderer();
+        agogosProject.open().then(() => {
+            agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
+                mainWindowEvent.sender.send(ipc_1.ChannelFileChanged, {
+                    operation: operation,
+                    oldFileName: oldFile ? path_1.default.resolve(oldFile.path) : null,
+                    newFileName: newFile ? path_1.default.resolve(newFile.path) : null,
+                    newFile: agogosProject.projectFiles
+                });
+            };
+            mainWindowEvent.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
+        });
     });
 }
-function loadRenderer() {
-    loadMenu();
-    mainWindow = new electron_1.BrowserWindow({ width: 1280, height: 720 });
-    mainWindow.loadFile("./res/html/index.html");
-    electron_1.ipcMain.on("ping", (event, args) => {
-        event.returnValue = "pong";
-        agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
-            event.sender.send(ipc_1.ChannelFileChanged, {
-                operation: operation,
-                oldFileName: oldFile ? path_1.default.resolve(oldFile.path) : null,
-                newFileName: newFile ? path_1.default.resolve(newFile.path) : null,
-                newFile: agogosProject.projectFiles
-            });
-        };
-        event.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
+async function loadRenderer() {
+    return new Promise(resolve => {
+        loadMenu();
+        mainWindow = new electron_1.BrowserWindow({ width: 1280, height: 720 });
+        mainWindow.loadFile("./res/html/index.html");
+        electron_1.ipcMain.on("ping", (event, args) => {
+            event.returnValue = "pong";
+            mainWindowEvent = event;
+            resolve(event);
+        });
     });
 }
 function loadMenu() {

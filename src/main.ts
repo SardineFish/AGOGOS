@@ -27,6 +27,7 @@ if (!fs.existsSync(workDir))
 
 let agogosProject: AGOGOSProject;
 let mainWindow: BrowserWindow;
+let mainWindowEvent: Event;
 
 loadProject();
 
@@ -36,29 +37,38 @@ function loadProject()
     {
         agogosProject = new AGOGOSProject(workDir);
         await agogosProject.open();
-        loadRenderer();
+        await loadRenderer();
+        agogosProject.open().then(() =>
+        {
+            agogosProject.fileWatchCallback = (operation, oldFile, newFile) =>
+            {
+                mainWindowEvent.sender.send(ChannelFileChanged, <FileChangeArgs>{
+                    operation: operation,
+                    oldFileName: oldFile ? path.resolve(oldFile.path) : null,
+                    newFileName: newFile ? path.resolve(newFile.path) : null,
+                    newFile: agogosProject.projectFiles
+                });
+            };
+
+            mainWindowEvent.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
+        });
     });
 }
-function loadRenderer()
+async function loadRenderer():Promise<Event>
 {
-    loadMenu();
-    mainWindow = new BrowserWindow({ width: 1280, height: 720 });
-    mainWindow.loadFile("./res/html/index.html");
-
-
-    ipcMain.on("ping", (event: Event, args: any) =>
+    return new Promise<Event>(resolve =>
     {
-        event.returnValue = "pong";
-        agogosProject.fileWatchCallback = (operation, oldFile, newFile) =>
+        loadMenu();
+        mainWindow = new BrowserWindow({ width: 1280, height: 720 });
+        mainWindow.loadFile("./res/html/index.html");
+
+
+        ipcMain.on("ping", (event: Event, args: any) =>
         {
-            event.sender.send(ChannelFileChanged, <FileChangeArgs>{
-                operation: operation,
-                oldFileName: oldFile ? path.resolve(oldFile.path) : null,
-                newFileName: newFile ? path.resolve(newFile.path) : null,
-                newFile: agogosProject.projectFiles
-            });
-        }
-        event.sender.send(ChannelStartup, <Startup>{ workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
+            event.returnValue = "pong";
+            mainWindowEvent = event;
+            resolve(event);
+        });
     });
 }
 function loadMenu()

@@ -8,13 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const package_json_1 = require("./package-json");
 const path_1 = __importDefault(require("path"));
@@ -23,7 +16,7 @@ const meta_data_1 = require("./meta-data");
 const lib_1 = require("./lib");
 const util_1 = require("util");
 const linq_1 = __importDefault(require("linq"));
-const typescript = __importStar(require("typescript"));
+const ipc_1 = require("./ipc");
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
 const ProjectBuildOutputFolder = "build";
@@ -100,51 +93,18 @@ __decorate([
 ], AGOGOSProject.prototype, "tsCompiler", void 0);
 exports.AGOGOSProject = AGOGOSProject;
 class TSCompiler {
-    get configPath() { return path_1.default.resolve(this.srcDirectory, "tsconfig.json"); }
-    constructor(srcDir, outDir) {
-        this.srcDirectory = srcDir;
-        this.outDirectory = outDir;
-        this.tsConfig = {
-            target: typescript.ScriptTarget.ESNext,
-            module: typescript.ModuleKind.CommonJS,
-            strict: true,
-            strictNullChecks: false,
-            outDir: outDir,
-            rootDir: srcDir,
-            experimentalDecorators: true
-        };
-        this.ts = typescript.createProgram([this.srcDirectory], this.tsConfig);
+    constructor(src, out) {
+        this.srcDirectory = src;
+        this.outDirectory = out;
     }
     async init() {
-        if (!await util_1.promisify(fs_1.default.exists)(this.configPath)) {
-            await util_1.promisify(fs_1.default.writeFile)(this.configPath, JSON.stringify({
-                compilerOptions: {
-                    target: "esnext",
-                    module: "commonjs",
-                    strict: true,
-                    strictNullChecks: false,
-                    outDir: this.outDirectory,
-                    rootDir: this.srcDirectory,
-                    experimentalDecorators: true
-                },
-            }));
-        }
-        this.tsConfig = typescript.parseJsonConfigFileContent(typescript.readConfigFile(this.configPath, typescript.sys.readFile).config, typescript.sys, this.srcDirectory).options;
-        return this;
+        this.compileProcess = new ipc_1.IPCHost("./build/compiler.js");
+        this.compileProcess.start();
+        await this.compileProcess.call("init", this.srcDirectory, this.outDirectory);
+        console.log("ready");
     }
-    startWatch() {
-        let createProgram = typescript.createSemanticDiagnosticsBuilderProgram;
-    }
-    compile() {
-        let parseResult = typescript.parseJsonConfigFileContent(typescript.readConfigFile(this.configPath, typescript.sys.readFile).config, typescript.sys, this.srcDirectory);
-        let compileHost = typescript.createCompilerHost(parseResult.options);
-        this.ts = typescript.createProgram({
-            rootNames: parseResult.fileNames,
-            options: parseResult.options,
-            host: compileHost,
-        });
-        let emitResult = this.ts.emit();
-        let diagnostics = emitResult.diagnostics;
+    async compile() {
+        return await this.compileProcess.call("compile");
     }
 }
 class ProjFile {
