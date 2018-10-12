@@ -51,7 +51,8 @@ class App extends React.Component {
         super(props);
         this.state = {
             workDir: this.props.workDir,
-            dirData: null
+            dirData: null,
+            statusText: null
         };
     }
     onFolderExtend(nodeData) {
@@ -95,15 +96,18 @@ class App extends React.Component {
     }
     render() {
         let data = this.state.dirData;
-        return (React.createElement("div", null,
-            React.createElement(react_split_pane_1.default, { split: "vertical", minSize: 50, defaultSize: 300, allowResize: true },
-                React.createElement("div", { id: "left-side" },
-                    React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
-                        React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
-                            React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
-                        React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
-                React.createElement("div", { id: "mid", className: "pane" },
-                    React.createElement(components_1.ProcessSpace, { id: "process-space" })))));
+        return (React.createElement("div", { id: "content" },
+            React.createElement("main", { id: "main" },
+                React.createElement(react_split_pane_1.default, { split: "vertical", minSize: 50, defaultSize: 300, allowResize: true },
+                    React.createElement("div", { id: "left-side" },
+                        React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
+                            React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
+                                React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
+                            React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
+                    React.createElement("div", { id: "mid", className: "pane" },
+                        React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
+            React.createElement("footer", { id: "status-bar" },
+                React.createElement("span", { id: "status-text" }))));
     }
 }
 const $ = (selector) => document.querySelector(selector);

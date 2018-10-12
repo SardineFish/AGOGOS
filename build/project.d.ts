@@ -20,6 +20,7 @@ export declare class AGOGOSProject extends IPackageJSON {
     startWatch(callback: FileWatchCallback): AGOGOSProject;
 }
 declare class TSCompiler {
+    ready: boolean;
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;

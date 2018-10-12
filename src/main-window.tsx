@@ -23,6 +23,7 @@ interface AppState
 {
     workDir: string;
     dirData: ProjectFileData;
+    statusText: string;
 }
 function toProjectFileData(root: ProjectFile): ProjectFileData
 {
@@ -58,7 +59,8 @@ class App extends React.Component<AppArgs, AppState>
         super(props);
         this.state = {
             workDir: this.props.workDir,
-            dirData: null
+            dirData: null,
+            statusText: null
         };
     }
     onFolderExtend(nodeData: NodeData)
@@ -112,27 +114,32 @@ class App extends React.Component<AppArgs, AppState>
     {
         let data = this.state.dirData;
         return (
-            <div>
-                <SplitPane split="vertical" minSize={50} defaultSize={300} allowResize={true}>
-                    <div id="left-side">
-                        <SplitPane split="horizontal" defaultSize={400} allowResize={true}>
-                            <Pane id="work-dir" header="Project">
-                                <TreeViewer
-                                    nodeData={this.state.dirData}
-                                    tabSize={10}
-                                    root={true}
-                                    onContextMenu={e=>this.onProjectContextMenu(e)}
-                                    onExtend={(nodeData) => this.onFolderExtend(nodeData)} />
-                            </Pane>
-                            <Pane id="res-lib" header="Library">
+            <div id="content">
+                <main id="main">
+                    <SplitPane split="vertical" minSize={50} defaultSize={300} allowResize={true}>
+                        <div id="left-side">
+                            <SplitPane split="horizontal" defaultSize={400} allowResize={true}>
+                                <Pane id="work-dir" header="Project">
+                                    <TreeViewer
+                                        nodeData={this.state.dirData}
+                                        tabSize={10}
+                                        root={true}
+                                        onContextMenu={e => this.onProjectContextMenu(e)}
+                                        onExtend={(nodeData) => this.onFolderExtend(nodeData)} />
+                                </Pane>
+                                <Pane id="res-lib" header="Library">
 
-                            </Pane>
-                        </SplitPane>
-                    </div>
-                    <div id="mid" className="pane">
-                        <ProcessSpace id="process-space"></ProcessSpace>
-                    </div>
-                </SplitPane>
+                                </Pane>
+                            </SplitPane>
+                        </div>
+                        <div id="mid" className="pane">
+                            <ProcessSpace id="process-space"></ProcessSpace>
+                        </div>
+                    </SplitPane>
+                </main>
+                <footer id="status-bar">
+                    <span id="status-text"></span>
+                </footer>
             </div>
         );
     }

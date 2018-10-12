@@ -95,12 +95,14 @@ __decorate([
 exports.AGOGOSProject = AGOGOSProject;
 class TSCompiler {
     constructor(src, out) {
+        this.ready = false;
         this.srcDirectory = src;
         this.outDirectory = out;
     }
     async init() {
         this.compileProcessIPC = new ipc_1.ProcessIPC(child_process_1.fork("./build/compiler.js"));
         await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
+        this.ready = true;
     }
     async compile() {
         return await this.compileProcessIPC.call("compile");

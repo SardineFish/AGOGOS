@@ -76,6 +76,24 @@ svg *{
 .pane-content{
     overflow: auto;
 }
+#content{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+}
+#main{
+    flex: 1;
+    position: relative;
+}
+#status-bar{
+    height: 24px;
+    background-color: #3C3C3C;
+    color: #FAFAFA;
+}
 #work-dir .node-icon::before {
     margin-right: .3em;
     display: inline-block;

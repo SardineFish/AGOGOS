@@ -104,6 +104,7 @@ export class AGOGOSProject extends IPackageJSON
 }
 class TSCompiler
 {
+    ready: boolean = false;
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
@@ -116,6 +117,7 @@ class TSCompiler
     {
         this.compileProcessIPC = new ProcessIPC(fork("./build/compiler.js"));
         await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
+        this.ready = true;
     }
     async compile(): Promise<ReadonlyArray<typescript.Diagnostic>>
     {

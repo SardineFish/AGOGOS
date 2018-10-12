@@ -7,8 +7,7 @@ const electron_1 = require("electron");
 const commander_1 = __importDefault(require("commander"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const ipc_1 = require("./ipc");
-const project_1 = require("./project");
+const agogos_1 = __importDefault(require("./agogos"));
 require("electron-reload")(electron_1.app.getAppPath());
 const pkg = require('../package.json');
 commander_1.default
@@ -22,40 +21,11 @@ let workDir = path_1.default.normalize(commander_1.default.args[commander_1.defa
 console.log(workDir);
 if (!fs_1.default.existsSync(workDir))
     commander_1.default.help();
-//console.log(program.args);
-let agogosProject;
-let mainWindow;
-let mainWindowEvent;
 loadProject();
 function loadProject() {
     electron_1.app.on("ready", async () => {
-        agogosProject = new project_1.AGOGOSProject(workDir);
-        await agogosProject.open();
-        await loadRenderer();
-        agogosProject.open().then(async () => {
-            agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
-                mainWindowEvent.sender.send(ipc_1.ChannelFileChanged, {
-                    operation: operation,
-                    oldFileName: oldFile ? path_1.default.resolve(oldFile.path) : null,
-                    newFileName: newFile ? path_1.default.resolve(newFile.path) : null,
-                    newFile: agogosProject.projectFiles
-                });
-            };
-            mainWindowEvent.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
-            await agogosProject.tsCompiler.init();
-        });
-    });
-}
-async function loadRenderer() {
-    return new Promise(resolve => {
         loadMenu();
-        mainWindow = new electron_1.BrowserWindow({ width: 1280, height: 720 });
-        mainWindow.loadFile("./res/html/index.html");
-        electron_1.ipcMain.on("ping", (event, args) => {
-            event.returnValue = "pong";
-            mainWindowEvent = event;
-            resolve(event);
-        });
+        await agogos_1.default.init(workDir);
     });
 }
 function loadMenu() {
@@ -75,7 +45,7 @@ function loadMenu() {
                 },
                 {
                     label: "Save Project",
-                    click: () => agogosProject.save(),
+                    click: () => agogos_1.default.project.save(),
                     accelerator: "CommandOrControl+Shift+S",
                 }
             ]
@@ -92,9 +62,14 @@ function loadMenu() {
             label: "Tool",
             submenu: [
                 {
+                    label: "Reload",
+                    accelerator: "F5",
+                    click: () => agogos_1.default.mainWindow.reload()
+                },
+                {
                     label: "Development Tools",
                     accelerator: "F12",
-                    click: () => mainWindow.webContents.toggleDevTools()
+                    click: () => agogos_1.default.mainWindow.webContents.toggleDevTools()
                 }
             ]
         },
