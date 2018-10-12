@@ -51,79 +51,21 @@ interface IPCPackage
     callId: number;
     data: any;
 }
-export class IPCHost
+export class ProcessIPC
 {
-    public process: ChildProcess;
-    private src: string;
+    public process: any;
     private callList: Map<number, (returnValue: any) => void> = new Map();
     private handler: Map<string, IPCHandler> = new Map();
     private increaseCallID = 0;
 
-    constructor(src: string)
-    {
-        this.src = src;
-    }
-    public start()
-    {
-        this.process = fork(this.src);
-        this.process.on("message", (msg: IPCPackage) => this.onmessage(msg));
-        /*this.process.stdout.on("data", (data) =>
-        {
-            console.log(`[Compile Process]: ${data}`);
-        });
-        this.process.stderr.on("data", data => console.error(`[Compile Process]: ${data}`));*/
-    }
-    private async onmessage(msg:IPCPackage):Promise<void>
-    {
-        
-        let { name, callId, data } = msg;
-        let args = data as Array<any>;
-
-        if (name === IPCReturnValue)
-        {
-            this.callList.get(callId)!(data);
-            this.callList.delete(callId);
-            return;
-        }
-
-        let handler = this.handler.get(name);
-        let returnValue: any;
-        if (handler)
-            returnValue = handler(...args);
-
-        if (returnValue instanceof Promise)
-            returnValue.then(returnValue => this.process.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue }));
-        else
-            this.process.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue });
-    }
-    public add(name: string, handler: IPCHandler)
-    {
-        this.handler.set(name, handler);
-    }
-    public async call<TResult>(name: string, ...args: any[]): Promise<TResult>
-    {
-        let callId = ++this.increaseCallID;
-        return new Promise<TResult>((resolve) =>
-        {
-            this.callList.set(callId, resolve);
-            this.process.send(<IPCPackage>{ name, callId, data: args });
-        });
-    }
-}
-export class IPCClient
-{
-    public process: NodeJS.Process;
-    private callList: Map<number, (returnValue: any) => void> = new Map();
-    private handler: Map<string, IPCHandler> = new Map();
-    private increaseCallID = 0
-    
-    constructor(process: NodeJS.Process)
+    constructor(process: ChildProcess | NodeJS.Process)
     {
         this.process = process;
         this.process.on("message", (msg: IPCPackage) => this.onmessage(msg));
     }
     private async onmessage(msg: IPCPackage): Promise<void>
     {
+
         let { name, callId, data } = msg;
         let args = data as Array<any>;
 
@@ -138,7 +80,6 @@ export class IPCClient
         let returnValue: any;
         if (handler)
             returnValue = handler(...args);
-
         if (returnValue instanceof Promise)
             returnValue.then(returnValue => this.process.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue }));
         else

@@ -7,7 +7,8 @@ import { JSONStringrify, diffFiles, foreachAsync } from "./lib";
 import { promisify } from "util";
 import linq from "linq";
 import * as typescript from "typescript";
-import { IPCHost } from "./ipc";
+import { ProcessIPC } from "./ipc";
+import { fork } from "child_process";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
@@ -54,7 +55,7 @@ export class AGOGOSProject extends IPackageJSON
         this.tsCompiler = new TSCompiler(this.projectDirectory, Path.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
-        await this.tsCompiler.init();
+        //await this.tsCompiler.init();
         return await this.startWatch((operation,oldFile,newFile) =>
         {
             if (this.fileWatchCallback)
@@ -103,7 +104,7 @@ export class AGOGOSProject extends IPackageJSON
 }
 class TSCompiler
 {
-    compileProcess: IPCHost;
+    compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
     constructor(src: string, out: string)
@@ -113,14 +114,12 @@ class TSCompiler
     }
     async init(): Promise<void>
     {
-        this.compileProcess = new IPCHost("./build/compiler.js");
-        this.compileProcess.start();
-        await this.compileProcess.call("init", this.srcDirectory, this.outDirectory);
-        console.log("ready");
+        this.compileProcessIPC = new ProcessIPC(fork("./build/compiler.js"));
+        await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
     }
     async compile(): Promise<ReadonlyArray<typescript.Diagnostic>>
     {
-        return await this.compileProcess.call<ReadonlyArray<typescript.Diagnostic>>("compile");
+        return await this.compileProcessIPC.call<ReadonlyArray<typescript.Diagnostic>>("compile");
     }
 }
 export interface ProjectFile

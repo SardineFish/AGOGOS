@@ -17,24 +17,12 @@ export interface FileChangeArgs {
     newFile: ProjectFile;
 }
 declare type IPCHandler = (...args: any[]) => any;
-export declare class IPCHost {
-    process: ChildProcess;
-    private src;
+export declare class ProcessIPC {
+    process: any;
     private callList;
     private handler;
     private increaseCallID;
-    constructor(src: string);
-    start(): void;
-    private onmessage;
-    add(name: string, handler: IPCHandler): void;
-    call<TResult>(name: string, ...args: any[]): Promise<TResult>;
-}
-export declare class IPCClient {
-    process: NodeJS.Process;
-    private callList;
-    private handler;
-    private increaseCallID;
-    constructor(process: NodeJS.Process);
+    constructor(process: ChildProcess | NodeJS.Process);
     private onmessage;
     add(name: string, handler: IPCHandler): void;
     call<TResult>(name: string, ...args: any[]): Promise<TResult>;

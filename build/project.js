@@ -17,6 +17,7 @@ const lib_1 = require("./lib");
 const util_1 = require("util");
 const linq_1 = __importDefault(require("linq"));
 const ipc_1 = require("./ipc");
+const child_process_1 = require("child_process");
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
 const ProjectBuildOutputFolder = "build";
@@ -45,7 +46,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
         this.tsCompiler = new TSCompiler(this.projectDirectory, path_1.default.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
-        await this.tsCompiler.init();
+        //await this.tsCompiler.init();
         return await this.startWatch((operation, oldFile, newFile) => {
             if (this.fileWatchCallback)
                 this.fileWatchCallback(operation, oldFile, newFile);
@@ -98,13 +99,11 @@ class TSCompiler {
         this.outDirectory = out;
     }
     async init() {
-        this.compileProcess = new ipc_1.IPCHost("./build/compiler.js");
-        this.compileProcess.start();
-        await this.compileProcess.call("init", this.srcDirectory, this.outDirectory);
-        console.log("ready");
+        this.compileProcessIPC = new ipc_1.ProcessIPC(child_process_1.fork("./build/compiler.js"));
+        await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
     }
     async compile() {
-        return await this.compileProcess.call("compile");
+        return await this.compileProcessIPC.call("compile");
     }
 }
 class ProjFile {

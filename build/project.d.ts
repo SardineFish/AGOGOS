@@ -2,7 +2,7 @@
 import { IPackageJSON } from "./package-json";
 import fs from "fs";
 import * as typescript from "typescript";
-import { IPCHost } from "./ipc";
+import { ProcessIPC } from "./ipc";
 declare type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 export declare class AGOGOSProject extends IPackageJSON {
     projectDirectory: string;
@@ -20,7 +20,7 @@ export declare class AGOGOSProject extends IPackageJSON {
     startWatch(callback: FileWatchCallback): AGOGOSProject;
 }
 declare class TSCompiler {
-    compileProcess: IPCHost;
+    compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
     constructor(src: string, out: string);

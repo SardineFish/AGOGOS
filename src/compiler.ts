@@ -2,11 +2,11 @@ import typescript from "typescript";
 import Path from "path";
 import { promisify } from "util";
 import fs from "fs";
-import { IPCClient } from "./ipc";
+import { ProcessIPC } from "./ipc";
 
-console.log("ready");
+//console.log("ready");
 
-let ipc = new IPCClient(process);
+let ipc = new ProcessIPC(process);
 let compiler: TSCompiler;
 ipc.add("init", init);
 

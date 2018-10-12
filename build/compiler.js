@@ -8,8 +8,8 @@ const path_1 = __importDefault(require("path"));
 const util_1 = require("util");
 const fs_1 = __importDefault(require("fs"));
 const ipc_1 = require("./ipc");
-console.log("ready");
-let ipc = new ipc_1.IPCClient(process);
+//console.log("ready");
+let ipc = new ipc_1.ProcessIPC(process);
 let compiler;
 ipc.add("init", init);
 async function init(root, out) {

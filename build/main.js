@@ -32,7 +32,7 @@ function loadProject() {
         agogosProject = new project_1.AGOGOSProject(workDir);
         await agogosProject.open();
         await loadRenderer();
-        agogosProject.open().then(() => {
+        agogosProject.open().then(async () => {
             agogosProject.fileWatchCallback = (operation, oldFile, newFile) => {
                 mainWindowEvent.sender.send(ipc_1.ChannelFileChanged, {
                     operation: operation,
@@ -42,6 +42,7 @@ function loadProject() {
                 });
             };
             mainWindowEvent.sender.send(ipc_1.ChannelStartup, { workDir: agogosProject.projectDirectory, /*project: agogosProject,*/ projectFile: agogosProject.projectFiles });
+            await agogosProject.tsCompiler.init();
         });
     });
 }
