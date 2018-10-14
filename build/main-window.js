@@ -52,7 +52,8 @@ class App extends React.Component {
         this.state = {
             workDir: this.props.workDir,
             dirData: null,
-            statusText: null
+            statusText: { type: "log", message: "AGOGOS ready" },
+            consoleText: { type: "error", message: "Development environment." }
         };
     }
     onFolderExtend(nodeData) {
@@ -93,6 +94,9 @@ class App extends React.Component {
             dir.children = project_1.ProjFile.orderFiles(dir.children);
             this.setState({ dirData: projectFileData });
         });
+        electron_1.ipcRenderer.on(ipc_1.ChannelConsole, (event, args) => {
+            this.setState({ consoleText: args });
+        });
     }
     render() {
         let data = this.state.dirData;
@@ -107,7 +111,12 @@ class App extends React.Component {
                     React.createElement("div", { id: "mid", className: "pane" },
                         React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
             React.createElement("footer", { id: "status-bar" },
-                React.createElement("span", { id: "status-text" }))));
+                this.state.consoleText ?
+                    React.createElement("span", { id: "console-text", className: `icon-before msg-${this.state.consoleText.type}` }, this.state.consoleText.message)
+                    : null,
+                this.state.statusText ?
+                    React.createElement("span", { id: "status-text", className: `icon-before msg-${this.state.statusText.type}` }, this.state.statusText.message)
+                    : null)));
     }
 }
 const $ = (selector) => document.querySelector(selector);

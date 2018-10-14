@@ -76,6 +76,18 @@ svg *{
 .pane-content{
     overflow: auto;
 }
+.icon-before::before {
+    font-family: "Material Icons";
+    font-weight: normal;
+    font-style: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
 #content{
     position: absolute;
     height: 100%;
@@ -90,9 +102,32 @@ svg *{
     position: relative;
 }
 #status-bar{
+    padding: 0 20px;
     height: 24px;
     background-color: #3C3C3C;
     color: #FAFAFA;
+    display:  flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    cursor: default;
+    user-select: none;
+}
+#status-bar .icon-before::before{
+    font-size: 1.2em;
+    margin-right: 0.6em;
+}
+.msg-warn{
+    color: #efd889;
+}
+.msg-warn::before {
+    content: "warning";
+}
+.msg-error{
+    color: #da4d4c;
+}
+.msg-error::before{
+    content: "error";
 }
 #work-dir .node-icon::before {
     margin-right: .3em;

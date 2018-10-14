@@ -4,13 +4,13 @@ import SplitPane from "react-split-pane";
 import { TreeViewer, NodeData, NodeMouseEvent } from "../../react-tree-viewer";
 import ViewPort from "../../react-free-viewport"
 import { ipcRenderer, Event, app, Menu, MenuItem } from "electron";
-import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs } from "./ipc";
+import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole } from "./ipc";
 import fs from "fs";
 import path from "path";
 import { Pane, ProcessSpace} from "./components";
 import linq from "linq";
 import { GetProjectSettings, PopupProjectMenu, ProjectFileData } from "./lib-renderer";
-import { switchCase } from "./lib";
+import { switchCase, ConsoleMessage } from "./lib";
 import { ProjectFile, AGOGOSProject, ProjFile } from "./project";
 
 interface AppArgs
@@ -23,7 +23,8 @@ interface AppState
 {
     workDir: string;
     dirData: ProjectFileData;
-    statusText: string;
+    statusText: ConsoleMessage;
+    consoleText: ConsoleMessage;
 }
 function toProjectFileData(root: ProjectFile): ProjectFileData
 {
@@ -60,7 +61,8 @@ class App extends React.Component<AppArgs, AppState>
         this.state = {
             workDir: this.props.workDir,
             dirData: null,
-            statusText: null
+            statusText: {type:"log",message:"AGOGOS ready"},
+            consoleText: {type:"error", message:"Development environment."}
         };
     }
     onFolderExtend(nodeData: NodeData)
@@ -109,6 +111,10 @@ class App extends React.Component<AppArgs, AppState>
             dir.children = ProjFile.orderFiles(dir.children);
             this.setState({ dirData: projectFileData });
         });
+        ipcRenderer.on(ChannelConsole, (event: Event, args: ConsoleMessage) =>
+        {
+            this.setState({ consoleText: args });
+        });
     }
     render()
     {
@@ -138,7 +144,16 @@ class App extends React.Component<AppArgs, AppState>
                     </SplitPane>
                 </main>
                 <footer id="status-bar">
-                    <span id="status-text"></span>
+                    {
+                        this.state.consoleText ?
+                            <span id="console-text" className={`icon-before msg-${this.state.consoleText.type}`}>{this.state.consoleText.message}</span>
+                            : null
+                    }
+                    {
+                        this.state.statusText ?
+                            <span id="status-text" className={`icon-before msg-${this.state.statusText.type}`}>{this.state.statusText.message}</span>
+                            :null
+                    }
                 </footer>
             </div>
         );

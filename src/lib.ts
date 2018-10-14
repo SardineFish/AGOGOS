@@ -177,3 +177,8 @@ export async function mapAsync<TIn, TOut>(list: TIn[], func: (item: TIn, idx: nu
     }
     return result;
 }
+export interface ConsoleMessage
+{
+    type: "log" | "warn" | "error";
+    message: string;
+}

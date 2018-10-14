@@ -5,6 +5,7 @@ const electron_1 = require("electron");
 exports.ChannelStartup = "startup";
 exports.ChannelProjectSettings = "proj-settings";
 exports.ChannelFileChanged = "file-chenged";
+exports.ChannelConsole = "agogos-console";
 async function waitIpcRenderer(channel, timeout = 500) {
     return new Promise((resolve, reject) => {
         electron_1.ipcRenderer.once(channel, (event, args) => {

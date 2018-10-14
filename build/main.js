@@ -79,7 +79,11 @@ function loadMenu() {
                 {
                     label: "Build Project",
                     accelerator: "CommandOrControl+Shift+B",
-                    click: () => agogosProject.tsCompiler.compile()
+                    click: async () => {
+                        let diagnostics = await agogos_1.default.project.tsCompiler.compile();
+                        agogos_1.default.console.log("Compile Completed.");
+                        diagnostics.forEach(diag => agogos_1.default.console.error(diag.messageText));
+                    }
                 }
             ]
         }

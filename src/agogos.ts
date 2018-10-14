@@ -1,14 +1,14 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
-import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup } from "./ipc";
+import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole } from "./ipc";
 import Path from "path";
+import { ConsoleMessage } from "./lib";
 
 class AGOGOS
 {
     workDir: string;
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
-    ipcEvent: Event;
     async init(workDir: string):Promise<AGOGOS>
     {
         this.workDir = workDir;
@@ -21,10 +21,9 @@ class AGOGOS
     }
     async reload(event:Event):Promise<AGOGOS>
     {
-        this.ipcEvent = event;
         this.project.fileWatchCallback = (operation, oldFile, newFile) =>
         {
-            this.ipcEvent.sender.send(ChannelFileChanged, <FileChangeArgs>{
+            this.mainWindow.webContents.send(ChannelFileChanged, <FileChangeArgs>{
                 operation: operation,
                 oldFileName: oldFile ? Path.resolve(oldFile.path) : null,
                 newFileName: newFile ? Path.resolve(newFile.path) : null,
@@ -35,6 +34,12 @@ class AGOGOS
             await this.project.tsCompiler.init();
         event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         return this;
+    }
+    
+    console = {
+        log: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "log", message: message.toString() }),
+        warn: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "warn", message: message.toString() }),
+        error: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "error", message: message.toString() }),
     }
 }
 const agogos: AGOGOS = new AGOGOS();

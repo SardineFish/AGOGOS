@@ -9,6 +9,7 @@ import linq from "linq";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { fork } from "child_process";
+import agogos from "./agogos";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
@@ -43,6 +44,7 @@ export class AGOGOSProject extends IPackageJSON
     }
     public async open(): Promise<AGOGOSProject>
     {
+        agogos.console.log("Loading project...");
         let data = await promisify(fs.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson)
@@ -121,6 +123,7 @@ class TSCompiler
     }
     async compile(): Promise<ReadonlyArray<typescript.Diagnostic>>
     {
+        agogos.console.log("Compiling...");
         return await this.compileProcessIPC.call<ReadonlyArray<typescript.Diagnostic>>("compile");
     }
 }

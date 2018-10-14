@@ -30,3 +30,7 @@ export declare function switchCase<T>(value: string, cases: {
 }): T;
 export declare function foreachAsync<T>(list: T[], callback: (item: T, idx: number) => Promise<any>): Promise<T[]>;
 export declare function mapAsync<TIn, TOut>(list: TIn[], func: (item: TIn, idx: number) => Promise<TOut>): Promise<TOut[]>;
+export interface ConsoleMessage {
+    type: "log" | "warn" | "error";
+    message: string;
+}

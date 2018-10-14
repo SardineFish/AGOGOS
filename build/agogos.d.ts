@@ -4,9 +4,13 @@ declare class AGOGOS {
     workDir: string;
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
-    ipcEvent: Event;
     init(workDir: string): Promise<AGOGOS>;
     reload(event: Event): Promise<AGOGOS>;
+    console: {
+        log: (message: any) => void;
+        warn: (message: any) => void;
+        error: (message: any) => void;
+    };
 }
 declare const agogos: AGOGOS;
 export default agogos;

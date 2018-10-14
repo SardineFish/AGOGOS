@@ -8,6 +8,13 @@ const electron_1 = require("electron");
 const ipc_1 = require("./ipc");
 const path_1 = __importDefault(require("path"));
 class AGOGOS {
+    constructor() {
+        this.console = {
+            log: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "log", message: message.toString() }),
+            warn: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "warn", message: message.toString() }),
+            error: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "error", message: message.toString() }),
+        };
+    }
     async init(workDir) {
         this.workDir = workDir;
         this.project = new project_1.AGOGOSProject(workDir);
@@ -18,9 +25,8 @@ class AGOGOS {
         return this;
     }
     async reload(event) {
-        this.ipcEvent = event;
         this.project.fileWatchCallback = (operation, oldFile, newFile) => {
-            this.ipcEvent.sender.send(ipc_1.ChannelFileChanged, {
+            this.mainWindow.webContents.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
                 oldFileName: oldFile ? path_1.default.resolve(oldFile.path) : null,
                 newFileName: newFile ? path_1.default.resolve(newFile.path) : null,

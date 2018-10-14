@@ -18,6 +18,7 @@ const util_1 = require("util");
 const linq_1 = __importDefault(require("linq"));
 const ipc_1 = require("./ipc");
 const child_process_1 = require("child_process");
+const agogos_1 = __importDefault(require("./agogos"));
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
 const ProjectBuildOutputFolder = "build";
@@ -36,6 +37,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     get packageJSONPath() { return path_1.default.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return path_1.default.join(this.projectDirectory, AGOGOSFolder); }
     async open() {
+        agogos_1.default.console.log("Loading project...");
         let data = await util_1.promisify(fs_1.default.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson) {
@@ -105,6 +107,7 @@ class TSCompiler {
         this.ready = true;
     }
     async compile() {
+        agogos_1.default.console.log("Compiling...");
         return await this.compileProcessIPC.call("compile");
     }
 }
