@@ -10,9 +10,18 @@ const path_1 = __importDefault(require("path"));
 class AGOGOS {
     constructor() {
         this.console = {
-            log: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "log", message: message.toString() }),
-            warn: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "warn", message: message.toString() }),
-            error: (message) => this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "error", message: message.toString() }),
+            log: (message) => {
+                console.log(message);
+                this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "log", message: message.toString() });
+            },
+            warn: (message) => {
+                console.warn(message);
+                this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "warn", message: message.toString() });
+            },
+            error: (message) => {
+                console.error(message);
+                this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "error", message: message.toString() });
+            },
         };
     }
     async init(workDir) {
@@ -33,8 +42,10 @@ class AGOGOS {
                 newFile: this.project.projectFiles
             });
         };
-        if (!this.project.tsCompiler.ready)
+        if (!this.project.tsCompiler.ready) {
             await this.project.tsCompiler.init();
+            await this.project.tsCompiler.watch();
+        }
         event.sender.send(ipc_1.ChannelStartup, { workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         return this;
     }

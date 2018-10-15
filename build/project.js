@@ -19,6 +19,7 @@ const linq_1 = __importDefault(require("linq"));
 const ipc_1 = require("./ipc");
 const child_process_1 = require("child_process");
 const agogos_1 = __importDefault(require("./agogos"));
+const compiler_1 = require("./compiler");
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
 const ProjectBuildOutputFolder = "build";
@@ -103,12 +104,25 @@ class TSCompiler {
     }
     async init() {
         this.compileProcessIPC = new ipc_1.ProcessIPC(child_process_1.fork("./build/compiler.js"));
-        await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
+        await this.compileProcessIPC.call(compiler_1.CompilerIpc.Init, this.srcDirectory, this.outDirectory);
         this.ready = true;
     }
     async compile() {
         agogos_1.default.console.log("Compiling...");
         return await this.compileProcessIPC.call("compile");
+    }
+    async watch() {
+        agogos_1.default.console.log("Start watching...");
+        this.compileProcessIPC.add(compiler_1.CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
+        this.compileProcessIPC.add(compiler_1.CompilerIpc.Status, (status) => this.onStatusReport(status));
+        await this.compileProcessIPC.call(compiler_1.CompilerIpc.StartWatch);
+        return this;
+    }
+    onDiagnostic(diagnostic) {
+        agogos_1.default.console.error(`Error ${diagnostic.code}: ${diagnostic.messageText}`);
+    }
+    onStatusReport(status) {
+        agogos_1.default.console.log(status);
     }
 }
 class ProjFile {

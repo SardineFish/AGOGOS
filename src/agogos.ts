@@ -31,15 +31,30 @@ class AGOGOS
             });
         };
         if (!this.project.tsCompiler.ready)
+        {
             await this.project.tsCompiler.init();
+            await this.project.tsCompiler.watch();
+        }
         event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         return this;
     }
     
     console = {
-        log: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "log", message: message.toString() }),
-        warn: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "warn", message: message.toString() }),
-        error: (message: any) => this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "error", message: message.toString() }),
+        log: (message: any) =>
+        {
+            console.log(message);
+            this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "log", message: message.toString() })
+        },
+        warn: (message: any) =>
+        {
+            console.warn(message);
+            this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "warn", message: message.toString() })
+        },
+        error: (message: any) =>
+        {
+            console.error(message);
+            this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "error", message: message.toString() })
+        },
     }
 }
 const agogos: AGOGOS = new AGOGOS();

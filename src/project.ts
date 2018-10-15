@@ -10,6 +10,7 @@ import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { fork } from "child_process";
 import agogos from "./agogos";
+import { CompilerIpc } from "./compiler";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
@@ -118,13 +119,29 @@ class TSCompiler
     async init(): Promise<void>
     {
         this.compileProcessIPC = new ProcessIPC(fork("./build/compiler.js"));
-        await this.compileProcessIPC.call("init", this.srcDirectory, this.outDirectory);
+        await this.compileProcessIPC.call(CompilerIpc.Init, this.srcDirectory, this.outDirectory);
         this.ready = true;
     }
     async compile(): Promise<ReadonlyArray<typescript.Diagnostic>>
     {
         agogos.console.log("Compiling...");
         return await this.compileProcessIPC.call<ReadonlyArray<typescript.Diagnostic>>("compile");
+    }
+    async watch(): Promise<TSCompiler>
+    {
+        agogos.console.log("Start watching...");
+        this.compileProcessIPC.add(CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
+        this.compileProcessIPC.add(CompilerIpc.Status, (status) => this.onStatusReport(status));
+        await this.compileProcessIPC.call(CompilerIpc.StartWatch);
+        return this;
+    }
+    private onDiagnostic(diagnostic: typescript.Diagnostic)
+    {
+        agogos.console.error(`Error ${diagnostic.code}: ${diagnostic.messageText}`);
+    }
+    private onStatusReport(status: string)
+    {
+        agogos.console.log(status);
     }
 }
 export interface ProjectFile

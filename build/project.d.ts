@@ -27,6 +27,9 @@ declare class TSCompiler {
     constructor(src: string, out: string);
     init(): Promise<void>;
     compile(): Promise<ReadonlyArray<typescript.Diagnostic>>;
+    watch(): Promise<TSCompiler>;
+    private onDiagnostic;
+    private onStatusReport;
 }
 export interface ProjectFile {
     name: string;
