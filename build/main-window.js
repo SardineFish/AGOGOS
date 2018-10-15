@@ -52,7 +52,7 @@ class App extends React.Component {
         this.state = {
             workDir: null,
             dirData: null,
-            statusText: { type: "log", message: "AGOGOS ready" },
+            statusText: { message: "GUI Ready", loading: true, progress: 0.4 },
             consoleText: { type: "error", message: "Development environment." },
             projectFile: null
         };
@@ -98,6 +98,11 @@ class App extends React.Component {
         electron_1.ipcRenderer.on(ipc_1.ChannelConsole, (event, args) => {
             this.setState({ consoleText: args });
         });
+        electron_1.ipcRenderer.on(ipc_1.ChannelStatus, (event, args) => {
+            this.setState({
+                statusText: args
+            });
+        });
     }
     componentDidMount() {
         electron_1.ipcRenderer.once(ipc_1.ChannelStartup, (event, args) => {
@@ -125,9 +130,11 @@ class App extends React.Component {
                 this.state.consoleText ?
                     React.createElement("span", { id: "console-text", className: `icon-before msg-${this.state.consoleText.type}` }, this.state.consoleText.message)
                     : null,
-                this.state.statusText ?
-                    React.createElement("span", { id: "status-text", className: `icon-before msg-${this.state.statusText.type}` }, this.state.statusText.message)
-                    : null)));
+                React.createElement("span", { id: "agogos-status" },
+                    this.state.statusText.progress ?
+                        React.createElement(components_1.ProgressBar, { progress: this.state.statusText.progress })
+                        : null,
+                    React.createElement("span", { id: "status-text", className: this.state.statusText.loading ? "loading" : "" }, this.state.statusText.message)))));
     }
 }
 const $ = (selector) => document.querySelector(selector);

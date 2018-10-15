@@ -23,6 +23,13 @@ class AGOGOS {
                 this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "error", message: message.toString() });
             },
         };
+        this.showStatus = (status, loading, progress) => {
+            this.mainWindow.webContents.send(ipc_1.ChannelStatus, {
+                message: status,
+                loading,
+                progress
+            });
+        };
     }
     async init(workDir) {
         this.workDir = workDir;
@@ -42,10 +49,13 @@ class AGOGOS {
                 newFile: this.project.projectFiles
             });
         };
-        if (!this.project.tsCompiler.ready) {
-            this.project.tsCompiler.init().then(() => this.project.tsCompiler.watch());
-        }
         event.sender.send(ipc_1.ChannelStartup, { workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
+        if (!this.project.tsCompiler.ready) {
+            agogos.showStatus("Init Compiler", true);
+            this.project.tsCompiler.init()
+                .then(() => this.project.tsCompiler.watch())
+                .then(() => agogos.showStatus("Project Ready"));
+        }
         return this;
     }
 }

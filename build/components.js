@@ -129,4 +129,20 @@ class ProcessSpace extends react_1.default.Component {
     }
 }
 exports.ProcessSpace = ProcessSpace;
+class ProgressBar extends react_1.default.Component {
+    render() {
+        let { className, ...others } = this.props;
+        className = [className, "progress-bar"].join(" ");
+        return (react_1.default.createElement("span", Object.assign({ className: className }, others, { style: { display: "inline-block", position: "relative" } }),
+            react_1.default.createElement("span", { className: "progress", style: {
+                    display: "block",
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    height: "100%",
+                    width: `${this.props.progress * 100}%`
+                } })));
+    }
+}
+exports.ProgressBar = ProgressBar;
 //# sourceMappingURL=components.js.map

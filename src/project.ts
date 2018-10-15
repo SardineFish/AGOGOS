@@ -45,7 +45,8 @@ export class AGOGOSProject extends IPackageJSON
     }
     public async open(): Promise<AGOGOSProject>
     {
-        agogos.console.log("Loading project...");
+        agogos.showStatus("Loading Project", true);
+        
         let data = await promisify(fs.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson)

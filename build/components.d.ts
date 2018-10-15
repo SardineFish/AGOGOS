@@ -36,4 +36,10 @@ export declare class ProcessSpace extends React.Component<HTMLProps<HTMLDivEleme
     componentDidMount(): void;
     render(): JSX.Element;
 }
+interface ProgressProps extends HTMLProps<HTMLSpanElement> {
+    progress: number;
+}
+export declare class ProgressBar extends React.Component<ProgressProps> {
+    render(): JSX.Element;
+}
 export {};

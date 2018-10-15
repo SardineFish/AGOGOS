@@ -12,6 +12,8 @@ export const ChannelStartup = "startup";
 export const ChannelProjectSettings = "proj-settings";
 export const ChannelFileChanged = "file-chenged";
 export const ChannelConsole = "agogos-console";
+export const ChannelStatus = "agogos-status";
+export const ChannelProjectReady = "agogos-ready";
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>
 {

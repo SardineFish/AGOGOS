@@ -177,3 +177,29 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         )
     }
 }
+interface ProgressProps extends HTMLProps<HTMLSpanElement>
+{
+    progress: number;
+}
+export class ProgressBar extends React.Component<ProgressProps>
+{
+    render()
+    {
+        let { className, ...others } = this.props;
+        className = [className, "progress-bar"].join(" ");
+        return (
+            <span className={className} {...others} style={{ display: "inline-block", position: "relative" }}>
+                <span
+                    className="progress"
+                    style={{
+                        display: "block",
+                        position: "absolute",
+                        left: "0",
+                        top: "0",
+                        height: "100%",
+                        width: `${this.props.progress * 100}%`
+                    }} />
+            </span>
+        );
+    }
+}

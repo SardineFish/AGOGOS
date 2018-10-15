@@ -101,22 +101,6 @@ svg *{
     flex: 1;
     position: relative;
 }
-#status-bar{
-    padding: 0 20px;
-    height: 24px;
-    background-color: #3C3C3C;
-    color: #FAFAFA;
-    display:  flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-    cursor: default;
-    user-select: none;
-}
-#status-bar .icon-before::before{
-    font-size: 1.2em;
-    margin-right: 0.6em;
-}
 .msg-warn{
     color: #efd889;
 }
@@ -265,4 +249,66 @@ svg *{
     margin-left: 1em;
     border-radius: 100%;
     box-sizing: border-box;
+}
+
+#status-bar {
+    padding: 0 20px;
+    height: 24px;
+    background-color: #3C3C3C;
+    color: #EEE;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    cursor: default;
+    user-select: none;
+}
+
+#status-bar .icon-before::before {
+    font-size: 1.2em;
+    margin-right: 0.6em;
+}
+#agogos-status{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+#agogos-status .progress-bar{
+    width: 200px;
+    height: 10px;
+    border: solid 1px #EEE;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-right: 2em;
+}
+
+#agogos-status .progress {
+    background-color: #EEE;
+    transition: all .2s;
+}
+
+#agogos-status .loading::after{
+    content: "...";
+    font-size: 1em;
+    display: inline-block;
+    width: 3em;
+    animation-name: anim-loading;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-play-state: running;
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes anim-loading {
+    0%{
+        content:"";
+    }
+    25%{
+        content:".";
+    }
+    50%{
+        content: "..";
+    }
+    75%{content: "..."}
 }

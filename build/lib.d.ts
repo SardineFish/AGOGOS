@@ -34,3 +34,8 @@ export interface ConsoleMessage {
     type: "log" | "warn" | "error";
     message: string;
 }
+export interface StatusOutput {
+    loading?: boolean;
+    message: string;
+    progress?: number;
+}

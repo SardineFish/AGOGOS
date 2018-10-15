@@ -38,7 +38,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     get packageJSONPath() { return path_1.default.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return path_1.default.join(this.projectDirectory, AGOGOSFolder); }
     async open() {
-        agogos_1.default.console.log("Loading project...");
+        agogos_1.default.showStatus("Loading Project", true);
         let data = await util_1.promisify(fs_1.default.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson) {

@@ -1,8 +1,8 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
-import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole } from "./ipc";
+import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus } from "./ipc";
 import Path from "path";
-import { ConsoleMessage } from "./lib";
+import { ConsoleMessage, StatusOutput } from "./lib";
 
 class AGOGOS
 {
@@ -17,6 +17,7 @@ class AGOGOS
         this.mainWindow.loadFile("./res/html/index.html");
         ipcMain.on("ping", (event: Event, args: any) => this.reload(event));
         await this.project.open();
+        
         return this;
     }
     async reload(event:Event):Promise<AGOGOS>
@@ -30,11 +31,14 @@ class AGOGOS
                 newFile: this.project.projectFiles
             });
         };
+        event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         if (!this.project.tsCompiler.ready)
         {
-            this.project.tsCompiler.init().then(() => this.project.tsCompiler.watch());
+            agogos.showStatus("Init Compiler", true);
+            this.project.tsCompiler.init()
+                .then(() => this.project.tsCompiler.watch())
+                .then(() => agogos.showStatus("Project Ready"));
         }
-        event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         return this;
     }
     
@@ -54,6 +58,14 @@ class AGOGOS
             console.error(message);
             this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "error", message: message.toString() })
         },
+    }
+
+    showStatus = (status: string, loading?:boolean, progress?:number)=>{
+        this.mainWindow.webContents.send(ChannelStatus, <StatusOutput>{
+            message: status,
+            loading,
+            progress
+        });
     }
 }
 const agogos: AGOGOS = new AGOGOS();

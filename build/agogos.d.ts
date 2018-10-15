@@ -11,6 +11,7 @@ declare class AGOGOS {
         warn: (message: any) => void;
         error: (message: any) => void;
     };
+    showStatus: (status: string, loading?: boolean, progress?: number) => void;
 }
 declare const agogos: AGOGOS;
 export default agogos;
