@@ -29,7 +29,7 @@ export class Pane extends React.Component<PaneProps>
     render()
     {
         return (
-            <section className={[this.props.className, "pane"].join(" ")} id={this.props.id} key={this.props.key}>
+            <section className={[this.props.className, "pane"].join(" ")} id={this.props.id} key={this.props.key} style={this.props.style}>
                 <header className="pane-header">{this.props.header}</header>
                 <div className="pane-content">{this.props.children}</div>
             </section>

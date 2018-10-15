@@ -6,3 +6,9 @@ export declare const CompilerIpc: {
     Diagnostic: string;
     Status: string;
 };
+export interface CompilerDiagnostic {
+    code: number;
+    message: string;
+    file?: string;
+    line?: number;
+}

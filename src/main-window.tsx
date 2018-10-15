@@ -22,8 +22,9 @@ interface AppState
     workDir: string;
     dirData: ProjectFileData;
     statusText: StatusOutput;
-    consoleText: ConsoleMessage;
+    consoleHistory: ConsoleMessage[];
     projectFile: ProjectFile;
+    showConsole: boolean;
 }
 function toProjectFileData(root: ProjectFile): ProjectFileData
 {
@@ -61,10 +62,12 @@ class App extends React.Component<AppArgs, AppState>
             workDir: null,
             dirData: null,
             statusText: { message: "GUI Ready", loading:true, progress:0.4},
-            consoleText: { type: "error", message: "Development environment." },
-            projectFile: null
+            consoleHistory: [{ type: "error", message: "Development environment." }],
+            projectFile: null,
+            showConsole:false,
         };
     }
+    get latestConsole() { return this.state.consoleHistory[this.state.consoleHistory.length - 1];}
     onFolderExtend(nodeData: NodeData)
     {
         return nodeData;
@@ -112,7 +115,8 @@ class App extends React.Component<AppArgs, AppState>
         });
         ipcRenderer.on(ChannelConsole, (event: Event, args: ConsoleMessage) =>
         {
-            this.setState({ consoleText: args });
+            this.state.consoleHistory.push(args);
+            this.setState({ consoleHistory: this.state.consoleHistory });
         });
         ipcRenderer.on(ChannelStatus, (event: Event, args: StatusOutput) =>
         {
@@ -163,11 +167,23 @@ class App extends React.Component<AppArgs, AppState>
                     </SplitPane>
                 </main>
                 <footer id="status-bar">
-                    {
-                        this.state.consoleText ?
-                            <span id="console-text" className={`icon-before msg-${this.state.consoleText.type}`}>{this.state.consoleText.message}</span>
-                            : null
-                    }
+                    <span id="agogos-console">
+                        {
+                            this.state.consoleHistory.length > 0 ?
+                                <span id="console-text"
+                                    className={`icon-before msg-${this.latestConsole.type}`}
+                                    onClick={() => this.setState({ showConsole: !this.state.showConsole })}
+                                >
+                                    {this.latestConsole.message}
+                                </span>
+                                : null
+                        }
+                        <Pane id="console-history" header="Console" style={{ visibility: this.state.showConsole ? "visible":"collapse" }}>
+                            {
+                                this.state.consoleHistory.map((con, idx) => (<p className={`console-msg-item icon-before msg-${con.type}`} key={idx}>{con.message}</p>))
+                            }
+                        </Pane>
+                    </span>
                     <span id="agogos-status">
                         {
                             this.state.statusText.progress ?

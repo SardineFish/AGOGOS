@@ -11,7 +11,7 @@ const lib_1 = require("./lib");
 const process_manager_1 = __importDefault(require("./process-manager"));
 class Pane extends react_1.default.Component {
     render() {
-        return (react_1.default.createElement("section", { className: [this.props.className, "pane"].join(" "), id: this.props.id, key: this.props.key },
+        return (react_1.default.createElement("section", { className: [this.props.className, "pane"].join(" "), id: this.props.id, key: this.props.key, style: this.props.style },
             react_1.default.createElement("header", { className: "pane-header" }, this.props.header),
             react_1.default.createElement("div", { className: "pane-content" }, this.props.children)));
     }

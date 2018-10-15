@@ -55,7 +55,7 @@ class AGOGOS
         },
         error: (message: any) =>
         {
-            console.error(message);
+            //console.error(message);
             this.mainWindow.webContents.send(ChannelConsole, <ConsoleMessage>{ type: "error", message: message.toString() })
         },
     }

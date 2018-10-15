@@ -53,10 +53,12 @@ class App extends React.Component {
             workDir: null,
             dirData: null,
             statusText: { message: "GUI Ready", loading: true, progress: 0.4 },
-            consoleText: { type: "error", message: "Development environment." },
-            projectFile: null
+            consoleHistory: [{ type: "error", message: "Development environment." }],
+            projectFile: null,
+            showConsole: false,
         };
     }
+    get latestConsole() { return this.state.consoleHistory[this.state.consoleHistory.length - 1]; }
     onFolderExtend(nodeData) {
         return nodeData;
     }
@@ -96,7 +98,8 @@ class App extends React.Component {
             this.setState({ dirData: projectFileData });
         });
         electron_1.ipcRenderer.on(ipc_1.ChannelConsole, (event, args) => {
-            this.setState({ consoleText: args });
+            this.state.consoleHistory.push(args);
+            this.setState({ consoleHistory: this.state.consoleHistory });
         });
         electron_1.ipcRenderer.on(ipc_1.ChannelStatus, (event, args) => {
             this.setState({
@@ -127,9 +130,11 @@ class App extends React.Component {
                     React.createElement("div", { id: "mid", className: "pane" },
                         React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
             React.createElement("footer", { id: "status-bar" },
-                this.state.consoleText ?
-                    React.createElement("span", { id: "console-text", className: `icon-before msg-${this.state.consoleText.type}` }, this.state.consoleText.message)
-                    : null,
+                React.createElement("span", { id: "agogos-console" },
+                    this.state.consoleHistory.length > 0 ?
+                        React.createElement("span", { id: "console-text", className: `icon-before msg-${this.latestConsole.type}`, onClick: () => this.setState({ showConsole: !this.state.showConsole }) }, this.latestConsole.message)
+                        : null,
+                    React.createElement(components_1.Pane, { id: "console-history", header: "Console", style: { visibility: this.state.showConsole ? "visible" : "collapse" } }, this.state.consoleHistory.map((con, idx) => (React.createElement("p", { className: `console-msg-item icon-before msg-${con.type}`, key: idx }, con.message))))),
                 React.createElement("span", { id: "agogos-status" },
                     this.state.statusText.progress ?
                         React.createElement(components_1.ProgressBar, { progress: this.state.statusText.progress })

@@ -31,11 +31,14 @@ async function init(root: string, out: string): Promise<void>
     ipc.add(CompilerIpc.StartWatch, () => compiler.startWatch());
 }
 
-const formatHost: typescript.FormatDiagnosticsHost = {
-    getCanonicalFileName: path => path,
-    getCurrentDirectory: typescript.sys.getCurrentDirectory,
-    getNewLine: () => typescript.sys.newLine
-};
+export interface CompilerDiagnostic
+{
+    code: number;
+    message: string;
+    file?: string;
+    line?: number;
+    
+}
 
 class TSCompiler
 {
@@ -44,6 +47,7 @@ class TSCompiler
     public outDirectory: string;
     public tsConfig: typescript.CompilerOptions;
     public get configPath() { return Path.resolve(this.srcDirectory, "tsconfig.json"); }
+    private formatHost: typescript.FormatDiagnosticsHost;
     constructor(srcDir: string, outDir: string)
     {
         this.srcDirectory = srcDir;
@@ -58,6 +62,11 @@ class TSCompiler
             experimentalDecorators: true
         };
         this.ts = typescript.createProgram([this.srcDirectory], this.tsConfig);
+        this.formatHost = {
+            getCanonicalFileName: path => path,
+            getCurrentDirectory: ()=>this.srcDirectory,
+            getNewLine: () => typescript.sys.newLine
+        };
     }
     public async init(): Promise<TSCompiler>
     {
@@ -86,7 +95,7 @@ class TSCompiler
     {
         const reportDiagnostic = (diagnostic: typescript.Diagnostic) =>
         {
-            ipc.call(CompilerIpc.Diagnostic, diagnostic);
+            ipc.call(CompilerIpc.Diagnostic, typescript.formatDiagnostic(diagnostic, this.formatHost));
             /*console.error(
                 "Error",
                 diagnostic.code,
@@ -104,7 +113,7 @@ class TSCompiler
          */
         const reportWatchStatusChanged = (diagnostic: typescript.Diagnostic) =>
         {
-            ipc.call(CompilerIpc.Status, typescript.formatDiagnostic(diagnostic, formatHost));
+            ipc.call(CompilerIpc.Status, typescript.formatDiagnostic(diagnostic, this.formatHost));
             //console.info(typescript.formatDiagnostic(diagnostic, formatHost));
         };
 

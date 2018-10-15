@@ -119,10 +119,10 @@ class TSCompiler {
         return this;
     }
     onDiagnostic(diagnostic) {
-        agogos_1.default.console.error(`Error ${diagnostic.code}: ${diagnostic.messageText}`);
+        agogos_1.default.console.error(diagnostic);
     }
     onStatusReport(status) {
-        agogos_1.default.console.log(status);
+        agogos_1.default.console.log(`[Compiler] ${status}`);
     }
 }
 class ProjFile {

@@ -46,7 +46,7 @@ export class AGOGOSProject extends IPackageJSON
     public async open(): Promise<AGOGOSProject>
     {
         agogos.showStatus("Loading Project", true);
-        
+
         let data = await promisify(fs.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson)
@@ -136,13 +136,13 @@ class TSCompiler
         await this.compileProcessIPC.call(CompilerIpc.StartWatch);
         return this;
     }
-    private onDiagnostic(diagnostic: typescript.Diagnostic)
+    private onDiagnostic(diagnostic: string)
     {
-        agogos.console.error(`Error ${diagnostic.code}: ${diagnostic.messageText}`);
+        agogos.console.error(diagnostic);
     }
     private onStatusReport(status: string)
     {
-        agogos.console.log(status);
+        agogos.console.log(`[Compiler] ${status}`);
     }
 }
 export interface ProjectFile

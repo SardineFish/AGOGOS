@@ -19,7 +19,7 @@ class AGOGOS {
                 this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "warn", message: message.toString() });
             },
             error: (message) => {
-                console.error(message);
+                //console.error(message);
                 this.mainWindow.webContents.send(ipc_1.ChannelConsole, { type: "error", message: message.toString() });
             },
         };

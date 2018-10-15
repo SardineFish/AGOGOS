@@ -28,11 +28,6 @@ async function init(root, out) {
     });
     ipc.add(exports.CompilerIpc.StartWatch, () => compiler.startWatch());
 }
-const formatHost = {
-    getCanonicalFileName: path => path,
-    getCurrentDirectory: typescript_1.default.sys.getCurrentDirectory,
-    getNewLine: () => typescript_1.default.sys.newLine
-};
 class TSCompiler {
     get configPath() { return path_1.default.resolve(this.srcDirectory, "tsconfig.json"); }
     constructor(srcDir, outDir) {
@@ -48,6 +43,11 @@ class TSCompiler {
             experimentalDecorators: true
         };
         this.ts = typescript_1.default.createProgram([this.srcDirectory], this.tsConfig);
+        this.formatHost = {
+            getCanonicalFileName: path => path,
+            getCurrentDirectory: () => this.srcDirectory,
+            getNewLine: () => typescript_1.default.sys.newLine
+        };
     }
     async init() {
         if (!await util_1.promisify(fs_1.default.exists)(this.configPath)) {
@@ -68,7 +68,7 @@ class TSCompiler {
     }
     startWatch() {
         const reportDiagnostic = (diagnostic) => {
-            ipc.call(exports.CompilerIpc.Diagnostic, diagnostic);
+            ipc.call(exports.CompilerIpc.Diagnostic, typescript_1.default.formatDiagnostic(diagnostic, this.formatHost));
             /*console.error(
                 "Error",
                 diagnostic.code,
@@ -84,7 +84,7 @@ class TSCompiler {
          * This is mainly for messages like "Starting compilation" or "Compilation completed".
          */
         const reportWatchStatusChanged = (diagnostic) => {
-            ipc.call(exports.CompilerIpc.Status, typescript_1.default.formatDiagnostic(diagnostic, formatHost));
+            ipc.call(exports.CompilerIpc.Status, typescript_1.default.formatDiagnostic(diagnostic, this.formatHost));
             //console.info(typescript.formatDiagnostic(diagnostic, formatHost));
         };
         let parseResult = typescript_1.default.parseJsonConfigFileContent(typescript_1.default.readConfigFile(this.configPath, typescript_1.default.sys.readFile).config, typescript_1.default.sys, this.srcDirectory);
