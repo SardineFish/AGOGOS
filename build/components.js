@@ -124,8 +124,8 @@ class ProcessSpace extends react_1.default.Component {
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }
     render() {
-        const { children, ...other } = this.props;
-        return (react_1.default.createElement(dist_1.default, { id: this.props.id, ref: "viewport", button: 1, refobj: this.domRef }));
+        const { children, ref, key, ...other } = this.props;
+        return (react_1.default.createElement(dist_1.default, Object.assign({ id: this.props.id, ref: "viewport", button: 1, refobj: this.domRef }, other)));
     }
 }
 exports.ProcessSpace = ProcessSpace;

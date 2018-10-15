@@ -23,6 +23,10 @@ const linq_1 = __importDefault(require("linq"));
 const lib_renderer_1 = require("./lib-renderer");
 const lib_1 = require("./lib");
 const project_1 = require("./project");
+const ipcCall = new ipc_1.GeneralIPC({
+    receive: (msg) => electron_1.ipcRenderer.on(ipc_1.ChannelIpcCall, (event, args) => msg(args)),
+    send: (args) => electron_1.ipcRenderer.send(ipc_1.ChannelIpcCall, args)
+});
 function toProjectFileData(root) {
     let { children, ...other } = root;
     return {
@@ -49,11 +53,22 @@ function getDirData(dirPath) {
 class App extends React.Component {
     constructor(props) {
         super(props);
+        this.consoleHistory = [];
+        this.console = {
+            log: (message, type = "log") => {
+                console.log(message);
+                this.consoleHistory.push({ message: `[GUI] ${message.toString()}`, type });
+                this.setState({
+                    consoleHistory: this.consoleHistory
+                });
+            }
+        };
+        this.consoleHistory = [{ type: "warn", message: "Development environment." }];
         this.state = {
             workDir: null,
             dirData: null,
             statusText: { message: "GUI Ready", loading: true, progress: 0.4 },
-            consoleHistory: [{ type: "warn", message: "Development environment." }],
+            consoleHistory: this.consoleHistory,
             projectFile: null,
             showConsole: false,
         };
@@ -117,6 +132,15 @@ class App extends React.Component {
         });
         electron_1.ipcRenderer.send("ping", "ping");
     }
+    onFileDragStart(e) {
+        e.dataTransfer.setData("text/uri-list", e.nodeData.data);
+        e.dataTransfer.dropEffect = "move";
+        this.console.log(e.nodeData.data);
+    }
+    onFileDrop(e) {
+        e.preventDefault();
+        this.console.log(`Drop: ${e.dataTransfer.getData("text/uri-list")}`);
+    }
     render() {
         let data = this.state.dirData;
         return (React.createElement("div", { id: "content" },
@@ -125,10 +149,13 @@ class App extends React.Component {
                     React.createElement("div", { id: "left-side" },
                         React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
                             React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
-                                React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
+                                React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, dragable: true, onDragStart: (e) => this.onFileDragStart(e), onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
                             React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
                     React.createElement("div", { id: "mid", className: "pane" },
-                        React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
+                        React.createElement(components_1.ProcessSpace, { id: "process-space", onDrop: e => this.onFileDrop(e), onDragOver: e => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = "move";
+                            } })))),
             React.createElement("footer", { id: "status-bar" },
                 React.createElement("span", { id: "agogos-console" },
                     this.state.consoleHistory.length > 0 ?

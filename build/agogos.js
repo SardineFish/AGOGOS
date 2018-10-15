@@ -37,6 +37,10 @@ class AGOGOS {
         this.mainWindow = new electron_1.BrowserWindow({ width: 1280, height: 720 });
         this.mainWindow.loadFile("./res/html/index.html");
         electron_1.ipcMain.on("ping", (event, args) => this.reload(event));
+        this.ipc = new ipc_1.GeneralIPC({
+            receive: (msg) => electron_1.ipcMain.on(ipc_1.ChannelIpcCall, (event, args) => msg(args)),
+            send: (args) => this.mainWindow.webContents.send(ipc_1.ChannelIpcCall, args)
+        });
         await this.project.open();
         return this;
     }

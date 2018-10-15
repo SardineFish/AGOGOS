@@ -168,10 +168,10 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     }
     render()
     {
-        const { children, ...other } = this.props;
+        const { children, ref, key, ...other } = this.props;
         
         return (
-            <ViewPort id={this.props.id} ref="viewport" button={1} refobj={this.domRef}>
+            <ViewPort id={this.props.id} ref="viewport" button={1} refobj={this.domRef} {...other}>
 
             </ViewPort>
         )

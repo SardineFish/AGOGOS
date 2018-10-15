@@ -1,6 +1,6 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
-import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus } from "./ipc";
+import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall } from "./ipc";
 import Path from "path";
 import { ConsoleMessage, StatusOutput } from "./lib";
 
@@ -9,6 +9,7 @@ class AGOGOS
     workDir: string;
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
+    ipc: GeneralIPC;
     async init(workDir: string):Promise<AGOGOS>
     {
         this.workDir = workDir;
@@ -16,6 +17,10 @@ class AGOGOS
         this.mainWindow = new BrowserWindow({ width: 1280, height: 720 });
         this.mainWindow.loadFile("./res/html/index.html");
         ipcMain.on("ping", (event: Event, args: any) => this.reload(event));
+        this.ipc = new GeneralIPC({
+            receive: (msg) => ipcMain.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
+            send: (args) => this.mainWindow.webContents.send(ChannelIpcCall, args)
+        });
         await this.project.open();
         
         return this;

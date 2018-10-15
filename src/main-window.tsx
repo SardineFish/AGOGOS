@@ -1,10 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import SplitPane from "react-split-pane";
-import { TreeViewer, NodeData, NodeMouseEvent } from "../../react-tree-viewer";
+import { TreeViewer, NodeData, NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
 import ViewPort from "../../react-free-viewport"
 import { ipcRenderer, Event, app, Menu, MenuItem } from "electron";
-import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus } from "./ipc";
+import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall } from "./ipc";
 import fs from "fs";
 import path from "path";
 import { Pane, ProcessSpace, ProgressBar} from "./components";
@@ -12,6 +12,11 @@ import linq from "linq";
 import { GetProjectSettings, PopupProjectMenu, ProjectFileData } from "./lib-renderer";
 import { switchCase, ConsoleMessage, StatusOutput } from "./lib";
 import { ProjectFile, AGOGOSProject, ProjFile } from "./project";
+
+const ipcCall: GeneralIPC = new GeneralIPC({
+    receive: (msg) => ipcRenderer.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
+    send: (args) => ipcRenderer.send(ChannelIpcCall, args)
+});
 
 interface AppArgs
 {
@@ -58,16 +63,29 @@ class App extends React.Component<AppArgs, AppState>
     constructor(props:AppArgs)
     {
         super(props);
+        this.consoleHistory = [{ type: "warn", message: "Development environment." }];
         this.state = {
             workDir: null,
             dirData: null,
             statusText: { message: "GUI Ready", loading:true, progress:0.4},
-            consoleHistory: [{ type: "warn", message: "Development environment." }],
+            consoleHistory: this.consoleHistory,
             projectFile: null,
             showConsole:false,
         };
     }
-    get latestConsole() { return this.state.consoleHistory[this.state.consoleHistory.length - 1];}
+    consoleHistory:ConsoleMessage[] = [];
+    console = {
+        log: (message: any, type: "log" | "warn" | "error" = "log") =>
+        {
+            console.log(message);
+            this.consoleHistory.push({ message:`[GUI] ${message.toString()}`, type });
+            this.setState({
+                consoleHistory: this.consoleHistory
+            });
+        }
+    }
+    get latestConsole() { return this.state.consoleHistory[this.state.consoleHistory.length - 1]; }
+    
     onFolderExtend(nodeData: NodeData)
     {
         return nodeData;
@@ -136,7 +154,20 @@ class App extends React.Component<AppArgs, AppState>
             this.onProjectReady(args.projectFile);
         });
         ipcRenderer.send("ping", "ping");
-
+        
+        
+    }
+    onFileDragStart(e: TreeNodeDragEvent)
+    {
+        e.dataTransfer.setData("text/uri-list", e.nodeData.data);
+        e.dataTransfer.dropEffect = "move";
+        
+        this.console.log(e.nodeData.data);
+    }
+    onFileDrop(e: React.DragEvent<HTMLElement>)
+    {
+        e.preventDefault();
+        this.console.log(`Drop: ${e.dataTransfer.getData("text/uri-list")}`);
         
     }
     render()
@@ -153,8 +184,11 @@ class App extends React.Component<AppArgs, AppState>
                                         nodeData={this.state.dirData}
                                         tabSize={10}
                                         root={true}
+                                        dragable={true}
+                                        onDragStart={(e) => this.onFileDragStart(e)}
                                         onContextMenu={e => this.onProjectContextMenu(e)}
-                                        onExtend={(nodeData) => this.onFolderExtend(nodeData)} />
+                                        onExtend={(nodeData) => this.onFolderExtend(nodeData)}
+                                        />
                                 </Pane>
                                 <Pane id="res-lib" header="Library">
 
@@ -162,7 +196,15 @@ class App extends React.Component<AppArgs, AppState>
                             </SplitPane>
                         </div>
                         <div id="mid" className="pane">
-                            <ProcessSpace id="process-space"></ProcessSpace>
+                            <ProcessSpace
+                                id="process-space"
+                                onDrop={e => this.onFileDrop(e)}
+                                onDragOver={e =>
+                                {
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = "move";
+                                }}
+                            ></ProcessSpace>
                         </div>
                     </SplitPane>
                 </main>

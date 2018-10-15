@@ -11,6 +11,8 @@ export declare const ChannelFileChanged = "file-chenged";
 export declare const ChannelConsole = "agogos-console";
 export declare const ChannelStatus = "agogos-status";
 export declare const ChannelProjectReady = "agogos-ready";
+export declare const ChannelGetProcess = "get-process";
+export declare const ChannelIpcCall = "_ipc-call";
 export declare function waitIpcRenderer<T>(channel: string, timeout?: number): Promise<T>;
 export declare function waitIpcMain<T>(channel: string, timeout?: number): Promise<T>;
 export interface FileChangeArgs {
@@ -20,14 +22,22 @@ export interface FileChangeArgs {
     newFile: ProjectFile;
 }
 declare type IPCHandler = (...args: any[]) => any;
-export declare class ProcessIPC {
-    process: any;
+export interface IPCEntity {
+    receive: (onMsg: (args: any) => void) => void;
+    send: (args: any) => void;
+}
+export declare class GeneralIPC {
+    entity: IPCEntity;
     private callList;
     private handler;
     private increaseCallID;
-    constructor(process: ChildProcess | NodeJS.Process);
+    constructor(entity: IPCEntity);
     private onmessage;
     add(name: string, handler: IPCHandler): void;
     call<TResult>(name: string, ...args: any[]): Promise<TResult>;
+}
+export declare class ProcessIPC extends GeneralIPC {
+    process: any;
+    constructor(process: ChildProcess | NodeJS.Process);
 }
 export {};

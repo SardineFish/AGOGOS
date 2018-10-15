@@ -8,6 +8,8 @@ exports.ChannelFileChanged = "file-chenged";
 exports.ChannelConsole = "agogos-console";
 exports.ChannelStatus = "agogos-status";
 exports.ChannelProjectReady = "agogos-ready";
+exports.ChannelGetProcess = "get-process";
+exports.ChannelIpcCall = "_ipc-call";
 async function waitIpcRenderer(channel, timeout = 500) {
     return new Promise((resolve, reject) => {
         electron_1.ipcRenderer.once(channel, (event, args) => {
@@ -27,13 +29,13 @@ async function waitIpcMain(channel, timeout = 500) {
 }
 exports.waitIpcMain = waitIpcMain;
 const IPCReturnValue = "__IPC_RETURN";
-class ProcessIPC {
-    constructor(process) {
+class GeneralIPC {
+    constructor(entity) {
         this.callList = new Map();
         this.handler = new Map();
         this.increaseCallID = 0;
-        this.process = process;
-        this.process.on("message", (msg) => this.onmessage(msg));
+        this.entity = entity;
+        this.entity.receive((msg) => this.onmessage(msg));
     }
     async onmessage(msg) {
         let { name, callId, data } = msg;
@@ -48,9 +50,9 @@ class ProcessIPC {
         if (handler)
             returnValue = handler(...args);
         if (returnValue instanceof Promise)
-            returnValue.then(returnValue => this.process.send({ name: IPCReturnValue, callId, data: returnValue }));
+            returnValue.then(returnValue => this.entity.send({ name: IPCReturnValue, callId, data: returnValue }));
         else
-            this.process.send({ name: IPCReturnValue, callId, data: returnValue });
+            this.entity.send({ name: IPCReturnValue, callId, data: returnValue });
     }
     add(name, handler) {
         this.handler.set(name, handler);
@@ -59,8 +61,18 @@ class ProcessIPC {
         let callId = ++this.increaseCallID;
         return new Promise((resolve) => {
             this.callList.set(callId, resolve);
-            this.process.send({ name, callId, data: args });
+            this.entity.send({ name, callId, data: args });
         });
+    }
+}
+exports.GeneralIPC = GeneralIPC;
+class ProcessIPC extends GeneralIPC {
+    constructor(process) {
+        super({
+            receive: (msg) => process.on("message", msg),
+            send: (args) => process.send(args)
+        });
+        this.process = process;
     }
 }
 exports.ProcessIPC = ProcessIPC;

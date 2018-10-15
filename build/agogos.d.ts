@@ -1,9 +1,11 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, Event } from "electron";
+import { GeneralIPC } from "./ipc";
 declare class AGOGOS {
     workDir: string;
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
+    ipc: GeneralIPC;
     init(workDir: string): Promise<AGOGOS>;
     reload(event: Event): Promise<AGOGOS>;
     console: {

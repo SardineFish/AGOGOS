@@ -14,6 +14,8 @@ export const ChannelFileChanged = "file-chenged";
 export const ChannelConsole = "agogos-console";
 export const ChannelStatus = "agogos-status";
 export const ChannelProjectReady = "agogos-ready";
+export const ChannelGetProcess = "get-process";
+export const ChannelIpcCall = "_ipc-call";
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>
 {
@@ -54,17 +56,21 @@ interface IPCPackage
     callId: number;
     data: any;
 }
-export class ProcessIPC
+export interface IPCEntity
 {
-    public process: any;
+    receive: (onMsg: (args: any) => void) => void;
+    send: (args: any) => void;
+}
+export class GeneralIPC
+{
+    public entity: IPCEntity;
     private callList: Map<number, (returnValue: any) => void> = new Map();
     private handler: Map<string, IPCHandler> = new Map();
     private increaseCallID = 0;
-
-    constructor(process: ChildProcess | NodeJS.Process)
+    constructor(entity: IPCEntity)
     {
-        this.process = process;
-        this.process.on("message", (msg: IPCPackage) => this.onmessage(msg));
+        this.entity = entity;
+        this.entity.receive((msg: IPCPackage) => this.onmessage(msg));
     }
     private async onmessage(msg: IPCPackage): Promise<void>
     {
@@ -84,9 +90,9 @@ export class ProcessIPC
         if (handler)
             returnValue = handler(...args);
         if (returnValue instanceof Promise)
-            returnValue.then(returnValue => this.process.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue }));
+            returnValue.then(returnValue => this.entity.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue }));
         else
-            this.process.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue });
+            this.entity.send(<IPCPackage>{ name: IPCReturnValue, callId, data: returnValue });
     }
     public add(name: string, handler: IPCHandler)
     {
@@ -98,7 +104,20 @@ export class ProcessIPC
         return new Promise<TResult>((resolve) =>
         {
             this.callList.set(callId, resolve);
-            this.process.send(<IPCPackage>{ name, callId, data: args });
+            this.entity.send(<IPCPackage>{ name, callId, data: args });
         });
+    }
+}
+export class ProcessIPC extends GeneralIPC
+{
+    public process: any;
+
+    constructor(process: ChildProcess | NodeJS.Process)
+    {
+        super({
+            receive: (msg) => (<any>process).on("message", msg),
+            send: (args) => (<any>process).send(args)
+        })
+        this.process = process;
     }
 }
