@@ -53,7 +53,7 @@ class App extends React.Component {
             workDir: null,
             dirData: null,
             statusText: { message: "GUI Ready", loading: true, progress: 0.4 },
-            consoleHistory: [{ type: "error", message: "Development environment." }],
+            consoleHistory: [{ type: "warn", message: "Development environment." }],
             projectFile: null,
             showConsole: false,
         };

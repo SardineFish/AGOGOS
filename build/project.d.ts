@@ -24,10 +24,13 @@ declare class TSCompiler {
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
+    srcFiles: string[];
+    outputMap: Map<string, string>;
     constructor(src: string, out: string);
     init(): Promise<void>;
     compile(): Promise<ReadonlyArray<typescript.Diagnostic>>;
     watch(): Promise<TSCompiler>;
+    private onCompileComplete;
     private onDiagnostic;
     private onStatusReport;
 }

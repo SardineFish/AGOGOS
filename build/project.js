@@ -99,6 +99,7 @@ exports.AGOGOSProject = AGOGOSProject;
 class TSCompiler {
     constructor(src, out) {
         this.ready = false;
+        this.outputMap = new Map();
         this.srcDirectory = src;
         this.outDirectory = out;
     }
@@ -115,8 +116,15 @@ class TSCompiler {
         agogos_1.default.console.log("Start watching...");
         this.compileProcessIPC.add(compiler_1.CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
         this.compileProcessIPC.add(compiler_1.CompilerIpc.Status, (status) => this.onStatusReport(status));
+        this.compileProcessIPC.add(compiler_1.CompilerIpc.PostCompile, (result) => this.onCompileComplete(result));
         await this.compileProcessIPC.call(compiler_1.CompilerIpc.StartWatch);
         return this;
+    }
+    onCompileComplete(result) {
+        console.log(result);
+        this.srcFiles = result.files;
+        this.outputMap = new Map();
+        this.srcFiles.forEach(f => this.outputMap.set(f, path_1.default.resolve(this.outDirectory, path_1.default.resolve(path_1.default.dirname(f), path_1.default.basename(f) + ".js"))));
     }
     onDiagnostic(diagnostic) {
         agogos_1.default.console.error(diagnostic);

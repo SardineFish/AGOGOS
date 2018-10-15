@@ -10,7 +10,7 @@ import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { fork } from "child_process";
 import agogos from "./agogos";
-import { CompilerIpc } from "./compiler";
+import { CompilerIpc, CompileResult } from "./compiler";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
@@ -112,6 +112,8 @@ class TSCompiler
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
+    srcFiles: string[];
+    outputMap: Map<string, string> = new Map();
     constructor(src: string, out: string)
     {
         this.srcDirectory = src;
@@ -133,8 +135,16 @@ class TSCompiler
         agogos.console.log("Start watching...");
         this.compileProcessIPC.add(CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
         this.compileProcessIPC.add(CompilerIpc.Status, (status) => this.onStatusReport(status));
+        this.compileProcessIPC.add(CompilerIpc.PostCompile, (result) => this.onCompileComplete(result));
         await this.compileProcessIPC.call(CompilerIpc.StartWatch);
         return this;
+    }
+    private onCompileComplete(result: CompileResult)
+    {
+        console.log(result);
+        this.srcFiles = result.files;
+        this.outputMap = new Map();
+        this.srcFiles.forEach(f => this.outputMap.set(f, Path.resolve(this.outDirectory, Path.resolve(Path.dirname(f), Path.basename(f) + ".js"))));
     }
     private onDiagnostic(diagnostic: string)
     {

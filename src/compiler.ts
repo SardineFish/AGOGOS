@@ -12,7 +12,8 @@ export const CompilerIpc = {
     StartWatch: "start-watch",
     EndWatch: "end-watch",
     Diagnostic: "on-diagnostic",
-    Status: "on-status"
+    Status: "on-status",
+    PostCompile: "post-compile"
 };
 
 let ipc = new ProcessIPC(process);
@@ -39,7 +40,10 @@ export interface CompilerDiagnostic
     line?: number;
     
 }
-
+export interface CompileResult
+{
+    files: string[];
+}
 class TSCompiler
 {
     public ts: typescript.Program;
@@ -128,9 +132,17 @@ class TSCompiler
 
 
         let createProgram = typescript.createSemanticDiagnosticsBuilderProgram;
-        const host = typescript.createWatchCompilerHost(
+        /*const host = typescript.createWatchCompilerHost(
             rootFileNames,
             parseResult.options,
+            typescript.sys,
+            createProgram,
+            reportDiagnostic,
+            reportWatchStatusChanged
+        );*/
+        const host = typescript.createWatchCompilerHost(
+            this.configPath,
+            {},
             typescript.sys,
             createProgram,
             reportDiagnostic,
@@ -155,7 +167,12 @@ class TSCompiler
         const origPostProgramCreate = host.afterProgramCreate;
         host.afterProgramCreate = program =>
         {
+            //console.log(program.getProgram().getRootFileNames());
             //console.log("** We finished making the program! **");
+            ipc.call(CompilerIpc.PostCompile, <CompileResult>{
+                files: program.getProgram().getRootFileNames()
+                    .map(f => Path.relative(this.srcDirectory, f))
+            });
             origPostProgramCreate!(program);
         };
 

@@ -15,7 +15,8 @@ exports.CompilerIpc = {
     StartWatch: "start-watch",
     EndWatch: "end-watch",
     Diagnostic: "on-diagnostic",
-    Status: "on-status"
+    Status: "on-status",
+    PostCompile: "post-compile"
 };
 let ipc = new ipc_1.ProcessIPC(process);
 let compiler;
@@ -90,7 +91,15 @@ class TSCompiler {
         let parseResult = typescript_1.default.parseJsonConfigFileContent(typescript_1.default.readConfigFile(this.configPath, typescript_1.default.sys.readFile).config, typescript_1.default.sys, this.srcDirectory);
         let rootFileNames = parseResult.fileNames;
         let createProgram = typescript_1.default.createSemanticDiagnosticsBuilderProgram;
-        const host = typescript_1.default.createWatchCompilerHost(rootFileNames, parseResult.options, typescript_1.default.sys, createProgram, reportDiagnostic, reportWatchStatusChanged);
+        /*const host = typescript.createWatchCompilerHost(
+            rootFileNames,
+            parseResult.options,
+            typescript.sys,
+            createProgram,
+            reportDiagnostic,
+            reportWatchStatusChanged
+        );*/
+        const host = typescript_1.default.createWatchCompilerHost(this.configPath, {}, typescript_1.default.sys, createProgram, reportDiagnostic, reportWatchStatusChanged);
         // You can technically override any given hook on the host, though you probably
         // don't need to.
         // Note that we're assuming `origCreateProgram` and `origPostProgramCreate`
@@ -102,7 +111,12 @@ class TSCompiler {
         };
         const origPostProgramCreate = host.afterProgramCreate;
         host.afterProgramCreate = program => {
+            //console.log(program.getProgram().getRootFileNames());
             //console.log("** We finished making the program! **");
+            ipc.call(exports.CompilerIpc.PostCompile, {
+                files: program.getProgram().getRootFileNames()
+                    .map(f => path_1.default.relative(this.srcDirectory, f))
+            });
             origPostProgramCreate(program);
         };
         // `createWatchProgram` creates an initial program, watches files, and updates
