@@ -1,4 +1,5 @@
 import { type, BuildinTypes } from "../meta-data";
+import internal from "../agogos";
 export class Unit
 {
     @type(BuildinTypes.string)
@@ -12,6 +13,7 @@ export class Unit
 const agogos = {
     type,
     Unit,
+    console: internal.console,
     ...BuildinTypes
-}
+};
 export default agogos;

@@ -15,9 +15,7 @@ import { ProjectFile, AGOGOSProject, ProjFile } from "./project";
 
 interface AppArgs
 {
-    workDir: string;
     //project: AGOGOSProject;
-    projectFile?: ProjectFile;
 }
 interface AppState
 {
@@ -25,6 +23,7 @@ interface AppState
     dirData: ProjectFileData;
     statusText: ConsoleMessage;
     consoleText: ConsoleMessage;
+    projectFile: ProjectFile;
 }
 function toProjectFileData(root: ProjectFile): ProjectFileData
 {
@@ -59,10 +58,11 @@ class App extends React.Component<AppArgs, AppState>
     {
         super(props);
         this.state = {
-            workDir: this.props.workDir,
+            workDir: null,
             dirData: null,
-            statusText: {type:"log",message:"AGOGOS ready"},
-            consoleText: {type:"error", message:"Development environment."}
+            statusText: { type: "log", message: "AGOGOS ready" },
+            consoleText: { type: "error", message: "Development environment." },
+            projectFile: null
         };
     }
     onFolderExtend(nodeData: NodeData)
@@ -73,20 +73,19 @@ class App extends React.Component<AppArgs, AppState>
     {
         PopupProjectMenu(e.parent.data as string);
     }
-    componentDidMount()
+    onProjectReady(projectFile: ProjectFile)
     {
-        let projectFileData = toProjectFileData(this.props.projectFile);
+        let projectFileData = toProjectFileData(this.state.projectFile);
         projectFileData.icon = (<span className="node-icon directory"></span>);
         projectFileData.name = projectFileData.path;
         projectFileData.extend = true;
         this.setState({
             dirData: projectFileData
         });
-
         ipcRenderer.on(ChannelFileChanged, (event: Event, args: FileChangeArgs) =>
         {
-            let relativeOld = args.oldFileName ? path.relative(this.props.workDir, args.oldFileName) : null;
-            let relativeNew = args.newFileName ? path.relative(this.props.workDir, args.newFileName) : null;
+            let relativeOld = args.oldFileName ? path.relative(this.state.workDir, args.oldFileName) : null;
+            let relativeNew = args.newFileName ? path.relative(this.state.workDir, args.newFileName) : null;
             let dir: ProjectFileData;
             if (args.operation === "add")
             {
@@ -115,6 +114,20 @@ class App extends React.Component<AppArgs, AppState>
         {
             this.setState({ consoleText: args });
         });
+    }
+    componentDidMount()
+    {
+        ipcRenderer.once(ChannelStartup, (event: Event, args: Startup) =>
+        {
+            this.setState({
+                workDir: args.workDir,
+                projectFile: args.projectFile
+            });
+            this.onProjectReady(args.projectFile);
+        });
+        ipcRenderer.send("ping", "ping");
+
+        
     }
     render()
     {
@@ -161,13 +174,9 @@ class App extends React.Component<AppArgs, AppState>
 }
 
 const $ = (selector: string) => document.querySelector(selector);
+const element = (
+    <App ></App>
+);
+ReactDOM.render(element, $("#root"));
 
 
-ipcRenderer.once(ChannelStartup, (event: Event, args: Startup) =>
-{
-    const element = (
-        <App workDir={args.workDir} /*project={args.project}*/ projectFile={args.projectFile}></App>
-    );
-    ReactDOM.render(element, $("#root"));
-});
-ipcRenderer.send("ping", "ping");

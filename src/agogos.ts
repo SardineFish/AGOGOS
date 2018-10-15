@@ -32,8 +32,7 @@ class AGOGOS
         };
         if (!this.project.tsCompiler.ready)
         {
-            await this.project.tsCompiler.init();
-            await this.project.tsCompiler.watch();
+            this.project.tsCompiler.init().then(() => this.project.tsCompiler.watch());
         }
         event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         return this;

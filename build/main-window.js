@@ -50,10 +50,11 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            workDir: this.props.workDir,
+            workDir: null,
             dirData: null,
             statusText: { type: "log", message: "AGOGOS ready" },
-            consoleText: { type: "error", message: "Development environment." }
+            consoleText: { type: "error", message: "Development environment." },
+            projectFile: null
         };
     }
     onFolderExtend(nodeData) {
@@ -62,8 +63,8 @@ class App extends React.Component {
     onProjectContextMenu(e) {
         lib_renderer_1.PopupProjectMenu(e.parent.data);
     }
-    componentDidMount() {
-        let projectFileData = toProjectFileData(this.props.projectFile);
+    onProjectReady(projectFile) {
+        let projectFileData = toProjectFileData(this.state.projectFile);
         projectFileData.icon = (React.createElement("span", { className: "node-icon directory" }));
         projectFileData.name = projectFileData.path;
         projectFileData.extend = true;
@@ -71,8 +72,8 @@ class App extends React.Component {
             dirData: projectFileData
         });
         electron_1.ipcRenderer.on(ipc_1.ChannelFileChanged, (event, args) => {
-            let relativeOld = args.oldFileName ? path_1.default.relative(this.props.workDir, args.oldFileName) : null;
-            let relativeNew = args.newFileName ? path_1.default.relative(this.props.workDir, args.newFileName) : null;
+            let relativeOld = args.oldFileName ? path_1.default.relative(this.state.workDir, args.oldFileName) : null;
+            let relativeNew = args.newFileName ? path_1.default.relative(this.state.workDir, args.newFileName) : null;
             let dir;
             if (args.operation === "add") {
                 dir = project_1.ProjFile.getDirectory(projectFileData, relativeNew);
@@ -98,6 +99,16 @@ class App extends React.Component {
             this.setState({ consoleText: args });
         });
     }
+    componentDidMount() {
+        electron_1.ipcRenderer.once(ipc_1.ChannelStartup, (event, args) => {
+            this.setState({
+                workDir: args.workDir,
+                projectFile: args.projectFile
+            });
+            this.onProjectReady(args.projectFile);
+        });
+        electron_1.ipcRenderer.send("ping", "ping");
+    }
     render() {
         let data = this.state.dirData;
         return (React.createElement("div", { id: "content" },
@@ -120,9 +131,6 @@ class App extends React.Component {
     }
 }
 const $ = (selector) => document.querySelector(selector);
-electron_1.ipcRenderer.once(ipc_1.ChannelStartup, (event, args) => {
-    const element = (React.createElement(App, { workDir: args.workDir, projectFile: args.projectFile }));
-    ReactDOM.render(element, $("#root"));
-});
-electron_1.ipcRenderer.send("ping", "ping");
+const element = (React.createElement(App, null));
+ReactDOM.render(element, $("#root"));
 //# sourceMappingURL=main-window.js.map
