@@ -1,4 +1,3 @@
-import { ProcessNodeData } from "./lib-renderer";
 import { getJsonIgnore } from "./meta-data";
 import { ProjectFile } from "./project";
 import Path from "path";
@@ -187,4 +186,26 @@ export interface StatusOutput
     loading?: boolean,
     message: string;
     progress?: number;
+}
+
+
+export class ProcessNodeData
+{
+    name: string;
+    properties: Map<string, PropertyData> = new Map();
+    processOutput: PropertyData;
+}
+export class PropertyData
+{
+    type: string;
+    value: any;
+    input?: EndPoint;
+    output?: EndPoint;
+}
+
+export class ObjectData
+{
+    owner: any;
+    name: string;
+    properties: Map<string, PropertyData> = new Map();
 }

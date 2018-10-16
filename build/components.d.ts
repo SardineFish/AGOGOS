@@ -1,8 +1,7 @@
 import React, { HTMLProps, RefObject } from "react";
 import ViewPort from "../../react-free-viewport/dist";
-import { ProcessNodeData } from "./lib-renderer";
 import { ReactProcessNode, ConnectLine } from "./process-editor";
-import { Connection, EndPoint } from "./lib";
+import { Connection, EndPoint, ProcessNodeData } from "./lib";
 interface PaneProps extends HTMLProps<HTMLDivElement> {
     header: string;
 }

@@ -38,13 +38,11 @@ exports.jsonIgnore = jsonIgnore;
 exports.getJsonIgnore = getJsonIgnore;
 //const [process, getProcess] = DectatorFactory<string>("process", "");
 function process(constructor) {
-    if (constructor)
-        constructor.__agogosProcess = constructor.name;
+    constructor.__agogosProcess = constructor.name;
 }
 exports.process = process;
 function getProcess(constructor) {
-    if (constructor)
-        return constructor.__agogosProcess;
+    return constructor.__agogosProcess;
 }
 exports.getProcess = getProcess;
 //# sourceMappingURL=meta-data.js.map

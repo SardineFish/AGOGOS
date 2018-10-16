@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged, FileChangeArgs } from "./ipc";
 import { AGOGOSProject } from "./project";
-import agogos from "./agogos";
+import { AGOGOS } from "./agogos";
 require("electron-reload")(app.getAppPath());
 
 const pkg = require('../package.json');
@@ -24,6 +24,7 @@ console.log(workDir);
 if (!fs.existsSync(workDir))
     program.help();
 
+const agogos = new AGOGOS();
 
 loadProject();
 

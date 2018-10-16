@@ -1,4 +1,3 @@
-import { ProcessNodeData } from "./lib-renderer";
 import { ProjectFile } from "./project";
 export declare class Vector2 {
     x: number;
@@ -38,4 +37,20 @@ export interface StatusOutput {
     loading?: boolean;
     message: string;
     progress?: number;
+}
+export declare class ProcessNodeData {
+    name: string;
+    properties: Map<string, PropertyData>;
+    processOutput: PropertyData;
+}
+export declare class PropertyData {
+    type: string;
+    value: any;
+    input?: EndPoint;
+    output?: EndPoint;
+}
+export declare class ObjectData {
+    owner: any;
+    name: string;
+    properties: Map<string, PropertyData>;
 }

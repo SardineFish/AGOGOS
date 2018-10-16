@@ -30,10 +30,10 @@
     "react": "^16.5.1",
     "react-dom": "^16.5.1",
     "react-split-pane": "^0.1.84",
-    "reflect-metadata": "^0.1.12",
-    "typescript": "^3.1.2"
+    "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
-    "electron": "^2.0.9"
+    "electron": "^2.0.9",
+    "typescript": "^3.1.3"
   }
 }

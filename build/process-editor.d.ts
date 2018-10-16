@@ -1,6 +1,5 @@
 import React, { HTMLProps, RefObject, MouseEvent } from "react";
-import { Vector2, EndPoint } from "./lib";
-import { ProcessNodeData } from "./lib-renderer";
+import { Vector2, EndPoint, ProcessNodeData } from "./lib";
 declare type RefCallback<T> = (ref: T) => void;
 declare type EventHandler<T> = (e: T) => void;
 export interface DragMoveEvent {

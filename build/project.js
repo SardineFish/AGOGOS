@@ -9,6 +9,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const npm_1 = __importDefault(require("npm"));
 const package_json_1 = require("./package-json");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
@@ -18,8 +19,9 @@ const util_1 = require("util");
 const linq_1 = __importDefault(require("linq"));
 const ipc_1 = require("./ipc");
 const child_process_1 = require("child_process");
-const agogos_1 = __importDefault(require("./agogos"));
 const compiler_1 = require("./compiler");
+const process_manager_1 = require("./process-manager");
+const agogos_1 = require("./agogos");
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
 const ProjectBuildOutputFolder = "build";
@@ -27,6 +29,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     constructor(path) {
         super();
         this.projectDirectory = "/";
+        this.processManager = new process_manager_1.ProcessManager();
         this.projectDirectory = path;
         this.projectFiles = {
             name: path_1.default.basename(this.projectDirectory),
@@ -38,7 +41,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     get packageJSONPath() { return path_1.default.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return path_1.default.join(this.projectDirectory, AGOGOSFolder); }
     async open() {
-        agogos_1.default.showStatus("Loading Project", true);
+        agogos_1.AGOGOS.instance.showStatus("Loading Project", true);
         let data = await util_1.promisify(fs_1.default.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson) {
@@ -46,9 +49,14 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
                 this[key] = packageJson[key];
             }
         }
+        this.dependencies["agogos"] = `file:${path_1.default.resolve("./build/user-lib")}`;
+        await this.save();
         this.tsCompiler = new TSCompiler(this.projectDirectory, path_1.default.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
+        agogos_1.AGOGOS.instance.showStatus("Resolving Packages", true);
+        let err = await util_1.promisify(npm_1.default.load)({});
+        err = await util_1.promisify(npm_1.default.commands.install)(this.projectDirectory, []);
         //await this.tsCompiler.init();
         return await this.startWatch((operation, oldFile, newFile) => {
             if (this.fileWatchCallback)
@@ -93,8 +101,14 @@ __decorate([
     meta_data_1.jsonIgnore(true)
 ], AGOGOSProject.prototype, "projectFiles", void 0);
 __decorate([
+    meta_data_1.jsonIgnore()
+], AGOGOSProject.prototype, "fileWatchCallback", void 0);
+__decorate([
     meta_data_1.jsonIgnore(true)
 ], AGOGOSProject.prototype, "tsCompiler", void 0);
+__decorate([
+    meta_data_1.jsonIgnore()
+], AGOGOSProject.prototype, "processManager", void 0);
 exports.AGOGOSProject = AGOGOSProject;
 class TSCompiler {
     constructor(src, out) {
@@ -109,11 +123,11 @@ class TSCompiler {
         this.ready = true;
     }
     async compile() {
-        agogos_1.default.console.log("Compiling...");
+        agogos_1.AGOGOS.instance.console.log("Compiling...");
         return await this.compileProcessIPC.call("compile");
     }
     async watch() {
-        agogos_1.default.console.log("Start watching...");
+        agogos_1.AGOGOS.instance.console.log("Start watching...");
         this.compileProcessIPC.add(compiler_1.CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
         this.compileProcessIPC.add(compiler_1.CompilerIpc.Status, (status) => this.onStatusReport(status));
         this.compileProcessIPC.add(compiler_1.CompilerIpc.PostCompile, (result) => this.onCompileComplete(result));
@@ -121,16 +135,18 @@ class TSCompiler {
         return this;
     }
     onCompileComplete(result) {
-        console.log(result);
         this.srcFiles = result.files;
         this.outputMap = new Map();
-        this.srcFiles.forEach(f => this.outputMap.set(f, path_1.default.resolve(this.outDirectory, path_1.default.resolve(path_1.default.dirname(f), path_1.default.basename(f) + ".js"))));
+        this.srcFiles.forEach(f => this.outputMap.set(f, path_1.default.resolve(this.outDirectory, path_1.default.join(path_1.default.dirname(f), path_1.default.parse(f).name + ".js"))));
+        agogos_1.AGOGOS.instance.console.log(this.srcFiles);
+        if (this.onCompileCompleteCallback)
+            this.onCompileCompleteCallback();
     }
     onDiagnostic(diagnostic) {
-        agogos_1.default.console.error(diagnostic);
+        agogos_1.AGOGOS.instance.console.error(diagnostic);
     }
     onStatusReport(status) {
-        agogos_1.default.console.log(`[Compiler] ${status}`);
+        agogos_1.AGOGOS.instance.console.log(`[Compiler] ${status}`);
     }
 }
 class ProjFile {

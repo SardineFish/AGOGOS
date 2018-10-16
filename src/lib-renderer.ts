@@ -4,25 +4,7 @@ import { ipcRenderer, remote } from "electron";
 import { ChannelProjectSettings } from "./ipc";
 import { NodeData } from "../../react-tree-viewer/dist";
 const { Menu } = remote;
-export class PropertyData
-{
-    type: string;
-    value: any;
-    input?: EndPoint;
-    output?: EndPoint;
-}
-export class ProcessNodeData
-{
-    name: string;
-    properties: Map<string, PropertyData> = new Map();
-    processOutput: PropertyData;
-}
-export class ObjectData
-{
-    owner: any;
-    name: string;
-    properties: Map<string, PropertyData> = new Map();
-}
+
 export function GetProjectSettings(): AGOGOSProject
 {
     return ipcRenderer.sendSync(ChannelProjectSettings) as AGOGOSProject;

@@ -134,4 +134,19 @@ async function mapAsync(list, func) {
     return result;
 }
 exports.mapAsync = mapAsync;
+class ProcessNodeData {
+    constructor() {
+        this.properties = new Map();
+    }
+}
+exports.ProcessNodeData = ProcessNodeData;
+class PropertyData {
+}
+exports.PropertyData = PropertyData;
+class ObjectData {
+    constructor() {
+        this.properties = new Map();
+    }
+}
+exports.ObjectData = ObjectData;
 //# sourceMappingURL=lib.js.map

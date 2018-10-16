@@ -1,4 +1,4 @@
-import { type, BuildinTypes } from "../meta-data";
+import { type, BuildinTypes, process } from "../meta-data";
 export declare class Unit {
     name: string;
     process(): void;
@@ -10,6 +10,7 @@ declare const agogos: {
     object: BuildinTypes.object;
     type: typeof type;
     Unit: typeof Unit;
+    process: typeof process;
     console: {
         log: (message: any) => void;
         warn: (message: any) => void;

@@ -1,15 +1,20 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
-import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall } from "./ipc";
+import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
 import Path from "path";
 import { ConsoleMessage, StatusOutput } from "./lib";
 
-class AGOGOS
+export class AGOGOS
 {
+    static instance: AGOGOS;
     workDir: string;
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
     ipc: GeneralIPC;
+    constructor()
+    {
+        AGOGOS.instance = this;
+    }
     async init(workDir: string):Promise<AGOGOS>
     {
         this.workDir = workDir;
@@ -27,6 +32,7 @@ class AGOGOS
     }
     async reload(event:Event):Promise<AGOGOS>
     {
+        this.ipc.add(IPCRenderer.GetProcess, async (filename: string) => await this.onGetProcessData(filename));
         this.project.fileWatchCallback = (operation, oldFile, newFile) =>
         {
             this.mainWindow.webContents.send(ChannelFileChanged, <FileChangeArgs>{
@@ -39,12 +45,24 @@ class AGOGOS
         event.sender.send(ChannelStartup, <Startup>{ workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         if (!this.project.tsCompiler.ready)
         {
-            agogos.showStatus("Init Compiler", true);
+            this.showStatus("Init Compiler", true);
             this.project.tsCompiler.init()
                 .then(() => this.project.tsCompiler.watch())
-                .then(() => agogos.showStatus("Project Ready"));
+                .then(() => this.showStatus("Project Ready"));
+            this.project.tsCompiler.onCompileCompleteCallback = () => this.onCompileComplete();
         }
         return this;
+    }
+    onCompileComplete()
+    {
+        this.project.tsCompiler.srcFiles.forEach(file =>
+        {
+            this.project.processManager.importProcess(this.project.tsCompiler.outputMap.get(file));
+        });
+    }
+    async onGetProcessData(filename: string)
+    {
+        
     }
     
     console = {
@@ -72,6 +90,6 @@ class AGOGOS
             progress
         });
     }
+
+
 }
-const agogos: AGOGOS = new AGOGOS();
-export default agogos;

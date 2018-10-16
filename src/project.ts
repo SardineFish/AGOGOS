@@ -9,8 +9,9 @@ import linq from "linq";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { fork } from "child_process";
-import agogos from "./agogos";
 import { CompilerIpc, CompileResult } from "./compiler";
+import { ProcessManager } from "./process-manager";
+import { AGOGOS } from "./agogos";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 
@@ -25,10 +26,14 @@ export class AGOGOSProject extends IPackageJSON
     @jsonIgnore(true)
     public projectFiles: ProjectFile;
 
+    @jsonIgnore()
     public fileWatchCallback: FileWatchCallback;
 
     @jsonIgnore(true)
     public tsCompiler: TSCompiler;
+
+    @jsonIgnore()
+    public processManager: ProcessManager = new ProcessManager();
 
     get packageJSONPath() { return Path.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return Path.join(this.projectDirectory, AGOGOSFolder); }
@@ -45,7 +50,7 @@ export class AGOGOSProject extends IPackageJSON
     }
     public async open(): Promise<AGOGOSProject>
     {
-        agogos.showStatus("Loading Project", true);
+        AGOGOS.instance.showStatus("Loading Project", true);
 
         let data = await promisify(fs.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
@@ -56,9 +61,16 @@ export class AGOGOSProject extends IPackageJSON
                 this[key] = packageJson[key];
             }
         }
+        this.dependencies["agogos"] = `file:${Path.resolve("./build/user-lib")}`;
+        await this.save();
         this.tsCompiler = new TSCompiler(this.projectDirectory, Path.join(this.agogosFolder, ProjectBuildOutputFolder));
         await this.checkAGOGOSFolder();
         await this.scanFiles();
+        AGOGOS.instance.showStatus("Resolving Packages", true);
+        let err = await promisify<any, any>(npm.load)({});
+        err = await promisify<string, string[], any>(npm.commands.install as any)(this.projectDirectory, []);
+        
+
         //await this.tsCompiler.init();
         return await this.startWatch((operation,oldFile,newFile) =>
         {
@@ -85,8 +97,6 @@ export class AGOGOSProject extends IPackageJSON
             throw new Error("Project existed.");
         this.name = name;
         await this.save();
-        
-
         return await this.open();
     }
     public async save(): Promise<AGOGOSProject>
@@ -113,6 +123,7 @@ class TSCompiler
     srcDirectory: string;
     outDirectory: string;
     srcFiles: string[];
+    onCompileCompleteCallback: () => void;
     outputMap: Map<string, string> = new Map();
     constructor(src: string, out: string)
     {
@@ -127,32 +138,37 @@ class TSCompiler
     }
     async compile(): Promise<ReadonlyArray<typescript.Diagnostic>>
     {
-        agogos.console.log("Compiling...");
+        AGOGOS.instance.console.log("Compiling...");
         return await this.compileProcessIPC.call<ReadonlyArray<typescript.Diagnostic>>("compile");
     }
     async watch(): Promise<TSCompiler>
     {
-        agogos.console.log("Start watching...");
+        AGOGOS.instance.console.log("Start watching...");
         this.compileProcessIPC.add(CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
         this.compileProcessIPC.add(CompilerIpc.Status, (status) => this.onStatusReport(status));
         this.compileProcessIPC.add(CompilerIpc.PostCompile, (result) => this.onCompileComplete(result));
+        
+
         await this.compileProcessIPC.call(CompilerIpc.StartWatch);
+        
         return this;
     }
     private onCompileComplete(result: CompileResult)
     {
-        console.log(result);
         this.srcFiles = result.files;
         this.outputMap = new Map();
-        this.srcFiles.forEach(f => this.outputMap.set(f, Path.resolve(this.outDirectory, Path.resolve(Path.dirname(f), Path.basename(f) + ".js"))));
+        this.srcFiles.forEach(f => this.outputMap.set(f, Path.resolve(this.outDirectory, Path.join(Path.dirname(f), Path.parse(f).name + ".js"))));
+        AGOGOS.instance.console.log(this.srcFiles);
+        if (this.onCompileCompleteCallback)
+            this.onCompileCompleteCallback();
     }
     private onDiagnostic(diagnostic: string)
     {
-        agogos.console.error(diagnostic);
+        AGOGOS.instance.console.error(diagnostic);
     }
     private onStatusReport(status: string)
     {
-        agogos.console.log(`[Compiler] ${status}`);
+        AGOGOS.instance.console.log(`[Compiler] ${status}`);
     }
 }
 export interface ProjectFile

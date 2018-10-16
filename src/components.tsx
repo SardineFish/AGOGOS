@@ -1,13 +1,12 @@
 import React, { HTMLProps, RefObject, EventHandler, ChangeEventHandler, ChangeEvent, DragEvent, MouseEventHandler } from "react";
 import ViewPort from "../../react-free-viewport/dist";
 import { TestProcessNode, KeyProcess } from "./process-node";
-import { ProcessNodeData } from "./lib-renderer";
 import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ReactProcessNode, ConnectLine, RenderConnectLine} from "./process-editor"
-import { Vector2, vec2, Connection, EndPoint } from "./lib";
-import processManager from "./process-manager";
+import { Vector2, vec2, Connection, EndPoint, ProcessNodeData } from "./lib";
+//import processManager from "./process-manager";
 interface PaneProps extends HTMLProps<HTMLDivElement>
 {
     header: string;
@@ -155,11 +154,11 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     componentDidMount()
     {
         this.viewport = this.refs["viewport"] as ViewPort;
-        processManager.addProcess("TestProcessNode", TestProcessNode);
+        /*processManager.addProcess("TestProcessNode", TestProcessNode);
         this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
         this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
         this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
-        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));*/
         /*this.addProcess(processManager.getProcessData(new TestProcessNode()));
         this.addProcess(processManager.getProcessData(new TestProcessNode()));
         this.addProcess(processManager.getProcessData(new TestProcessNode()));*/

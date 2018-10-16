@@ -16,6 +16,9 @@ export const ChannelStatus = "agogos-status";
 export const ChannelProjectReady = "agogos-ready";
 export const ChannelGetProcess = "get-process";
 export const ChannelIpcCall = "_ipc-call";
+export const IPCRenderer = {
+    GetProcess:"get-process-data"
+}
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>
 {

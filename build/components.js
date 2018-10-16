@@ -5,10 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importDefault(require("react"));
 const dist_1 = __importDefault(require("../../react-free-viewport/dist"));
-const process_node_1 = require("./process-node");
 const process_editor_1 = require("./process-editor");
 const lib_1 = require("./lib");
-const process_manager_1 = __importDefault(require("./process-manager"));
 class Pane extends react_1.default.Component {
     render() {
         return (react_1.default.createElement("section", { className: [this.props.className, "pane"].join(" "), id: this.props.id, key: this.props.key, style: this.props.style },
@@ -112,11 +110,11 @@ class ProcessSpace extends react_1.default.Component {
     }
     componentDidMount() {
         this.viewport = this.refs["viewport"];
-        process_manager_1.default.addProcess("TestProcessNode", process_node_1.TestProcessNode);
-        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
-        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
-        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
-        this.addProcess(process_manager_1.default.getProcessData(process_manager_1.default.instantiateProcess("TestProcessNode")));
+        /*processManager.addProcess("TestProcessNode", TestProcessNode);
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));
+        this.addProcess(processManager.getProcessData(processManager.instantiateProcess("TestProcessNode")));*/
         /*this.addProcess(processManager.getProcessData(new TestProcessNode()));
         this.addProcess(processManager.getProcessData(new TestProcessNode()));
         this.addProcess(processManager.getProcessData(new TestProcessNode()));*/

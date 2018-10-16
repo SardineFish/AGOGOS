@@ -4,9 +4,8 @@ import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import ReactDOM from "react-dom";
-import { Vector2, vec2, EndPoint } from "./lib";
+import { Vector2, vec2, EndPoint, ProcessNodeData } from "./lib";
 import { RenderedConnection } from "./components";
-import { ProcessNodeData } from "./lib-renderer";
 
 type EditorValueChangeCallback<T> = (value: T) => void;
 type RefCallback<T> = (ref: T) => void;

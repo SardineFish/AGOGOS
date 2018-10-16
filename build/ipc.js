@@ -10,6 +10,9 @@ exports.ChannelStatus = "agogos-status";
 exports.ChannelProjectReady = "agogos-ready";
 exports.ChannelGetProcess = "get-process";
 exports.ChannelIpcCall = "_ipc-call";
+exports.IPCRenderer = {
+    GetProcess: "get-process-data"
+};
 async function waitIpcRenderer(channel, timeout = 500) {
     return new Promise((resolve, reject) => {
         electron_1.ipcRenderer.once(channel, (event, args) => {

@@ -1,8 +1,10 @@
 import { ProcessNode, KeyProcess } from "./process-node";
-import { ProcessNodeData } from "./lib-renderer";
-import { getType, BuildinTypes } from "./meta-data";
+import { getType, BuildinTypes, getProcess } from "./meta-data";
+import Path from "path";
+import { ProcessNodeData } from "./lib";
+import agogos from "./user-lib/agogos"
 
-class ProcessManager
+export class ProcessManager
 {
     private types: Map<string, any> = new Map();
     private processLib: Map<string, typeof ProcessNode> = new Map();
@@ -31,6 +33,20 @@ class ProcessManager
         //console.log(JSON.stringify(data));
         return data;
     }
+    public importProcess(filename: string)
+    {
+        filename = Path.resolve(filename);
+        const importObj = require(filename);
+        let processName = getProcess(importObj.default);
+        if (importObj.default)
+        {
+            let obj = new importObj.default();
+            let type = getType(obj, "process");
+            console.log(type);
+        }
+        console.log(processName);
+        
+    }
     public addProcess(name:string, ProcessType: typeof ProcessNode)
     {
         this.processLib.set(name, ProcessType);
@@ -47,4 +63,3 @@ class ProcessManager
         this.types.set(name, Type);
     }
 }
-export default new ProcessManager();

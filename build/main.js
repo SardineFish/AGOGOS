@@ -7,7 +7,7 @@ const electron_1 = require("electron");
 const commander_1 = __importDefault(require("commander"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const agogos_1 = __importDefault(require("./agogos"));
+const agogos_1 = require("./agogos");
 require("electron-reload")(electron_1.app.getAppPath());
 const pkg = require('../package.json');
 commander_1.default
@@ -21,11 +21,12 @@ let workDir = path_1.default.normalize(commander_1.default.args[commander_1.defa
 console.log(workDir);
 if (!fs_1.default.existsSync(workDir))
     commander_1.default.help();
+const agogos = new agogos_1.AGOGOS();
 loadProject();
 function loadProject() {
     electron_1.app.on("ready", async () => {
         loadMenu();
-        await agogos_1.default.init(workDir);
+        await agogos.init(workDir);
     });
 }
 function loadMenu() {
@@ -45,7 +46,7 @@ function loadMenu() {
                 },
                 {
                     label: "Save Project",
-                    click: () => agogos_1.default.project.save(),
+                    click: () => agogos.project.save(),
                     accelerator: "CommandOrControl+Shift+S",
                 }
             ]
@@ -64,12 +65,12 @@ function loadMenu() {
                 {
                     label: "Reload",
                     accelerator: "F5",
-                    click: () => agogos_1.default.mainWindow.reload()
+                    click: () => agogos.mainWindow.reload()
                 },
                 {
                     label: "Development Tools",
                     accelerator: "F12",
-                    click: () => agogos_1.default.mainWindow.webContents.toggleDevTools()
+                    click: () => agogos.mainWindow.webContents.toggleDevTools()
                 }
             ]
         },
@@ -80,9 +81,9 @@ function loadMenu() {
                     label: "Build Project",
                     accelerator: "CommandOrControl+Shift+B",
                     click: async () => {
-                        let diagnostics = await agogos_1.default.project.tsCompiler.compile();
-                        agogos_1.default.console.log("Compile Completed.");
-                        diagnostics.forEach(diag => agogos_1.default.console.error(diag.messageText));
+                        let diagnostics = await agogos.project.tsCompiler.compile();
+                        agogos.console.log("Compile Completed.");
+                        diagnostics.forEach(diag => agogos.console.error(diag.messageText));
                     }
                 }
             ]

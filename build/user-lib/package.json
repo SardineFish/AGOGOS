@@ -1,0 +1,11 @@
+{
+  "name": "agogos",
+  "version": "1.0.0",
+  "description": "AGOGOS lib",
+  "main": "agogos.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SardineFish",
+  "license": "MIT"
+}

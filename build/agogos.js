@@ -30,6 +30,7 @@ class AGOGOS {
                 progress
             });
         };
+        AGOGOS.instance = this;
     }
     async init(workDir) {
         this.workDir = workDir;
@@ -45,6 +46,7 @@ class AGOGOS {
         return this;
     }
     async reload(event) {
+        this.ipc.add(ipc_1.IPCRenderer.GetProcess, async (filename) => await this.onGetProcessData(filename));
         this.project.fileWatchCallback = (operation, oldFile, newFile) => {
             this.mainWindow.webContents.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
@@ -55,14 +57,21 @@ class AGOGOS {
         };
         event.sender.send(ipc_1.ChannelStartup, { workDir: this.project.projectDirectory, /*project: agogosProject,*/ projectFile: this.project.projectFiles });
         if (!this.project.tsCompiler.ready) {
-            agogos.showStatus("Init Compiler", true);
+            this.showStatus("Init Compiler", true);
             this.project.tsCompiler.init()
                 .then(() => this.project.tsCompiler.watch())
-                .then(() => agogos.showStatus("Project Ready"));
+                .then(() => this.showStatus("Project Ready"));
+            this.project.tsCompiler.onCompileCompleteCallback = () => this.onCompileComplete();
         }
         return this;
     }
+    onCompileComplete() {
+        this.project.tsCompiler.srcFiles.forEach(file => {
+            this.project.processManager.importProcess(this.project.tsCompiler.outputMap.get(file));
+        });
+    }
+    async onGetProcessData(filename) {
+    }
 }
-const agogos = new AGOGOS();
-exports.default = agogos;
+exports.AGOGOS = AGOGOS;
 //# sourceMappingURL=agogos.js.map
