@@ -6,6 +6,8 @@ import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ReactProcessNode, ConnectLine, RenderConnectLine} from "./process-editor"
 import { Vector2, vec2, Connection, EndPoint, ProcessNodeData } from "./lib";
+import { IPCRenderer } from "./ipc";
+import { AGOGOSRenderer } from "./lib-renderer";
 //import processManager from "./process-manager";
 interface PaneProps extends HTMLProps<HTMLDivElement>
 {
@@ -165,12 +167,26 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         window.addEventListener("mousemove", (e) => this.onWindowMouseMove(e));
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }
+    async onFileDrop(e: React.DragEvent<HTMLElement>)
+    {
+        e.preventDefault();
+        this.addProcess(await AGOGOSRenderer.instance.ipc.call<ProcessNodeData>(IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")));
+    }
     render()
     {
         const { children, ref, key, ...other } = this.props;
         
         return (
-            <ViewPort id={this.props.id} ref="viewport" button={1} refobj={this.domRef} {...other}>
+            <ViewPort id={this.props.id}
+                ref="viewport"
+                button={1}
+                refobj={this.domRef}
+                onDrop={e => this.onFileDrop(e)}
+                onDragOver={e =>
+                {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                }} {...other}>
 
             </ViewPort>
         )

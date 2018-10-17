@@ -1,26 +1,94 @@
+import { EndPoint, StatusOutput, ConsoleMessage } from "./lib";
+import { AGOGOSProject, ProjectFile } from "./project";
+import { ipcRenderer, remote } from "electron";
+import { ChannelProjectSettings } from "./ipc";
+import { NodeData } from "../../react-tree-viewer/dist";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import SplitPane from "react-split-pane";
-import { TreeViewer, NodeData, NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
+import { TreeViewer, NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
 import ViewPort from "../../react-free-viewport"
-import { ipcRenderer, Event, app, Menu, MenuItem } from "electron";
+import { Event, app, MenuItem } from "electron";
 import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
 import fs from "fs";
 import path from "path";
-import { Pane, ProcessSpace, ProgressBar} from "./components";
+import { Pane, ProcessSpace, ProgressBar } from "./components";
 import linq from "linq";
-import { GetProjectSettings, PopupProjectMenu, ProjectFileData } from "./lib-renderer";
-import { switchCase, ConsoleMessage, StatusOutput } from "./lib";
-import { ProjectFile, AGOGOSProject, ProjFile } from "./project";
+import { ProjectFileData } from "./lib-renderer";
+import { switchCase } from "./lib";
+import { ProjFile } from "./project";
 
-const ipcCall: GeneralIPC = new GeneralIPC({
-    receive: (msg) => ipcRenderer.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
-    send: (args) => ipcRenderer.send(ChannelIpcCall, args)
-});
+const { Menu } = remote;
+const $ = (selector: string): HTMLElement => document.querySelector(selector);
+
+export function GetProjectSettings(): AGOGOSProject
+{
+    return ipcRenderer.sendSync(ChannelProjectSettings) as AGOGOSProject;
+}
+export function PopupProjectMenu(context: string)
+{
+    Menu.buildFromTemplate([
+        {
+            label: "New File",
+        },
+        {
+            label: "New Folder",
+        },
+        {
+            label: "Rename"
+        }
+    ]).popup({});
+}
+export function diffProjectFilesRenderer(files: ProjectFile, fileNode: NodeData): NodeData
+{
+    return null;
+    for (let i = 0; i < files.children.length; i++)
+    {
+        for (let j = 0; j < fileNode.children.length; j++)
+        {
+
+        }
+    }
+}
+export interface ProjectFileData extends NodeData, ProjectFile
+{
+    children?: ProjectFileData[];
+}
+
+export class AGOGOSRenderer
+{
+    public static instance: AGOGOSRenderer;
+
+    public ipc: GeneralIPC;
+    public app: App;
+
+    public get console() { return this.app.console };
+    constructor()
+    {
+        AGOGOSRenderer.instance = this;
+    }
+    init():AGOGOSRenderer
+    {
+        this.ipc = new GeneralIPC({
+            receive: (msg) => ipcRenderer.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
+            send: (args) => ipcRenderer.send(ChannelIpcCall, args)
+        });
+        return this;
+    }
+    render(): AGOGOSRenderer
+    {
+        const $ = (selector: string) => document.querySelector(selector);
+        const element = (
+            <App callback={(app) => this.app = app}></App>
+        );
+        ReactDOM.render(element, $("#root"));
+        return this;
+    }
+}
 
 interface AppArgs
 {
-    //project: AGOGOSProject;
+    callback: (app: App) => void;
 }
 interface AppState
 {
@@ -37,7 +105,10 @@ function toProjectFileData(root: ProjectFile): ProjectFileData
     return {
         extend: false,
         data: root.path,
-        icon: (<span className={switchCase(root.type, { "file": `node-icon file ${path.extname(root.path).replace(".", "")}`, "folder": "node-icon directory" })}></span>),
+        icon: (<span className={switchCase(root.type, {
+            "file": `node-icon file ${path.extname(root.path).replace(".", "")}`, "folder": "node-icon directory"
+        })
+        }> </span>),
         children: children ? children.map(child => toProjectFileData(child)) : null,
         ...other
     };
@@ -49,43 +120,44 @@ function getDirData(dirPath: string): NodeData[]
         let p = path.resolve(dirPath, name);
         let isDir = fs.statSync(p).isDirectory();
         return {
-            extend:false,
+            extend: false,
             name: name,
             children: isDir ? [] : undefined,
             data: p,
-            icon: (<span className={isDir ? "node-icon directory" : `node-icon file ${path.extname(p).replace(".", "")}`}></span>)
+            icon: (<span className={isDir ? "node-icon directory" : `node-icon file ${path.extname(p).replace(".", "")}`
+            } > </span>)
         } as NodeData
     })).orderBy(node => fs.statSync(node.data).isDirectory() ? 0 : 1).toArray();
 }
 
 class App extends React.Component<AppArgs, AppState>
 {
-    constructor(props:AppArgs)
+    constructor(props: AppArgs)
     {
         super(props);
         this.consoleHistory = [{ type: "warn", message: "Development environment." }];
         this.state = {
             workDir: null,
             dirData: null,
-            statusText: { message: "GUI Ready", loading:true, progress:0.4},
+            statusText: { message: "GUI Ready", loading: true, progress: 0.4 },
             consoleHistory: this.consoleHistory,
             projectFile: null,
-            showConsole:false,
+            showConsole: false,
         };
     }
-    consoleHistory:ConsoleMessage[] = [];
+    consoleHistory: ConsoleMessage[] = [];
     console = {
         log: (message: any, type: "log" | "warn" | "error" = "log") =>
         {
             console.log(message);
-            this.consoleHistory.push({ message:`[GUI] ${message.toString()}`, type });
+            this.consoleHistory.push({ message: `[GUI] ${message.toString()}`, type });
             this.setState({
                 consoleHistory: this.consoleHistory
             });
         }
     }
     get latestConsole() { return this.state.consoleHistory[this.state.consoleHistory.length - 1]; }
-    
+
     onFolderExtend(nodeData: NodeData)
     {
         return nodeData;
@@ -154,21 +226,15 @@ class App extends React.Component<AppArgs, AppState>
             this.onProjectReady(args.projectFile);
         });
         ipcRenderer.send("ping", "ping");
-        
-        
+
+
     }
     onFileDragStart(e: TreeNodeDragEvent)
     {
         e.dataTransfer.setData("text/plain", e.nodeData.data);
         e.dataTransfer.dropEffect = "move";
-        
+
         this.console.log(e.nodeData.data);
-    }
-    async onFileDrop(e: React.DragEvent<HTMLElement>)
-    {
-        e.preventDefault();
-        this.console.log(`Drop: ${e.dataTransfer.getData("text/plain")}`);
-        this.console.log(JSON.stringify(await ipcCall.call(IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain"))));
     }
     render()
     {
@@ -188,7 +254,7 @@ class App extends React.Component<AppArgs, AppState>
                                         onDragStart={(e) => this.onFileDragStart(e)}
                                         onContextMenu={e => this.onProjectContextMenu(e)}
                                         onExtend={(nodeData) => this.onFolderExtend(nodeData)}
-                                        />
+                                    />
                                 </Pane>
                                 <Pane id="res-lib" header="Library">
 
@@ -198,12 +264,6 @@ class App extends React.Component<AppArgs, AppState>
                         <div id="mid" className="pane">
                             <ProcessSpace
                                 id="process-space"
-                                onDrop={e => this.onFileDrop(e)}
-                                onDragOver={e =>
-                                {
-                                    e.preventDefault();
-                                    e.dataTransfer.dropEffect = "move";
-                                }}
                             ></ProcessSpace>
                         </div>
                     </SplitPane>
@@ -219,7 +279,7 @@ class App extends React.Component<AppArgs, AppState>
                                 </span>
                                 : null
                         }
-                        <Pane id="console-history" header="Console" style={{ visibility: this.state.showConsole ? "visible":"collapse" }}>
+                        <Pane id="console-history" header="Console" style={{ visibility: this.state.showConsole ? "visible" : "collapse" }}>
                             {
                                 this.state.consoleHistory.map((con, idx) => (<p className={`console-msg-item icon-before msg-${con.type}`} key={idx}>{con.message}</p>))
                             }
@@ -231,18 +291,10 @@ class App extends React.Component<AppArgs, AppState>
                                 <ProgressBar progress={this.state.statusText.progress}></ProgressBar>
                                 : null
                         }
-                        <span id="status-text" className={this.state.statusText.loading?"loading":""}>{this.state.statusText.message}</span>
+                        <span id="status-text" className={this.state.statusText.loading ? "loading" : ""}>{this.state.statusText.message}</span>
                     </span>
                 </footer>
             </div>
         );
     }
 }
-
-const $ = (selector: string) => document.querySelector(selector);
-const element = (
-    <App ></App>
-);
-ReactDOM.render(element, $("#root"));
-
-

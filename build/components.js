@@ -7,6 +7,8 @@ const react_1 = __importDefault(require("react"));
 const dist_1 = __importDefault(require("../../react-free-viewport/dist"));
 const process_editor_1 = require("./process-editor");
 const lib_1 = require("./lib");
+const ipc_1 = require("./ipc");
+const lib_renderer_1 = require("./lib-renderer");
 class Pane extends react_1.default.Component {
     render() {
         return (react_1.default.createElement("section", { className: [this.props.className, "pane"].join(" "), id: this.props.id, key: this.props.key, style: this.props.style },
@@ -121,9 +123,16 @@ class ProcessSpace extends react_1.default.Component {
         window.addEventListener("mousemove", (e) => this.onWindowMouseMove(e));
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }
+    async onFileDrop(e) {
+        e.preventDefault();
+        this.addProcess(await lib_renderer_1.AGOGOSRenderer.instance.ipc.call(ipc_1.IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")));
+    }
     render() {
         const { children, ref, key, ...other } = this.props;
-        return (react_1.default.createElement(dist_1.default, Object.assign({ id: this.props.id, ref: "viewport", button: 1, refobj: this.domRef }, other)));
+        return (react_1.default.createElement(dist_1.default, Object.assign({ id: this.props.id, ref: "viewport", button: 1, refobj: this.domRef, onDrop: e => this.onFileDrop(e), onDragOver: e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+            } }, other)));
     }
 }
 exports.ProcessSpace = ProcessSpace;

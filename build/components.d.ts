@@ -33,6 +33,7 @@ export declare class ProcessSpace extends React.Component<HTMLProps<HTMLDivEleme
     onWindowMouseMove(e: MouseEvent): void;
     onWindowMouseUp(e: MouseEvent): void;
     componentDidMount(): void;
+    onFileDrop(e: React.DragEvent<HTMLElement>): Promise<void>;
     render(): JSX.Element;
 }
 interface ProgressProps extends HTMLProps<HTMLSpanElement> {
