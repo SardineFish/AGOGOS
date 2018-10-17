@@ -276,6 +276,10 @@ svg *{
 }
 #agogos-console #console-text{
     cursor: pointer;
+    max-width: 500px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 #console-history {
     position: absolute;
