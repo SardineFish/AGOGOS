@@ -8,11 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const npm_1 = __importDefault(require("npm"));
 const package_json_1 = require("./package-json");
 const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
+const fs = __importStar(require("fs"));
 const meta_data_1 = require("./meta-data");
 const lib_1 = require("./lib");
 const util_1 = require("util");
@@ -43,7 +50,7 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     get agogosFolder() { return path_1.default.join(this.projectDirectory, AGOGOSFolder); }
     async open() {
         agogos_1.AGOGOS.instance.showStatus("Loading Project", true);
-        let data = await util_1.promisify(fs_1.default.readFile)(this.packageJSONPath);
+        let data = await util_1.promisify(fs.readFile)(this.packageJSONPath);
         let packageJson = JSON.parse(data.toString());
         for (const key in packageJson) {
             if (packageJson.hasOwnProperty(key)) {
@@ -65,24 +72,24 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
         });
     }
     async checkAGOGOSFolder() {
-        if (await util_1.promisify(fs_1.default.exists)(this.agogosFolder)) {
-            if (!(await util_1.promisify(fs_1.default.stat)(this.agogosFolder)).isDirectory())
+        if (await util_1.promisify(fs.exists)(this.agogosFolder)) {
+            if (!(await util_1.promisify(fs.stat)(this.agogosFolder)).isDirectory())
                 throw new Error("Invalid project.");
         }
         else {
-            await util_1.promisify(fs_1.default.mkdir)(this.agogosFolder);
+            await util_1.promisify(fs.mkdir)(this.agogosFolder);
         }
         return this;
     }
     async init(name) {
-        if (fs_1.default.existsSync(this.packageJSONPath))
+        if (fs.existsSync(this.packageJSONPath))
             throw new Error("Project existed.");
         this.name = name;
         await this.save();
         return await this.open();
     }
     async save() {
-        await util_1.promisify(fs_1.default.writeFile)(this.packageJSONPath, lib_1.JSONStringrify(this));
+        await util_1.promisify(fs.writeFile)(this.packageJSONPath, lib_1.JSONStringrify(this));
         return this;
     }
     async scanFiles() {
@@ -192,12 +199,12 @@ async function ScanFilesRecursive(rootPath, ignore) {
     return files;
 }
 async function ScanFiles(directory, ignore) {
-    let files = await util_1.promisify(fs_1.default.readdir)(directory);
+    let files = await util_1.promisify(fs.readdir)(directory);
     return ProjFile.orderFiles(linq_1.default.from(files)
         .where(f => !ignore.test(f))
         .select(f => {
         let p = path_1.default.join(directory, f);
-        let isDir = fs_1.default.statSync(p).isDirectory();
+        let isDir = fs.statSync(p).isDirectory();
         return {
             name: f,
             type: isDir ? "folder" : "file",
@@ -212,7 +219,7 @@ function watchFile(file, ignore, callback) {
         return;
     if (file.watcher)
         file.watcher.close();
-    file.watcher = fs_1.default.watch(file.path, { recursive: true }, async (event, filename) => {
+    file.watcher = fs.watch(file.path, { recursive: true }, async (event, filename) => {
         if (event === "change")
             return;
         let fullname = path_1.default.resolve(path_1.default.join(file.path, filename));
@@ -240,7 +247,7 @@ function watchFilesRecursive(file, ignore, callback) {
         return;
     if (file.watcher)
         file.watcher.close();
-    file.watcher = fs_1.default.watch(file.path, { recursive: false }, async (event, filename) => {
+    file.watcher = fs.watch(file.path, { recursive: false }, async (event, filename) => {
         if (event === "change")
             return;
         let newName = path_1.default.basename(filename);

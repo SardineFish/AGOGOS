@@ -188,11 +188,15 @@ export interface StatusOutput
     progress?: number;
 }
 
+export interface MapObject<TValue>
+{
+    [key: string]: TValue;
+}
 
-export class ProcessNodeData
+export interface ProcessNodeData
 {
     name: string;
-    properties: Map<string, PropertyData> = new Map();
+    properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
 export class PropertyData

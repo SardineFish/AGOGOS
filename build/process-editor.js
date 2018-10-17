@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importDefault(require("react"));
 const linq_1 = __importDefault(require("linq"));
+const utility_1 = require("./utility");
 const meta_data_1 = require("./meta-data");
 const react_dom_1 = __importDefault(require("react-dom"));
 const lib_1 = require("./lib");
@@ -108,7 +109,7 @@ class ReactProcessNode extends react_1.default.Component {
             this.props.node.name = e;
         }
         else
-            this.props.node.properties.get(key).value = e;
+            this.props.node.properties[key].value = e;
     }
     onMouseDown(e) {
         if (e.button === 0) {
@@ -143,15 +144,15 @@ class ReactProcessNode extends react_1.default.Component {
         const outputType = this.props.node.processOutput.type;
         return (react_1.default.createElement("div", { className: "node-wrapper", ref: this.nodeRef },
             react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.node.name),
-            react_1.default.createElement("div", { className: "node-content" }, Array.from(this.props.node.properties.keys())
+            react_1.default.createElement("div", { className: "node-content" }, Array.from(utility_1.getKeys(this.props.node.properties))
                 .map((key, idx) => {
-                switch (this.props.node.properties.get(key).type) {
+                switch (this.props.node.properties[key].type) {
                     case meta_data_1.BuildinTypes.string:
-                        return (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorString, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties[key].value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.number:
-                        return (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorNumber, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties[key].value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                     case meta_data_1.BuildinTypes.boolean:
-                        return (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties.get(key).value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                        return (react_1.default.createElement(EditorBoolean, { node: this.props.node, propertyName: key, label: key, allowOutput: true, ref: key, editvalue: this.props.node.properties[key].value, key: idx, allowInput: true, onChange: (e) => this.onValueChange(key, e), connecting: this.state.connecting, portFilter: this.state.portFilter, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
                 }
             })),
             react_1.default.createElement("div", { className: "node-output" }, linq_1.default.from([

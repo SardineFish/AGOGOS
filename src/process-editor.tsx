@@ -227,7 +227,7 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
             this.props.node.name = e;
         }
         else
-            this.props.node.properties.get(key).value = e;
+            this.props.node.properties[key].value = e;
     }
     onMouseDown(e: MouseEvent<HTMLElement>)
     {
@@ -276,10 +276,10 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                 <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.name}</header>
                 <div className="node-content">
                     {
-                        Array.from(this.props.node.properties.keys())
+                        Array.from(getKeys(this.props.node.properties))
                             .map((key, idx) =>
                             {
-                                switch (this.props.node.properties.get(key).type)
+                                switch (this.props.node.properties[key].type)
                                 {
                                     case BuildinTypes.string:
                                         return (<EditorString
@@ -288,7 +288,7 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             label={key}
                                             allowOutput
                                             ref={key}
-                                            editvalue={this.props.node.properties.get(key).value}
+                                            editvalue={this.props.node.properties[key].value}
                                             key={idx} allowInput
                                             onChange={(e) => this.onValueChange(key, e)}
                                             connecting={this.state.connecting}
@@ -302,7 +302,7 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             label={key}
                                             allowOutput
                                             ref={key}
-                                            editvalue={this.props.node.properties.get(key).value}
+                                            editvalue={this.props.node.properties[key].value}
                                             key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
                                             connecting={this.state.connecting}
                                             portFilter={this.state.portFilter}
@@ -315,7 +315,7 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
                                             label={key}
                                             allowOutput
                                             ref={key}
-                                            editvalue={this.props.node.properties.get(key).value}
+                                            editvalue={this.props.node.properties[key].value}
                                             key={idx} allowInput onChange={(e) => this.onValueChange(key, e)}
                                             connecting={this.state.connecting}
                                             portFilter={this.state.portFilter}

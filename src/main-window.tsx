@@ -4,7 +4,7 @@ import SplitPane from "react-split-pane";
 import { TreeViewer, NodeData, NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
 import ViewPort from "../../react-free-viewport"
 import { ipcRenderer, Event, app, Menu, MenuItem } from "electron";
-import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall } from "./ipc";
+import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
 import fs from "fs";
 import path from "path";
 import { Pane, ProcessSpace, ProgressBar} from "./components";
@@ -159,16 +159,16 @@ class App extends React.Component<AppArgs, AppState>
     }
     onFileDragStart(e: TreeNodeDragEvent)
     {
-        e.dataTransfer.setData("text/uri-list", e.nodeData.data);
+        e.dataTransfer.setData("text/plain", e.nodeData.data);
         e.dataTransfer.dropEffect = "move";
         
         this.console.log(e.nodeData.data);
     }
-    onFileDrop(e: React.DragEvent<HTMLElement>)
+    async onFileDrop(e: React.DragEvent<HTMLElement>)
     {
         e.preventDefault();
-        this.console.log(`Drop: ${e.dataTransfer.getData("text/uri-list")}`);
-        
+        this.console.log(`Drop: ${e.dataTransfer.getData("text/plain")}`);
+        this.console.log(JSON.stringify(await ipcCall.call(IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain"))));
     }
     render()
     {

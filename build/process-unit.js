@@ -7,7 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const meta_data_1 = require("./meta-data");
-const lib_1 = require("./lib");
 exports.KeyProcess = "process";
 class ProcessUnit {
     constructor() {
@@ -27,14 +26,17 @@ class ProcessUtility {
     static getProcessData(process) {
         if (!process)
             return null;
-        let data = new lib_1.ProcessNodeData();
+        let data = {
+            name: process.name,
+            processOutput: { type: meta_data_1.getType(process, exports.KeyProcess), value: null },
+            properties: {}
+        };
         data.name = process.name;
         for (const key in process) {
             if (process.hasOwnProperty(key)) {
-                data.properties.set(key, { type: meta_data_1.getType(process, key), value: process[key] });
+                data.properties[key] = { type: meta_data_1.getType(process, key), value: process[key] };
             }
         }
-        data.processOutput = { type: meta_data_1.getType(process, exports.KeyProcess), value: null };
         //console.log(JSON.stringify(data));
         return data;
     }

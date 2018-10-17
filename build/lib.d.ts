@@ -38,9 +38,12 @@ export interface StatusOutput {
     message: string;
     progress?: number;
 }
-export declare class ProcessNodeData {
+export interface MapObject<TValue> {
+    [key: string]: TValue;
+}
+export interface ProcessNodeData {
     name: string;
-    properties: Map<string, PropertyData>;
+    properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
 export declare class PropertyData {

@@ -20,6 +20,7 @@ class ModuleManager {
         try {
             const importObj = require(filePath);
             if (importObj.default) {
+                let obj = new importObj.default();
                 let processName = meta_data_1.getProcess(importObj.default);
                 let typeName = meta_data_1.getTypedef(importObj.default);
                 if (processName) {
@@ -82,6 +83,9 @@ class ProcessManager {
         let constructor = this.processLib.get(name);
         if (!constructor)
             return;
+        let process = new constructor();
+        if (process.name === "Process")
+            process.name = name;
         return process_unit_1.ProcessUtility.getProcessData(new constructor());
     }
     resetLib() {

@@ -133,13 +133,14 @@ class App extends React.Component {
         electron_1.ipcRenderer.send("ping", "ping");
     }
     onFileDragStart(e) {
-        e.dataTransfer.setData("text/uri-list", e.nodeData.data);
+        e.dataTransfer.setData("text/plain", e.nodeData.data);
         e.dataTransfer.dropEffect = "move";
         this.console.log(e.nodeData.data);
     }
-    onFileDrop(e) {
+    async onFileDrop(e) {
         e.preventDefault();
-        this.console.log(`Drop: ${e.dataTransfer.getData("text/uri-list")}`);
+        this.console.log(`Drop: ${e.dataTransfer.getData("text/plain")}`);
+        this.console.log(JSON.stringify(await ipcCall.call(ipc_1.IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain"))));
     }
     render() {
         let data = this.state.dirData;

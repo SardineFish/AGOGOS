@@ -22,6 +22,7 @@ export class ModuleManager
             const importObj = require(filePath);
             if (importObj.default)
             {
+                let obj = new importObj.default();
                 let processName = getProcess(importObj.default);
                 let typeName = getTypedef(importObj.default);
                 if (processName)
@@ -93,6 +94,9 @@ class ProcessManager
         let constructor = this.processLib.get(name);
         if (!constructor)
             return;
+        let process = new constructor() as ProcessUnit;
+        if (process.name === "Process")
+            process.name = name;
         return ProcessUtility.getProcessData(new constructor());
     }
     public resetLib()

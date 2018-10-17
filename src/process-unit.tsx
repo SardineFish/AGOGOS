@@ -23,16 +23,19 @@ export class ProcessUtility
     {
         if (!process)
             return null;
-        let data: ProcessNodeData = new ProcessNodeData();
+        let data: ProcessNodeData = {
+            name: process.name,
+            processOutput: { type: getType(process, KeyProcess), value: null },
+            properties: {}
+        };
         data.name = process.name;
         for (const key in process)
         {
             if (process.hasOwnProperty(key))
             {
-                data.properties.set(key, { type: getType(process, key), value: process[key] });
+                data.properties[key] = { type: getType(process, key), value: process[key] };
             }
         }
-        data.processOutput = { type: getType(process, KeyProcess), value: null };
         //console.log(JSON.stringify(data));
         return data;
     }

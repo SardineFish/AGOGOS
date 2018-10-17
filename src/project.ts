@@ -1,7 +1,7 @@
 import npm from "npm";
 import { IPackageJSON } from "./package-json";
 import Path from "path";
-import fs, { exists, statSync, stat } from "fs";
+import * as fs from "fs";
 import { jsonIgnore } from "./meta-data";
 import { JSONStringrify, diffFiles, foreachAsync } from "./lib";
 import { promisify } from "util";

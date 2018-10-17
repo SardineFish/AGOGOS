@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { IPackageJSON } from "./package-json";
-import fs from "fs";
+import * as fs from "fs";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { ModuleManager } from "./module-manager";

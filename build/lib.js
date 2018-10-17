@@ -134,12 +134,6 @@ async function mapAsync(list, func) {
     return result;
 }
 exports.mapAsync = mapAsync;
-class ProcessNodeData {
-    constructor() {
-        this.properties = new Map();
-    }
-}
-exports.ProcessNodeData = ProcessNodeData;
 class PropertyData {
 }
 exports.PropertyData = PropertyData;
