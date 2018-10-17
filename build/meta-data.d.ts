@@ -16,6 +16,8 @@ export declare enum BuildinTypes {
     object = "object"
 }
 declare const jsonIgnore: DecoratorFunc<boolean>, getJsonIgnore: MetadataFunc;
-declare function process(constructor: Function): void;
-declare function getProcess(constructor: Function): any;
-export { jsonIgnore, getJsonIgnore, process, getProcess };
+export { jsonIgnore, getJsonIgnore };
+export declare function process(constructor: Function): void;
+export declare function getProcess(constructor: Function): string;
+export declare function typedef(constructor: Function): any;
+export declare function getTypedef(constructor: Function): string;

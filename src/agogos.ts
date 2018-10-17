@@ -55,9 +55,13 @@ export class AGOGOS
     }
     onCompileComplete()
     {
+        this.project.moduleManager.reset();
+        this.project.sourceFiles = [];
         this.project.tsCompiler.srcFiles.forEach(file =>
         {
-            this.project.processManager.importProcess(this.project.tsCompiler.outputMap.get(file));
+            let src = this.project.moduleManager.importSourceFile(this.project.tsCompiler.outputMap.get(file));
+            if (src)
+                this.project.sourceFiles.push(src);
         });
     }
     async onGetProcessData(filename: string)

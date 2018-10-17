@@ -3,14 +3,15 @@ import { IPackageJSON } from "./package-json";
 import fs from "fs";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
-import { ProcessManager } from "./process-manager";
+import { ModuleManager } from "./module-manager";
 declare type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
 export declare class AGOGOSProject extends IPackageJSON {
     projectDirectory: string;
     projectFiles: ProjectFile;
     fileWatchCallback: FileWatchCallback;
     tsCompiler: TSCompiler;
-    processManager: ProcessManager;
+    moduleManager: ModuleManager;
+    sourceFiles: SourceFile[];
     readonly packageJSONPath: string;
     readonly agogosFolder: string;
     constructor(path: string);
@@ -43,6 +44,10 @@ export interface ProjectFile {
     path: string;
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
+}
+export interface SourceFile extends ProjectFile {
+    moduleType: "typedef" | "process";
+    moduleName: string;
 }
 export declare class ProjFile {
     static getDirectory(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;

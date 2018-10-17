@@ -10,7 +10,7 @@ import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { fork } from "child_process";
 import { CompilerIpc, CompileResult } from "./compiler";
-import { ProcessManager } from "./process-manager";
+import { ModuleManager } from "./module-manager";
 import { AGOGOS } from "./agogos";
 
 type FileWatchCallback = (operation: "add" | "delete" | "rename", oldFile?: ProjectFile, newFile?: ProjectFile) => void;
@@ -33,7 +33,10 @@ export class AGOGOSProject extends IPackageJSON
     public tsCompiler: TSCompiler;
 
     @jsonIgnore()
-    public processManager: ProcessManager = new ProcessManager();
+    public moduleManager: ModuleManager = new ModuleManager();
+
+    @jsonIgnore()
+    public sourceFiles: SourceFile[] = [];
 
     get packageJSONPath() { return Path.join(this.projectDirectory, PackageJSONFile); }
     get agogosFolder() { return Path.join(this.projectDirectory, AGOGOSFolder); }
@@ -178,6 +181,11 @@ export interface ProjectFile
     path: string;
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
+}
+export interface SourceFile extends ProjectFile
+{
+    moduleType: "typedef" | "process";
+    moduleName: string;
 }
 export class ProjFile
 {

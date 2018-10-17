@@ -40,19 +40,34 @@ export enum BuildinTypes
     object = "object"
 }
 const [jsonIgnore, getJsonIgnore] = DectatorFactory<boolean>("jsonIgnore", true);
+export { jsonIgnore, getJsonIgnore };
+    
 //const [process, getProcess] = DectatorFactory<string>("process", "");
 
-function process(constructor: Function)
+export function process(constructor: Function)
 {
     if (constructor)
         (constructor as any).__agogosProcess = constructor.name;
 }
-
-function getProcess(constructor: Function)
+export function getProcess(constructor: Function): string
 {
     if (constructor)
         return (constructor as any).__agogosProcess;
+    else
+        return null;
 }
 
-
-export { jsonIgnore, getJsonIgnore, process, getProcess };
+export function typedef(constructor: Function)
+{
+    if (constructor)
+        (constructor as any).__agogosType = constructor.name;
+    else
+        return null;
+}
+export function getTypedef(constructor: Function): string
+{
+    if (constructor)
+        return (constructor as any).__agogosType;
+    else
+        return null;
+}

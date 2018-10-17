@@ -45,6 +45,22 @@ exports.process = process;
 function getProcess(constructor) {
     if (constructor)
         return constructor.__agogosProcess;
+    else
+        return null;
 }
 exports.getProcess = getProcess;
+function typedef(constructor) {
+    if (constructor)
+        constructor.__agogosType = constructor.name;
+    else
+        return null;
+}
+exports.typedef = typedef;
+function getTypedef(constructor) {
+    if (constructor)
+        return constructor.__agogosType;
+    else
+        return null;
+}
+exports.getTypedef = getTypedef;
 //# sourceMappingURL=meta-data.js.map

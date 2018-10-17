@@ -20,7 +20,7 @@ const linq_1 = __importDefault(require("linq"));
 const ipc_1 = require("./ipc");
 const child_process_1 = require("child_process");
 const compiler_1 = require("./compiler");
-const process_manager_1 = require("./process-manager");
+const module_manager_1 = require("./module-manager");
 const agogos_1 = require("./agogos");
 const PackageJSONFile = "package.json";
 const AGOGOSFolder = ".agogos";
@@ -29,7 +29,8 @@ class AGOGOSProject extends package_json_1.IPackageJSON {
     constructor(path) {
         super();
         this.projectDirectory = "/";
-        this.processManager = new process_manager_1.ProcessManager();
+        this.moduleManager = new module_manager_1.ModuleManager();
+        this.sourceFiles = [];
         this.projectDirectory = path;
         this.projectFiles = {
             name: path_1.default.basename(this.projectDirectory),
@@ -108,7 +109,10 @@ __decorate([
 ], AGOGOSProject.prototype, "tsCompiler", void 0);
 __decorate([
     meta_data_1.jsonIgnore()
-], AGOGOSProject.prototype, "processManager", void 0);
+], AGOGOSProject.prototype, "moduleManager", void 0);
+__decorate([
+    meta_data_1.jsonIgnore()
+], AGOGOSProject.prototype, "sourceFiles", void 0);
 exports.AGOGOSProject = AGOGOSProject;
 class TSCompiler {
     constructor(src, out) {

@@ -11,6 +11,7 @@ class ProcessManager {
     constructor() {
         this.types = new Map();
         this.processLib = new Map();
+        this.processFile = new Map();
     }
     inherit(derived, base) {
         switch (derived) {
@@ -34,18 +35,24 @@ class ProcessManager {
         //console.log(JSON.stringify(data));
         return data;
     }
+    resetLib() {
+        this.processLib.clear();
+    }
     importProcess(filename) {
         filename = path_1.default.resolve(filename);
         const importObj = require(filename);
-        let processName = meta_data_1.getProcess(importObj.default);
         if (importObj.default) {
-            let obj = new importObj.default();
-            let type = meta_data_1.getType(obj, "process");
-            console.log(type);
+            let processName = meta_data_1.getProcess(importObj.default);
+            if (!processName)
+                return null;
+            this.addProcess(processName, importObj.default);
+            return processName;
         }
-        console.log(processName);
+        return null;
     }
     addProcess(name, ProcessType) {
+        if (this.processLib.has(name))
+            throw new Error("Process existed.");
         this.processLib.set(name, ProcessType);
     }
     instantiateProcess(name) {
