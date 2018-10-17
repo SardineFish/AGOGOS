@@ -3,10 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const process_node_1 = require("./process-node");
+const process_unit_1 = require("./process-unit");
 const meta_data_1 = require("./meta-data");
 const path_1 = __importDefault(require("path"));
-const lib_1 = require("./lib");
 const agogos_1 = __importDefault(require("./user-lib/agogos"));
 class ModuleManager {
     constructor() {
@@ -79,17 +78,11 @@ class ProcessManager {
     constructor() {
         this.processLib = new Map();
     }
-    getProcessData(process) {
-        let data = new lib_1.ProcessNodeData();
-        data.name = process.name;
-        for (const key in process) {
-            if (process.hasOwnProperty(key)) {
-                data.properties.set(key, { type: meta_data_1.getType(process, key), value: process[key] });
-            }
-        }
-        data.processOutput = { type: meta_data_1.getType(process, process_node_1.KeyProcess), value: null };
-        //console.log(JSON.stringify(data));
-        return data;
+    getProcessData(name) {
+        let constructor = this.processLib.get(name);
+        if (!constructor)
+            return;
+        return process_unit_1.ProcessUtility.getProcessData(new constructor());
     }
     resetLib() {
         this.processLib.clear();

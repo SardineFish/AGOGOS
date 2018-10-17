@@ -13,6 +13,7 @@ export declare enum BuildinTypes {
     string = "string",
     number = "number",
     boolean = "boolean",
+    void = "void",
     object = "object"
 }
 declare const jsonIgnore: DecoratorFunc<boolean>, getJsonIgnore: MetadataFunc;

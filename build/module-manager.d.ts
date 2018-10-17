@@ -1,4 +1,4 @@
-import { ProcessNode } from "./process-node";
+import { ProcessUnit } from "./process-unit";
 import { ProcessNodeData } from "./lib";
 import { SourceFile } from "./project";
 export declare class ModuleManager {
@@ -15,9 +15,9 @@ declare class TypeManager {
 }
 declare class ProcessManager {
     private processLib;
-    getProcessData(process: ProcessNode): ProcessNodeData;
+    getProcessData(name: string): ProcessNodeData;
     resetLib(): void;
-    addProcess(name: string, ProcessType: typeof ProcessNode): void;
-    instantiateProcess(name: string): import("./user-lib/agogos").Unit;
+    addProcess(name: string, ProcessType: typeof ProcessUnit): void;
+    instantiateProcess(name: string): ProcessUnit;
 }
 export {};

@@ -11,7 +11,7 @@ export declare class AGOGOS {
     init(workDir: string): Promise<AGOGOS>;
     reload(event: Event): Promise<AGOGOS>;
     onCompileComplete(): void;
-    onGetProcessData(filename: string): Promise<void>;
+    onGetProcessData(filename: string): import("./lib").ProcessNodeData;
     console: {
         log: (message: any) => void;
         warn: (message: any) => void;

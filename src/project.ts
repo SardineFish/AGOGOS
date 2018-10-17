@@ -186,6 +186,7 @@ export interface SourceFile extends ProjectFile
 {
     moduleType: "typedef" | "process";
     moduleName: string;
+    compiledFile?: string;
 }
 export class ProjFile
 {

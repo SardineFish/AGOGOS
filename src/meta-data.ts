@@ -37,6 +37,7 @@ export enum BuildinTypes
     string = "string",
     number = "number",
     boolean = "boolean",
+    void = "void",
     object = "object"
 }
 const [jsonIgnore, getJsonIgnore] = DectatorFactory<boolean>("jsonIgnore", true);

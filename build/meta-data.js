@@ -31,6 +31,7 @@ var BuildinTypes;
     BuildinTypes["string"] = "string";
     BuildinTypes["number"] = "number";
     BuildinTypes["boolean"] = "boolean";
+    BuildinTypes["void"] = "void";
     BuildinTypes["object"] = "object";
 })(BuildinTypes = exports.BuildinTypes || (exports.BuildinTypes = {}));
 const [jsonIgnore, getJsonIgnore] = DectatorFactory("jsonIgnore", true);

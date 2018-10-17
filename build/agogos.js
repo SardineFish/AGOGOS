@@ -7,6 +7,7 @@ const project_1 = require("./project");
 const electron_1 = require("electron");
 const ipc_1 = require("./ipc");
 const path_1 = __importDefault(require("path"));
+const linq_1 = __importDefault(require("linq"));
 class AGOGOS {
     constructor() {
         this.console = {
@@ -46,7 +47,7 @@ class AGOGOS {
         return this;
     }
     async reload(event) {
-        this.ipc.add(ipc_1.IPCRenderer.GetProcess, async (filename) => await this.onGetProcessData(filename));
+        this.ipc.add(ipc_1.IPCRenderer.GetProcess, (filename) => this.onGetProcessData(filename));
         this.project.fileWatchCallback = (operation, oldFile, newFile) => {
             this.mainWindow.webContents.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
@@ -70,11 +71,21 @@ class AGOGOS {
         this.project.sourceFiles = [];
         this.project.tsCompiler.srcFiles.forEach(file => {
             let src = this.project.moduleManager.importSourceFile(this.project.tsCompiler.outputMap.get(file));
-            if (src)
+            if (src) {
+                src.compiledFile = src.path;
+                src.name = file;
+                src.path = path_1.default.resolve(this.workDir, file);
                 this.project.sourceFiles.push(src);
+            }
         });
     }
-    async onGetProcessData(filename) {
+    onGetProcessData(filename) {
+        let src = linq_1.default.from(this.project.sourceFiles).where(src => src.path === filename).firstOrDefault();
+        if (!src)
+            return null;
+        if (src.moduleType !== "process")
+            return null;
+        return this.project.moduleManager.processManager.getProcessData(src.moduleName);
     }
 }
 exports.AGOGOS = AGOGOS;

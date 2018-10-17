@@ -3,6 +3,7 @@ import { BrowserWindow, ipcMain, Event } from "electron";
 import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
 import Path from "path";
 import { ConsoleMessage, StatusOutput } from "./lib";
+import linq from "linq";
 
 export class AGOGOS
 {
@@ -32,7 +33,7 @@ export class AGOGOS
     }
     async reload(event:Event):Promise<AGOGOS>
     {
-        this.ipc.add(IPCRenderer.GetProcess, async (filename: string) => await this.onGetProcessData(filename));
+        this.ipc.add(IPCRenderer.GetProcess, (filename: string) => this.onGetProcessData(filename));
         this.project.fileWatchCallback = (operation, oldFile, newFile) =>
         {
             this.mainWindow.webContents.send(ChannelFileChanged, <FileChangeArgs>{
@@ -61,12 +62,22 @@ export class AGOGOS
         {
             let src = this.project.moduleManager.importSourceFile(this.project.tsCompiler.outputMap.get(file));
             if (src)
+            {
+                src.compiledFile = src.path;
+                src.name = file;
+                src.path = Path.resolve(this.workDir, file);
                 this.project.sourceFiles.push(src);
+            }
         });
     }
-    async onGetProcessData(filename: string)
+    onGetProcessData(filename: string)
     {
-        
+        let src = linq.from(this.project.sourceFiles).where(src => src.path === filename).firstOrDefault();
+        if (!src)
+            return null;
+        if (src.moduleType !== "process")
+            return null;
+        return this.project.moduleManager.processManager.getProcessData(src.moduleName);
     }
     
     console = {

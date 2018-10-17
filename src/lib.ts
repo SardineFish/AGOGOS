@@ -209,3 +209,4 @@ export class ObjectData
     name: string;
     properties: Map<string, PropertyData> = new Map();
 }
+

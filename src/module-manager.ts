@@ -1,4 +1,4 @@
-import { ProcessNode, KeyProcess } from "./process-node";
+import { ProcessUnit, ProcessUtility } from "./process-unit";
 import { getType, BuildinTypes, getProcess, getTypedef } from "./meta-data";
 import Path from "path";
 import { ProcessNodeData } from "./lib";
@@ -86,25 +86,20 @@ class TypeManager
 
 class ProcessManager
 {
-    private processLib: Map<string, typeof agogos.Unit> = new Map();
-    public getProcessData(process: ProcessNode): ProcessNodeData
+    private processLib: Map<string, typeof ProcessUnit> = new Map();
+
+    public getProcessData(name: string): ProcessNodeData
     {
-        let data: ProcessNodeData = new ProcessNodeData();
-        data.name = process.name;
-        for (const key in process) {
-            if (process.hasOwnProperty(key)) {
-                data.properties.set(key, { type: getType(process, key), value: process[key] });
-            }
-        }
-        data.processOutput = { type: getType(process, KeyProcess), value: null };
-        //console.log(JSON.stringify(data));
-        return data;
+        let constructor = this.processLib.get(name);
+        if (!constructor)
+            return;
+        return ProcessUtility.getProcessData(new constructor());
     }
     public resetLib()
     {
         this.processLib.clear();
     }
-    public addProcess(name:string, ProcessType: typeof ProcessNode)
+    public addProcess(name:string, ProcessType: typeof ProcessUnit)
     {
         if (this.processLib.has(name))
             throw new Error("Process existed.");

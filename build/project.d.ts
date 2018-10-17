@@ -48,6 +48,7 @@ export interface ProjectFile {
 export interface SourceFile extends ProjectFile {
     moduleType: "typedef" | "process";
     moduleName: string;
+    compiledFile?: string;
 }
 export declare class ProjFile {
     static getDirectory(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;

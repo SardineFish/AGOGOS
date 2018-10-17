@@ -1,19 +1,12 @@
-import { type, BuildinTypes, process } from "../meta-data";
+import { type, BuildinTypes, process, typedef } from "../meta-data";
 import { AGOGOS } from "../agogos";
-export class Unit
-{
-    @type(BuildinTypes.string)
-    public name: string;
+import { ProcessUnit } from "../process-unit";
 
-    public process()
-    {
-        
-    }
-}
 const agogos = {
     type,
-    Unit,
-    process, 
+    Unit: ProcessUnit,
+    process,
+    typedef,
     console: {
         log: (message: any) => AGOGOS.instance.console.log(message),
         warn: (message: any) => AGOGOS.instance.console.warn(message),
