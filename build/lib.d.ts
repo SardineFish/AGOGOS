@@ -1,4 +1,6 @@
 import { ProjectFile } from "./project";
+export declare const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+export declare function getUUID(): string;
 export declare class Vector2 {
     x: number;
     y: number;
@@ -8,9 +10,9 @@ export declare class Vector2 {
 }
 export declare const vec2: (x: number, y: number) => Vector2;
 export interface EndPoint {
-    process: ProcessNodeData;
+    process: string;
     property: string;
-    port: string;
+    port: "input" | "output";
 }
 export interface Connection {
     source: EndPoint;
@@ -43,6 +45,7 @@ export interface MapObject<TValue> {
 }
 export interface ProcessNodeData {
     name: string;
+    processType: string;
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }

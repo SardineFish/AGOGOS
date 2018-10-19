@@ -23,7 +23,10 @@ function type(typeName) {
 }
 exports.type = type;
 function getType(target, propertyKey) {
-    return Reflect.getMetadata(typeMetadataKey, target, propertyKey);
+    let type = Reflect.getMetadata(typeMetadataKey, target, propertyKey);
+    if (!type)
+        return BuildinTypes.object;
+    return type;
 }
 exports.getType = getType;
 var BuildinTypes;

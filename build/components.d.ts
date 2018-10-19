@@ -1,7 +1,7 @@
 import React, { HTMLProps, RefObject } from "react";
 import ViewPort from "../../react-free-viewport/dist";
 import { ReactProcessNode, ConnectLine } from "./process-editor";
-import { Connection, EndPoint, ProcessNodeData } from "./lib";
+import { Vector2, Connection, EndPoint, ProcessNodeData } from "./lib";
 interface PaneProps extends HTMLProps<HTMLDivElement> {
     header: string;
 }
@@ -26,7 +26,7 @@ export declare class ProcessSpace extends React.Component<HTMLProps<HTMLDivEleme
     connecting: boolean;
     pendingConnection: RenderedConnection;
     constructor(props: HTMLProps<HTMLDivElement>);
-    addProcess(process: ProcessNodeData): void;
+    addProcess(process: ProcessNodeData, pos: Vector2): void;
     startConnection(endpoint: EndPoint): void;
     endConnection(endpoint: EndPoint): void;
     updateConnectionLine(line: RenderedConnection): void;

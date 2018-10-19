@@ -234,7 +234,7 @@ class App extends React.Component<AppArgs, AppState>
         e.dataTransfer.setData("text/plain", e.nodeData.data);
         e.dataTransfer.dropEffect = "move";
 
-        this.console.log(e.nodeData.data);
+        //this.console.log(e.nodeData.data);
     }
     render()
     {

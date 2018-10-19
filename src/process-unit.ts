@@ -10,12 +10,16 @@ export class ProcessUnit
     @type(BuildinTypes.string)
     name: string = "Process";
 
+    __processType: string;
+
     @type(BuildinTypes.void)
     process()
     {
         
     }
 }
+
+const privateKeys = ["name", "__processType"];
 
 export class ProcessUtility
 {
@@ -25,12 +29,15 @@ export class ProcessUtility
             return null;
         let data: ProcessNodeData = {
             name: process.name,
+            processType: process.__processType, 
             processOutput: { type: getType(process, KeyProcess), value: null },
             properties: {}
         };
         data.name = process.name;
         for (const key in process)
         {
+            if (privateKeys.includes(key))
+                continue;
             if (process.hasOwnProperty(key))
             {
                 data.properties[key] = { type: getType(process, key), value: process[key] };

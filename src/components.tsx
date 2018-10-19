@@ -5,9 +5,10 @@ import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ReactProcessNode, ConnectLine, RenderConnectLine} from "./process-editor"
-import { Vector2, vec2, Connection, EndPoint, ProcessNodeData } from "./lib";
+import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID } from "./lib";
 import { IPCRenderer } from "./ipc";
 import { AGOGOSRenderer } from "./lib-renderer";
+
 //import processManager from "./process-manager";
 interface PaneProps extends HTMLProps<HTMLDivElement>
 {
@@ -50,8 +51,10 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         super(props);
         this.domRef = React.createRef();
     }
-    addProcess(process: ProcessNodeData)
+    addProcess(process: ProcessNodeData, pos:Vector2)
     {
+        process.name = getUUID();
+        console.log(process);
         let startPos: Vector2;
         let holdPos: Vector2;
         const onDragStart = (e: DragMoveEvent) =>
@@ -71,13 +74,24 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
                 this.updateConnectionLine(this.pendingConnection);
         };
         
-        process.name = `Process${this.processes.size}`;
+        //process.name = `Process${this.processes.size}`;
+        
         this.processes.set(process.name, { process: process, renderer: null });
 
-        let element = renderProcessNode(process, onDragStart, onNodeDragMove, (p)=>this.startConnection(p), (p)=>this.endConnection(p), (p) =>
+        /*let element = renderProcessNode({
+            node:process, onDragStart, onNodeDragMove, (p)=> this.startConnection(p), (p) => this.endConnection(p), (p) =>
         {
             this.processes.get(process.name).renderer = p;
-        });
+        }
+    });*/
+        let element = renderProcessNode({
+            node: process,
+            onDragMoveStart: onDragStart,
+            onDragMove: onNodeDragMove,
+            onConnectStart: (p) => this.startConnection(p),
+            onConnectEnd: (p) => this.endConnection(p),
+            refCallback: (p) => this.processes.get(process.name).renderer = p
+        }, pos);
         this.domRef.current!.querySelector(".viewport-wrapper")!.appendChild(element);
     }
     startConnection(endpoint:EndPoint)
@@ -92,11 +106,11 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
             renderer: null,
             element: null
         };
-        let pos = this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port));
+        let pos = this.viewport.mousePosition(this.processes.get(endpoint.process).renderer.getPortPos(endpoint.property, endpoint.port));
         this.processes.forEach(obj =>
         {
             obj.renderer.setState({ connecting: true });
-        })
+        });
         //this.connecting = true;
         
         RenderConnectLine({
@@ -113,27 +127,53 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     }
     endConnection(endpoint: EndPoint)
     {
+        const resetConnection = () =>
+        {
+            this.pendingConnection = null;
+            this.connecting = false;
+        };
         this.pendingConnection.obj.target = endpoint;
+        let source = this.pendingConnection.obj.source;
+        let target = this.pendingConnection.obj.target;
+        if (source.port === target.port)
+        {
+            AGOGOSRenderer.instance.console.log("Can not connect same port.", "warn");
+            resetConnection();
+            return;
+        }
+        else if (source.port === "input")
+        {
+            source = this.pendingConnection.obj.target;
+            target = this.pendingConnection.obj.source;
+        }
+
+        if (this.processes.get(target.process).process.properties[target.property].input)
+        {
+            AGOGOSRenderer.instance.console.log("Already has input connection.", "warn");
+            resetConnection();
+            return;
+        }
+
+        this.processes.get(target.process).process.properties[target.property].input = source;
         this.pendingConnection.renderer.setState({
-            to: this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port))
+            to: this.viewport.mousePosition(this.processes.get(endpoint.process).renderer.getPortPos(endpoint.property, endpoint.port))
         });
         this.connections.push(this.pendingConnection);
-        this.pendingConnection = null;
-        this.connecting = false;
+        resetConnection();
     }
     updateConnectionLine(line: RenderedConnection)
     {
         if (line.obj.target)
         {
             line.renderer.setState({
-                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process.name).renderer.getPortPos(line.obj.source.property, line.obj.source.port)),
-                to: this.viewport.mousePosition(this.processes.get(line.obj.target.process.name).renderer.getPortPos(line.obj.target.property, line.obj.target.port))
+                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process).renderer.getPortPos(line.obj.source.property, line.obj.source.port)),
+                to: this.viewport.mousePosition(this.processes.get(line.obj.target.process).renderer.getPortPos(line.obj.target.property, line.obj.target.port))
             });
         }
         else
         {
             line.renderer.setState({
-                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process.name).renderer.getPortPos(line.obj.source.property, line.obj.source.port))
+                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process).renderer.getPortPos(line.obj.source.property, line.obj.source.port))
             });
         }
     }
@@ -169,8 +209,9 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
     }
     async onFileDrop(e: React.DragEvent<HTMLElement>)
     {
+        let pos = this.viewport.mousePosition(vec2(e.clientX,e.clientY))
         e.preventDefault();
-        this.addProcess(await AGOGOSRenderer.instance.ipc.call<ProcessNodeData>(IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")));
+        this.addProcess(await AGOGOSRenderer.instance.ipc.call<ProcessNodeData>(IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")), pos);
     }
     render()
     {

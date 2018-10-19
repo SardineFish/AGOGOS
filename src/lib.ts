@@ -2,6 +2,14 @@ import { getJsonIgnore } from "./meta-data";
 import { ProjectFile } from "./project";
 import Path from "path";
 import linq from "linq";
+import uuidv4 = require("uuid/v4");
+
+export const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+
+export function getUUID()
+{
+    return uuidv4();
+}
 
 export class Vector2
 {
@@ -25,9 +33,9 @@ export const vec2 = (x: number, y: number) => new Vector2(x, y);
 
 export interface EndPoint
 {
-    process: ProcessNodeData;
+    process: string;
     property: string;
-    port: string;
+    port: "input" | "output";
 }
 export interface Connection{
     source: EndPoint;
@@ -196,6 +204,7 @@ export interface MapObject<TValue>
 export interface ProcessNodeData
 {
     name: string;
+    processType: string;
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }

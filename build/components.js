@@ -25,7 +25,9 @@ class ProcessSpace extends react_1.default.Component {
         this.connecting = false;
         this.domRef = react_1.default.createRef();
     }
-    addProcess(process) {
+    addProcess(process, pos) {
+        process.name = lib_1.getUUID();
+        console.log(process);
         let startPos;
         let holdPos;
         const onDragStart = (e) => {
@@ -42,11 +44,22 @@ class ProcessSpace extends react_1.default.Component {
             if (this.connecting)
                 this.updateConnectionLine(this.pendingConnection);
         };
-        process.name = `Process${this.processes.size}`;
+        //process.name = `Process${this.processes.size}`;
         this.processes.set(process.name, { process: process, renderer: null });
-        let element = process_editor_1.renderProcessNode(process, onDragStart, onNodeDragMove, (p) => this.startConnection(p), (p) => this.endConnection(p), (p) => {
+        /*let element = renderProcessNode({
+            node:process, onDragStart, onNodeDragMove, (p)=> this.startConnection(p), (p) => this.endConnection(p), (p) =>
+        {
             this.processes.get(process.name).renderer = p;
-        });
+        }
+    });*/
+        let element = process_editor_1.renderProcessNode({
+            node: process,
+            onDragMoveStart: onDragStart,
+            onDragMove: onNodeDragMove,
+            onConnectStart: (p) => this.startConnection(p),
+            onConnectEnd: (p) => this.endConnection(p),
+            refCallback: (p) => this.processes.get(process.name).renderer = p
+        }, pos);
         this.domRef.current.querySelector(".viewport-wrapper").appendChild(element);
     }
     startConnection(endpoint) {
@@ -60,7 +73,7 @@ class ProcessSpace extends react_1.default.Component {
             renderer: null,
             element: null
         };
-        let pos = this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port));
+        let pos = this.viewport.mousePosition(this.processes.get(endpoint.process).renderer.getPortPos(endpoint.property, endpoint.port));
         this.processes.forEach(obj => {
             obj.renderer.setState({ connecting: true });
         });
@@ -77,24 +90,44 @@ class ProcessSpace extends react_1.default.Component {
         });
     }
     endConnection(endpoint) {
+        const resetConnection = () => {
+            this.pendingConnection = null;
+            this.connecting = false;
+        };
         this.pendingConnection.obj.target = endpoint;
+        let source = this.pendingConnection.obj.source;
+        let target = this.pendingConnection.obj.target;
+        if (source.port === target.port) {
+            lib_renderer_1.AGOGOSRenderer.instance.console.log("Can not connect same port.", "warn");
+            resetConnection();
+            return;
+        }
+        else if (source.port === "input") {
+            source = this.pendingConnection.obj.target;
+            target = this.pendingConnection.obj.source;
+        }
+        if (this.processes.get(target.process).process.properties[target.property].input) {
+            lib_renderer_1.AGOGOSRenderer.instance.console.log("Already has input connection.", "warn");
+            resetConnection();
+            return;
+        }
+        this.processes.get(target.process).process.properties[target.property].input = source;
         this.pendingConnection.renderer.setState({
-            to: this.viewport.mousePosition(this.processes.get(endpoint.process.name).renderer.getPortPos(endpoint.property, endpoint.port))
+            to: this.viewport.mousePosition(this.processes.get(endpoint.process).renderer.getPortPos(endpoint.property, endpoint.port))
         });
         this.connections.push(this.pendingConnection);
-        this.pendingConnection = null;
-        this.connecting = false;
+        resetConnection();
     }
     updateConnectionLine(line) {
         if (line.obj.target) {
             line.renderer.setState({
-                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process.name).renderer.getPortPos(line.obj.source.property, line.obj.source.port)),
-                to: this.viewport.mousePosition(this.processes.get(line.obj.target.process.name).renderer.getPortPos(line.obj.target.property, line.obj.target.port))
+                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process).renderer.getPortPos(line.obj.source.property, line.obj.source.port)),
+                to: this.viewport.mousePosition(this.processes.get(line.obj.target.process).renderer.getPortPos(line.obj.target.property, line.obj.target.port))
             });
         }
         else {
             line.renderer.setState({
-                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process.name).renderer.getPortPos(line.obj.source.property, line.obj.source.port))
+                from: this.viewport.mousePosition(this.processes.get(line.obj.source.process).renderer.getPortPos(line.obj.source.property, line.obj.source.port))
             });
         }
     }
@@ -124,8 +157,9 @@ class ProcessSpace extends react_1.default.Component {
         window.addEventListener("mouseup", (e) => this.onWindowMouseUp(e));
     }
     async onFileDrop(e) {
+        let pos = this.viewport.mousePosition(lib_1.vec2(e.clientX, e.clientY));
         e.preventDefault();
-        this.addProcess(await lib_renderer_1.AGOGOSRenderer.instance.ipc.call(ipc_1.IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")));
+        this.addProcess(await lib_renderer_1.AGOGOSRenderer.instance.ipc.call(ipc_1.IPCRenderer.GetProcess, e.dataTransfer.getData("text/plain")), pos);
     }
     render() {
         const { children, ref, key, ...other } = this.props;

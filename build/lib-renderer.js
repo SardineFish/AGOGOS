@@ -182,7 +182,7 @@ class App extends React.Component {
     onFileDragStart(e) {
         e.dataTransfer.setData("text/plain", e.nodeData.data);
         e.dataTransfer.dropEffect = "move";
-        this.console.log(e.nodeData.data);
+        //this.console.log(e.nodeData.data);
     }
     render() {
         let data = this.state.dirData;

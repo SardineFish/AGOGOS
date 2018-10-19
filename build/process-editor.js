@@ -13,7 +13,7 @@ class ValueEditor extends react_1.default.Component {
     onPortMouseDown(port) {
         if (this.props.onConnectStart) {
             this.props.onConnectStart({
-                process: this.props.node,
+                process: this.props.node.name,
                 property: this.props.propertyName,
                 port: port
             });
@@ -22,7 +22,7 @@ class ValueEditor extends react_1.default.Component {
     onPortMouseUp(port) {
         if (this.props.connecting && this.props.onConnectEnd)
             this.props.onConnectEnd({
-                process: this.props.node,
+                process: this.props.node.name,
                 property: this.props.propertyName,
                 port: port
             });
@@ -90,7 +90,7 @@ class EditorObject extends ValueEditor {
         super(props);
     }
     render() {
-        return this.doRender(react_1.default.createElement("span", { className: "editor-content" }, this.props.editvalue.name));
+        return this.doRender(react_1.default.createElement("span", { className: "editor-content" }, this.props.editvalue));
     }
 }
 class ReactProcessNode extends react_1.default.Component {
@@ -143,7 +143,7 @@ class ReactProcessNode extends react_1.default.Component {
     render() {
         const outputType = this.props.node.processOutput.type;
         return (react_1.default.createElement("div", { className: "node-wrapper", ref: this.nodeRef },
-            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.node.name),
+            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.node.processType),
             react_1.default.createElement("div", { className: "node-content" }, Array.from(utility_1.getKeys(this.props.node.properties))
                 .map((key, idx) => {
                 switch (this.props.node.properties[key].type) {
@@ -175,10 +175,13 @@ class ReactProcessNode extends react_1.default.Component {
     }
 }
 exports.ReactProcessNode = ReactProcessNode;
-function renderProcessNode(node, onDragMoveStart, onDragMove, onConnectStart, onConnectEnd, refCallback) {
+function renderProcessNode(props, pos = lib_1.vec2(0, 0)) {
     let element = document.createElement("div");
     element.className = "process-node";
-    const reactElement = (react_1.default.createElement(ReactProcessNode, { node: node, onDragMoveStart: onDragMoveStart, onDragMove: onDragMove, onConnectStart: onConnectStart, onConnectEnd: onConnectEnd, refCallback: refCallback }));
+    element.style.left = `${pos.x}px`;
+    element.style.top = `${pos.y}px`;
+    let { ref, ...others } = props;
+    const reactElement = (react_1.default.createElement(ReactProcessNode, Object.assign({}, others)));
     react_dom_1.default.render(reactElement, element);
     return element;
 }

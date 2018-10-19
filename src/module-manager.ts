@@ -91,13 +91,7 @@ class ProcessManager
 
     public getProcessData(name: string): ProcessNodeData
     {
-        let constructor = this.processLib.get(name);
-        if (!constructor)
-            return;
-        let process = new constructor() as ProcessUnit;
-        if (process.name === "Process")
-            process.name = name;
-        return ProcessUtility.getProcessData(new constructor());
+        return ProcessUtility.getProcessData(this.instantiateProcess(name));
     }
     public resetLib()
     {
@@ -114,6 +108,12 @@ class ProcessManager
         if (!this.processLib.has(name))
             return null;
         let Process = this.processLib.get(name);
-        return new Process();
+        if (!Process)
+            return null;
+        let process = new Process();
+        if (process.name === "Process")
+            process.name = name;
+        process.__processType = name;
+        return process;
     }
 }

@@ -65,7 +65,7 @@ class ValueEditor<T> extends React.Component<EditorProps<T>>
         if (this.props.onConnectStart)
         {
             this.props.onConnectStart({
-                process: this.props.node,
+                process: this.props.node.name,
                 property: this.props.propertyName,
                 port: port
             });
@@ -75,7 +75,7 @@ class ValueEditor<T> extends React.Component<EditorProps<T>>
     {
         if (this.props.connecting && this.props.onConnectEnd)
             this.props.onConnectEnd({
-                process: this.props.node,
+                process: this.props.node.name,
                 property: this.props.propertyName,
                 port: port
             });
@@ -200,7 +200,7 @@ class EditorObject extends ValueEditor<ProcessNodeData>
     render()
     {
         return this.doRender(
-            <span className="editor-content">{this.props.editvalue.name}</span>
+            <span className="editor-content">{this.props.editvalue}</span>
         );
     }
 }
@@ -273,7 +273,7 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
         const outputType = this.props.node.processOutput.type;
         return (
             <div className="node-wrapper" ref={this.nodeRef}>
-                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.name}</header>
+                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.processType}</header>
                 <div className="node-content">
                     {
                         Array.from(getKeys(this.props.node.properties))
@@ -386,18 +386,16 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
 
 
 
-export function renderProcessNode(node: ProcessNodeData, onDragMoveStart?: EventHandler<DragMoveEvent>, onDragMove?: EventHandler<DragMoveEvent>,onConnectStart?:EventHandler<EndPoint>, onConnectEnd?:EventHandler<EndPoint>, refCallback?: RefCallback<ReactProcessNode>): HTMLElement
+export function renderProcessNode(props: ProcessNodeProps, pos:Vector2=vec2(0,0)): HTMLElement
 {
     let element = document.createElement("div");
     element.className = "process-node";
+    element.style.left = `${pos.x}px`;
+    element.style.top = `${pos.y}px`;
+    let { ref, ...others } = props;
     const reactElement = (
         <ReactProcessNode
-            node={node}
-            onDragMoveStart={onDragMoveStart}
-            onDragMove={onDragMove}
-            onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
-            refCallback={refCallback}/>
+            {...others}/>
     );
     ReactDOM.render(reactElement, element)
     return element;

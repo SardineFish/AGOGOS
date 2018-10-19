@@ -80,13 +80,7 @@ class ProcessManager {
         this.processLib = new Map();
     }
     getProcessData(name) {
-        let constructor = this.processLib.get(name);
-        if (!constructor)
-            return;
-        let process = new constructor();
-        if (process.name === "Process")
-            process.name = name;
-        return process_unit_1.ProcessUtility.getProcessData(new constructor());
+        return process_unit_1.ProcessUtility.getProcessData(this.instantiateProcess(name));
     }
     resetLib() {
         this.processLib.clear();
@@ -100,7 +94,13 @@ class ProcessManager {
         if (!this.processLib.has(name))
             return null;
         let Process = this.processLib.get(name);
-        return new Process();
+        if (!Process)
+            return null;
+        let process = new Process();
+        if (process.name === "Process")
+            process.name = name;
+        process.__processType = name;
+        return process;
     }
 }
 //# sourceMappingURL=module-manager.js.map

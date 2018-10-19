@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const meta_data_1 = require("./meta-data");
 const linq_1 = __importDefault(require("linq"));
+const uuidv4 = require("uuid/v4");
+exports.UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+function getUUID() {
+    return uuidv4();
+}
+exports.getUUID = getUUID;
 class Vector2 {
     constructor(x, y) {
         this.x = x;

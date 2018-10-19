@@ -23,6 +23,7 @@
     "@types/npm": "^2.0.29",
     "@types/react": "^16.4.14",
     "@types/react-dom": "^16.0.7",
+    "@types/uuid": "^3.4.4",
     "commander": "^2.18.0",
     "electron-reload": "^1.2.5",
     "linq": "^3.1.0",
@@ -30,7 +31,8 @@
     "react": "^16.5.1",
     "react-dom": "^16.5.1",
     "react-split-pane": "^0.1.84",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "electron": "^2.0.9",

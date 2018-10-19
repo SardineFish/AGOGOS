@@ -22,17 +22,21 @@ __decorate([
     meta_data_1.type(meta_data_1.BuildinTypes.void)
 ], ProcessUnit.prototype, "process", null);
 exports.ProcessUnit = ProcessUnit;
+const privateKeys = ["name", "__processType"];
 class ProcessUtility {
     static getProcessData(process) {
         if (!process)
             return null;
         let data = {
             name: process.name,
+            processType: process.__processType,
             processOutput: { type: meta_data_1.getType(process, exports.KeyProcess), value: null },
             properties: {}
         };
         data.name = process.name;
         for (const key in process) {
+            if (privateKeys.includes(key))
+                continue;
             if (process.hasOwnProperty(key)) {
                 data.properties[key] = { type: meta_data_1.getType(process, key), value: process[key] };
             }

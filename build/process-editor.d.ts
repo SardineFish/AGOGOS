@@ -40,7 +40,7 @@ export declare class ReactProcessNode extends React.Component<ProcessNodeProps, 
     getPortPos(key: string, port: string): Vector2;
     render(): JSX.Element;
 }
-export declare function renderProcessNode(node: ProcessNodeData, onDragMoveStart?: EventHandler<DragMoveEvent>, onDragMove?: EventHandler<DragMoveEvent>, onConnectStart?: EventHandler<EndPoint>, onConnectEnd?: EventHandler<EndPoint>, refCallback?: RefCallback<ReactProcessNode>): HTMLElement;
+export declare function renderProcessNode(props: ProcessNodeProps, pos?: Vector2): HTMLElement;
 interface ConnectLineProps {
     from: Vector2;
     to: Vector2;

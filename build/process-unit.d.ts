@@ -2,6 +2,7 @@ import { ProcessNodeData } from "./lib";
 export declare const KeyProcess = "process";
 export declare class ProcessUnit {
     name: string;
+    __processType: string;
     process(): void;
 }
 export declare class ProcessUtility {

@@ -30,7 +30,10 @@ export function type(typeName:string)
 }
 export function getType(target: any, propertyKey: string)
 {
-    return Reflect.getMetadata(typeMetadataKey, target, propertyKey);
+    let type = Reflect.getMetadata(typeMetadataKey, target, propertyKey);
+    if (!type)
+        return BuildinTypes.object;
+    return type;
 }
 export enum BuildinTypes
 {
