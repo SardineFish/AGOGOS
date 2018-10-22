@@ -46,6 +46,7 @@ class ProcessSpace extends react_1.default.Component {
         };
         //process.name = `Process${this.processes.size}`;
         this.processes.set(process.name, { process: process, renderer: null });
+        lib_renderer_1.AGOGOSRenderer.instance.processesData = lib_1.toMapObject(this.processes, p => p.process);
         /*let element = renderProcessNode({
             node:process, onDragStart, onNodeDragMove, (p)=> this.startConnection(p), (p) => this.endConnection(p), (p) =>
         {
@@ -117,6 +118,7 @@ class ProcessSpace extends react_1.default.Component {
         });
         this.connections.push(this.pendingConnection);
         resetConnection();
+        lib_renderer_1.AGOGOSRenderer.instance.processesData = lib_1.toMapObject(this.processes, p => p.process);
     }
     updateConnectionLine(line) {
         if (line.obj.target) {

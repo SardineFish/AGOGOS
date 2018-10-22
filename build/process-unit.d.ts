@@ -3,7 +3,7 @@ export declare const KeyProcess = "process";
 export declare class ProcessUnit {
     name: string;
     __processType: string;
-    process(): void;
+    process(): any;
 }
 export declare class ProcessUtility {
     static getProcessData(process: ProcessUnit): ProcessNodeData;

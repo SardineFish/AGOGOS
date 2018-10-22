@@ -2,8 +2,9 @@ import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
 import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer, ChannelStatusCompile, ProjectCompiled, ChannelStatusReady } from "./ipc";
 import Path from "path";
-import { ConsoleMessage, StatusOutput, toMapObject } from "./lib";
+import { ConsoleMessage, StatusOutput, toMapObject, ProcessNodeData, MapObject } from "./lib";
 import linq from "linq";
+import { AGOGOSProcessor } from "./agogos-processor";
 
 export class AGOGOS
 {
@@ -12,6 +13,7 @@ export class AGOGOS
     project: AGOGOSProject;
     mainWindow: BrowserWindow;
     ipc: GeneralIPC;
+    processor: AGOGOSProcessor;
     constructor()
     {
         AGOGOS.instance = this;
@@ -60,6 +62,12 @@ export class AGOGOS
             });
         }
         return this;
+    }
+    async run()
+    {
+        let processesData = await this.ipc.call<MapObject<ProcessNodeData>>(IPCRenderer.GetProcessData);
+        this.processor = new AGOGOSProcessor(this.project.moduleManager, processesData);
+        this.processor.run();
     }
     onCompileStart()
     {

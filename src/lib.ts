@@ -201,11 +201,17 @@ export interface MapObject<TValue>
     [key: string]: TValue;
 }
 
-export function toMapObject<TValue>(map: Map<string, TValue>): MapObject<TValue>
+export function toMapObject<TValueIn>(map: Map<string, TValueIn>):MapObject<TValueIn>
+export function toMapObject<TValueIn, TValue>(map: Map<string, TValueIn>, cast: (obj: TValueIn) => TValue): MapObject<TValue>
+export function toMapObject<TValueIn, TValue>(map: Map<string, TValueIn>, cast: (obj: TValueIn) => TValue = (t: any) => t): MapObject<TValue> | MapObject<TValueIn>
 {
-    let mapObj: MapObject<TValue> = {};
-    for (const key of map.keys()) {
-        mapObj[key] = map.get(key);
+    let mapObj: MapObject<TValue> | MapObject<TValueIn> = {};
+    for (const key of map.keys())
+    {
+        if (cast)
+            mapObj[key] = cast(map.get(key));
+        else
+            mapObj[key] = map.get(key);
     }
     return mapObj;
 }

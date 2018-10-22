@@ -18,6 +18,7 @@ export declare const ChannelStatusCompile = "status-compile";
 export declare const ChannelStatusReady = "status-ready";
 export declare const IPCRenderer: {
     GetProcess: string;
+    GetProcessData: string;
 };
 export declare function waitIpcRenderer<T>(channel: string, timeout?: number): Promise<T>;
 export declare function waitIpcMain<T>(channel: string, timeout?: number): Promise<T>;

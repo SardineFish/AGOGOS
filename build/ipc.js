@@ -13,7 +13,8 @@ exports.ChannelIpcCall = "_ipc-call";
 exports.ChannelStatusCompile = "status-compile";
 exports.ChannelStatusReady = "status-ready";
 exports.IPCRenderer = {
-    GetProcess: "get-process-data"
+    GetProcess: "get-process-data",
+    GetProcessData: "get-process-data-from-renderer"
 };
 async function waitIpcRenderer(channel, timeout = 500) {
     return new Promise((resolve, reject) => {

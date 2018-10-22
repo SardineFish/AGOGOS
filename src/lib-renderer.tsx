@@ -66,6 +66,8 @@ export class AGOGOSRenderer
     public typeLib: MapObject<TypeData>;
     public ready = false;
 
+    public processesData: MapObject<ProcessNodeData>  = null;
+
     public get console() { return this.app.console };
     constructor()
     {
@@ -76,6 +78,10 @@ export class AGOGOSRenderer
         this.ipc = new GeneralIPC({
             receive: (msg) => ipcRenderer.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
             send: (args) => ipcRenderer.send(ChannelIpcCall, args)
+        });
+        this.ipc.add(IPCRenderer.GetProcessData, () =>
+        {
+            return this.processesData;
         });
         ipcRenderer.on(ChannelStatusCompile, () => this.ready = false);
         ipcRenderer.on(ChannelStatusReady, (event: Event, args: ProjectCompiled) =>

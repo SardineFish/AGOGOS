@@ -13,7 +13,7 @@ export class ProcessUnit
     __processType: string;
 
     @type(BuildinTypes.void)
-    process()
+    process():any
     {
         
     }

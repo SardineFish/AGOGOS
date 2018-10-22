@@ -18,6 +18,7 @@ export declare class AGOGOSRenderer {
     processLib: MapObject<ProcessNodeData>;
     typeLib: MapObject<TypeData>;
     ready: boolean;
+    processesData: MapObject<ProcessNodeData>;
     readonly console: {
         log: (message: any, type?: "log" | "warn" | "error") => void;
     };

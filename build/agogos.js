@@ -8,6 +8,7 @@ const electron_1 = require("electron");
 const ipc_1 = require("./ipc");
 const path_1 = __importDefault(require("path"));
 const linq_1 = __importDefault(require("linq"));
+const agogos_processor_1 = require("./agogos-processor");
 class AGOGOS {
     constructor() {
         this.console = {
@@ -71,6 +72,11 @@ class AGOGOS {
             });
         }
         return this;
+    }
+    async run() {
+        let processesData = await this.ipc.call(ipc_1.IPCRenderer.GetProcessData);
+        this.processor = new agogos_processor_1.AGOGOSProcessor(this.project.moduleManager, processesData);
+        this.processor.run();
     }
     onCompileStart() {
         this.mainWindow.webContents.send(ipc_1.ChannelStatusCompile);

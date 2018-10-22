@@ -20,8 +20,9 @@ export const ChannelIpcCall = "_ipc-call";
 export const ChannelStatusCompile = "status-compile";
 export const ChannelStatusReady = "status-ready";
 export const IPCRenderer = {
-    GetProcess:"get-process-data"
-}
+    GetProcess: "get-process-data",
+    GetProcessData: "get-process-data-from-renderer"
+};
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>
 {

@@ -43,7 +43,8 @@ export interface StatusOutput {
 export interface MapObject<TValue> {
     [key: string]: TValue;
 }
-export declare function toMapObject<TValue>(map: Map<string, TValue>): MapObject<TValue>;
+export declare function toMapObject<TValueIn>(map: Map<string, TValueIn>): MapObject<TValueIn>;
+export declare function toMapObject<TValueIn, TValue>(map: Map<string, TValueIn>, cast: (obj: TValueIn) => TValue): MapObject<TValue>;
 export interface ProcessNodeData {
     name: string;
     processType: string;

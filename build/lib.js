@@ -140,10 +140,13 @@ async function mapAsync(list, func) {
     return result;
 }
 exports.mapAsync = mapAsync;
-function toMapObject(map) {
+function toMapObject(map, cast = (t) => t) {
     let mapObj = {};
     for (const key of map.keys()) {
-        mapObj[key] = map.get(key);
+        if (cast)
+            mapObj[key] = cast(map.get(key));
+        else
+            mapObj[key] = map.get(key);
     }
     return mapObj;
 }

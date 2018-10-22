@@ -85,6 +85,12 @@ function loadMenu() {
                         agogos.console.log("Compile Completed.");
                         diagnostics.forEach(diag => agogos.console.error(diag.messageText));
                     }
+                },
+                {
+                    label: "Run",
+                    click: async () => {
+                        await agogos.run();
+                    }
                 }
             ]
         }

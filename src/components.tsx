@@ -5,7 +5,7 @@ import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ReactProcessNode, ConnectLine, RenderConnectLine} from "./process-editor"
-import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID } from "./lib";
+import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject } from "./lib";
 import { IPCRenderer } from "./ipc";
 import { AGOGOSRenderer } from "./lib-renderer";
 
@@ -77,6 +77,8 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         //process.name = `Process${this.processes.size}`;
         
         this.processes.set(process.name, { process: process, renderer: null });
+
+        AGOGOSRenderer.instance.processesData = toMapObject(this.processes, p => p.process);
 
         /*let element = renderProcessNode({
             node:process, onDragStart, onNodeDragMove, (p)=> this.startConnection(p), (p) => this.endConnection(p), (p) =>
@@ -155,11 +157,14 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         }
 
         this.processes.get(target.process).process.properties[target.property].input = source;
+
         this.pendingConnection.renderer.setState({
             to: this.viewport.mousePosition(this.processes.get(endpoint.process).renderer.getPortPos(endpoint.property, endpoint.port))
         });
         this.connections.push(this.pendingConnection);
         resetConnection();
+        
+        AGOGOSRenderer.instance.processesData = toMapObject(this.processes, p => p.process);
     }
     updateConnectionLine(line: RenderedConnection)
     {

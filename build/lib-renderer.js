@@ -54,6 +54,7 @@ exports.diffProjectFilesRenderer = diffProjectFilesRenderer;
 class AGOGOSRenderer {
     constructor() {
         this.ready = false;
+        this.processesData = null;
         AGOGOSRenderer.instance = this;
     }
     get console() { return this.app.console; }
@@ -62,6 +63,9 @@ class AGOGOSRenderer {
         this.ipc = new ipc_2.GeneralIPC({
             receive: (msg) => electron_1.ipcRenderer.on(ipc_2.ChannelIpcCall, (event, args) => msg(args)),
             send: (args) => electron_1.ipcRenderer.send(ipc_2.ChannelIpcCall, args)
+        });
+        this.ipc.add(ipc_2.IPCRenderer.GetProcessData, () => {
+            return this.processesData;
         });
         electron_1.ipcRenderer.on(ipc_1.ChannelStatusCompile, () => this.ready = false);
         electron_1.ipcRenderer.on(ipc_1.ChannelStatusReady, (event, args) => {
