@@ -337,7 +337,7 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
                                                 <EditorObject
                                                     node={this.props.node}
                                                     propertyName={key}
-                                                    type={typeData[key]}
+                                                    type={typeData.properties[key].type}
                                                     objectData={NULL(this.props.objectData).safe(data=>data.value).safe(()=>this.props.objectData.properties[key]).safe()}
                                                     label={key}
                                                     allowInput={this.props.allowInput}
