@@ -1,6 +1,7 @@
 import { ProcessUnit } from "./process-unit";
 import { ProcessNodeData, MapObject } from "./lib";
 import { ModuleManager } from "./module-manager";
+import agogos from "./user-lib/agogos";
 
 export class AGOGOSProcessor
 {
@@ -29,26 +30,38 @@ export class AGOGOSProcessor
 
     public run()
     {
-        this.processList.forEach(process =>
+        this.processList.forEach(async process =>
         {
             if (!this.hasOutput.has(process.name))
-                this.process(process);
+                await this.process(process);
         })
     }
 
-    private process(process: ProcessUnit)
+    private async process(process: ProcessUnit)
     {
-        let dependencies = this.processDependencies.get(process.name);
-        if (dependencies)
+        try
+        
         {
-            for (let i=0; i < dependencies.length; i++)
+            let dependencies = this.processDependencies.get(process.name);
+            if (dependencies)
             {
-                if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
-                    this.process(dependencies[i].target);
-                this.applyDependence(dependencies[i]);
+                for (let i = 0; i < dependencies.length; i++)
+                {
+                    if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
+                        await this.process(dependencies[i].target);
+                    this.applyDependence(dependencies[i]);
+                }
             }
+            let result = process.process();
+            if (result instanceof Promise)
+                this.outputLib.set(process.name, await result);
+            else
+                this.outputLib.set(process.name, process.process());
         }
-        this.outputLib.set(process.name, process.process());
+        catch (ex)
+        {
+            agogos.console.error(`Faild to process ${process.name}: ${ex.message}`);
+        }
     }
 
     private applyDependence(dependence: ProcessDependence)

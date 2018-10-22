@@ -1,5 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const agogos_1 = __importDefault(require("./user-lib/agogos"));
 class AGOGOSProcessor {
     constructor(moduleManager, processes) {
         this.processList = [];
@@ -20,21 +24,30 @@ class AGOGOSProcessor {
         });
     }
     run() {
-        this.processList.forEach(process => {
+        this.processList.forEach(async (process) => {
             if (!this.hasOutput.has(process.name))
-                this.process(process);
+                await this.process(process);
         });
     }
-    process(process) {
-        let dependencies = this.processDependencies.get(process.name);
-        if (dependencies) {
-            for (let i = 0; i < dependencies.length; i++) {
-                if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
-                    this.process(dependencies[i].target);
-                this.applyDependence(dependencies[i]);
+    async process(process) {
+        try {
+            let dependencies = this.processDependencies.get(process.name);
+            if (dependencies) {
+                for (let i = 0; i < dependencies.length; i++) {
+                    if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
+                        await this.process(dependencies[i].target);
+                    this.applyDependence(dependencies[i]);
+                }
             }
+            let result = process.process();
+            if (result instanceof Promise)
+                this.outputLib.set(process.name, await result);
+            else
+                this.outputLib.set(process.name, process.process());
         }
-        this.outputLib.set(process.name, process.process());
+        catch (ex) {
+            agogos_1.default.console.error(`Faild to process ${process.name}: ${ex.message}`);
+        }
     }
     applyDependence(dependence) {
         let selfPaths = dependence.pathSelf.split(".");
