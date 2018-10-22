@@ -210,9 +210,9 @@ class App extends React.Component {
                     React.createElement("div", { id: "mid", className: "pane" },
                         React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
             React.createElement("footer", { id: "status-bar" },
-                React.createElement("span", { id: "agogos-console", onClick: () => this.setState({ showConsole: !this.state.showConsole }) },
+                React.createElement("span", { id: "agogos-console" },
                     this.state.consoleHistory.length > 0 ?
-                        React.createElement("span", { id: "console-text", className: `icon-before msg-${this.latestConsole.type}` }, this.latestConsole.message)
+                        React.createElement("span", { id: "console-text", className: `icon-before msg-${this.latestConsole.type}`, onClick: () => this.setState({ showConsole: !this.state.showConsole }) }, this.latestConsole.message)
                         : null,
                     React.createElement(components_1.Pane, { id: "console-history", header: "Console", style: { visibility: this.state.showConsole ? "visible" : "collapse" } }, this.state.consoleHistory.map((con, idx) => (React.createElement("p", { className: `console-msg-item icon-before msg-${con.type}`, key: idx }, con.message))))),
                 React.createElement("span", { id: "agogos-status" },

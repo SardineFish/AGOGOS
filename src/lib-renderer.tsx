@@ -288,11 +288,12 @@ class App extends React.Component<AppArgs, AppState>
                     </SplitPane>
                 </main>
                 <footer id="status-bar">
-                    <span id="agogos-console" onClick={() => this.setState({ showConsole: !this.state.showConsole })}>
+                    <span id="agogos-console">
                         {
                             this.state.consoleHistory.length > 0 ?
                                 <span id="console-text"
                                     className={`icon-before msg-${this.latestConsole.type}`}
+                                    onClick={() => this.setState({ showConsole: !this.state.showConsole })}
                                 >
                                     {this.latestConsole.message}
                                 </span>

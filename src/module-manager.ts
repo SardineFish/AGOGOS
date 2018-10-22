@@ -9,10 +9,15 @@ export class ModuleManager
 {
     public typeManager: TypeManager = new TypeManager();
     public processManager: ProcessManager = new ProcessManager();
+    private moduleLib: Map<string, SourceFile> = new Map();
 
     public reset()
     {
         this.typeManager.resetLib();
+        this.processManager.resetLib();
+        for (const path of this.moduleLib.keys()) {
+            delete require.cache[path];
+        }
         this.processManager.resetLib();
     }
     public importSourceFile(filePath: string): SourceFile
@@ -25,10 +30,11 @@ export class ModuleManager
                 let obj = new importObj.default();
                 let processName = getProcess(importObj.default);
                 let typeName = getTypedef(importObj.default);
+                let srcFile: SourceFile;
                 if (processName)
                 {
                     this.processManager.addProcess(processName, importObj.default);
-                    return {
+                    srcFile =  {
                         name: Path.basename(filePath),
                         path: Path.resolve(filePath),
                         type: "file",
@@ -39,7 +45,7 @@ export class ModuleManager
                 if (typeName)
                 {
                     this.typeManager.addType(typeName, importObj.default);
-                    return {
+                    srcFile =  {
                         name: Path.basename(filePath),
                         path: Path.resolve(filePath),
                         type: "file",
@@ -47,6 +53,8 @@ export class ModuleManager
                         moduleName: processName
                     };
                 }
+                this.moduleLib.set(filePath, srcFile);
+                return srcFile;
             }
         }
         catch (err)
@@ -85,6 +93,8 @@ class TypeManager
     }
     public resetLib()
     {
+        for (const typedef of this.typeLib.values()) {
+        }
         this.typeLib.clear();
     }
     public addType(name: string, constructor: typeof Object)

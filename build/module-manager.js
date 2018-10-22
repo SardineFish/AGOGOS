@@ -11,9 +11,14 @@ class ModuleManager {
     constructor() {
         this.typeManager = new TypeManager();
         this.processManager = new ProcessManager();
+        this.moduleLib = new Map();
     }
     reset() {
         this.typeManager.resetLib();
+        this.processManager.resetLib();
+        for (const path of this.moduleLib.keys()) {
+            delete require.cache[path];
+        }
         this.processManager.resetLib();
     }
     importSourceFile(filePath) {
@@ -23,9 +28,10 @@ class ModuleManager {
                 let obj = new importObj.default();
                 let processName = meta_data_1.getProcess(importObj.default);
                 let typeName = meta_data_1.getTypedef(importObj.default);
+                let srcFile;
                 if (processName) {
                     this.processManager.addProcess(processName, importObj.default);
-                    return {
+                    srcFile = {
                         name: path_1.default.basename(filePath),
                         path: path_1.default.resolve(filePath),
                         type: "file",
@@ -35,7 +41,7 @@ class ModuleManager {
                 }
                 if (typeName) {
                     this.typeManager.addType(typeName, importObj.default);
-                    return {
+                    srcFile = {
                         name: path_1.default.basename(filePath),
                         path: path_1.default.resolve(filePath),
                         type: "file",
@@ -43,6 +49,8 @@ class ModuleManager {
                         moduleName: processName
                     };
                 }
+                this.moduleLib.set(filePath, srcFile);
+                return srcFile;
             }
         }
         catch (err) {
@@ -75,6 +83,8 @@ class TypeManager {
         }
     }
     resetLib() {
+        for (const typedef of this.typeLib.values()) {
+        }
         this.typeLib.clear();
     }
     addType(name, constructor) {

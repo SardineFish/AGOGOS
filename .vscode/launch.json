@@ -15,7 +15,8 @@
             "request": "attach",
             "name": "Attach to Chrome",
             "port": 9222,
-            "webRoot": "${workspaceFolder}"
+            "webRoot": "${workspaceFolder}",
+            "timeout": 5000
         },
         {
             "type": "node",

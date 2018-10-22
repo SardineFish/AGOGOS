@@ -4,6 +4,7 @@ import { SourceFile } from "./project";
 export declare class ModuleManager {
     typeManager: TypeManager;
     processManager: ProcessManager;
+    private moduleLib;
     reset(): void;
     importSourceFile(filePath: string): SourceFile;
 }
