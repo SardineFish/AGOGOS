@@ -124,8 +124,9 @@ class EditorObject extends react_1.default.Component {
     }
     getPortPos(key, port) {
         let keys = key.split(".");
-        if (keys.length > 1)
+        if (keys.length > 1 && this.refs[keys[0]].state.extend) {
             return this.refs[keys[0]].getPortPos(keys.slice(1).join('.'), port);
+        }
         let rect = this.nodeRef.current.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return lib_1.vec2(rect.left + 5, rect.top + 5);
     }
@@ -203,8 +204,9 @@ class ReactProcessNode extends react_1.default.Component {
     }
     getPortPos(key, port) {
         let keys = key.split(".");
-        if (keys.length > 1)
+        if (keys.length > 1 && this.refs[keys[0]].state.extend) {
             return this.refs[keys[0]].getPortPos(keys.slice(1).join('.'), port);
+        }
         let rect = this.nodeRef.current.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return lib_1.vec2(rect.left + 5, rect.top + 5);
     }

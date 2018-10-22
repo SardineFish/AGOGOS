@@ -250,8 +250,10 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
     getPortPos(key: string, port: string): Vector2
     {
         let keys = key.split(".");
-        if (keys.length > 1)
+        if (keys.length > 1 && (this.refs[keys[0]] as EditorObject).state.extend)
+        {
             return (this.refs[keys[0]] as EditorObject).getPortPos(keys.slice(1).join('.'), port);
+        }
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
     }
@@ -422,8 +424,10 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
     getPortPos(key: string, port: string): Vector2
     {
         let keys = key.split(".");
-        if (keys.length > 1)
+        if (keys.length > 1 && (this.refs[keys[0]] as EditorObject).state.extend)
+        {
             return (this.refs[keys[0]] as EditorObject).getPortPos(keys.slice(1).join('.'), port);
+        }
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
     }
