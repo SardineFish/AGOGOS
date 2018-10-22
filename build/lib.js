@@ -140,13 +140,41 @@ async function mapAsync(list, func) {
     return result;
 }
 exports.mapAsync = mapAsync;
+function toMapObject(map) {
+    let mapObj = {};
+    for (const key of map.keys()) {
+        mapObj[key] = map.get(key);
+    }
+    return mapObj;
+}
+exports.toMapObject = toMapObject;
 class PropertyData {
 }
 exports.PropertyData = PropertyData;
+class TypeData {
+}
+exports.TypeData = TypeData;
 class ObjectData {
     constructor() {
         this.properties = new Map();
     }
 }
 exports.ObjectData = ObjectData;
+class NullSafe {
+    constructor(obj) {
+        this.nullSafeObj = obj;
+    }
+    safe(callback) {
+        if (!callback)
+            return this.nullSafeObj;
+        if (this.nullSafeObj === undefined || this.nullSafeObj === null)
+            return new NullSafe(null);
+        return new NullSafe(callback(this.nullSafeObj));
+    }
+}
+exports.NullSafe = NullSafe;
+function NULL(obj) {
+    return new NullSafe(obj);
+}
+exports.NULL = NULL;
 //# sourceMappingURL=lib.js.map

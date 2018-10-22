@@ -13,7 +13,8 @@ export const CompilerIpc = {
     EndWatch: "end-watch",
     Diagnostic: "on-diagnostic",
     Status: "on-status",
-    PostCompile: "post-compile"
+    PostCompile: "post-compile", 
+    BeforeCompile: "before-compile"
 };
 
 let ipc = new ProcessIPC(process);
@@ -162,6 +163,7 @@ class TSCompiler
         ) =>
         {
             //console.log("** We're about to create the program! **");
+            ipc.call(CompilerIpc.BeforeCompile);
             return origCreateProgram(rootNames, options, host, oldProgram);
         };
         const origPostProgramCreate = host.afterProgramCreate;

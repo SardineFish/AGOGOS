@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { ProjectFile } from "./project";
 import { ChildProcess } from "child_process";
+import { MapObject, PropertyData, ProcessNodeData } from "./lib";
 export interface Startup {
     workDir: string;
     projectFile: ProjectFile;
@@ -13,6 +14,8 @@ export declare const ChannelStatus = "agogos-status";
 export declare const ChannelProjectReady = "agogos-ready";
 export declare const ChannelGetProcess = "get-process";
 export declare const ChannelIpcCall = "_ipc-call";
+export declare const ChannelStatusCompile = "status-compile";
+export declare const ChannelStatusReady = "status-ready";
 export declare const IPCRenderer: {
     GetProcess: string;
 };
@@ -42,5 +45,9 @@ export declare class GeneralIPC {
 export declare class ProcessIPC extends GeneralIPC {
     process: any;
     constructor(process: ChildProcess | NodeJS.Process);
+}
+export declare class ProjectCompiled {
+    typeLib: MapObject<PropertyData>;
+    processLib: MapObject<ProcessNodeData>;
 }
 export {};

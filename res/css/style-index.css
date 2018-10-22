@@ -336,7 +336,32 @@ svg *{
     animation-delay: 0s;
     animation-iteration-count: infinite;
 }
+.object-editor .editor-children{
+    padding-left: 2em;
+}
+.object-editor .fold-icon{
+    cursor: pointer;
+}
+.object-editor .fold-icon::after {
+    margin-right: .3em;
+    display: inline-block;
+    font-family: Material Icons;
+    font-size: 1.1em;
+    vertical-align: middle;
+    color: #888;
+    content: "chevron_right";
+    transition: transform .1s;
+    font-weight: bold;
+}
+.object-editor.fold > .editor > .fold-icon::after {
+    transform: rotate(0);
+    visibility: visible;
+}
 
+.object-editor.extend > .editor > .fold-icon::after {
+    transform: rotate(90deg);
+    visibility: visible;
+}
 @keyframes anim-loading {
     0%{
         content:"";

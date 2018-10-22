@@ -10,6 +10,7 @@ export declare class AGOGOS {
     constructor();
     init(workDir: string): Promise<AGOGOS>;
     reload(event: Event): Promise<AGOGOS>;
+    onCompileStart(): void;
     onCompileComplete(): void;
     onGetProcessData(filename: string): import("./lib").ProcessNodeData;
     console: {

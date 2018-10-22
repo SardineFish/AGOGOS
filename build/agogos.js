@@ -64,7 +64,16 @@ class AGOGOS {
                 .then(() => this.showStatus("Project Ready"));
             this.project.tsCompiler.onCompileCompleteCallback = () => this.onCompileComplete();
         }
+        if (this.project.tsCompiler.compiled) {
+            this.mainWindow.webContents.send(ipc_1.ChannelStatusReady, {
+                processLib: this.project.moduleManager.processManager.exportProcessData(),
+                typeLib: this.project.moduleManager.typeManager.exportTypesData()
+            });
+        }
         return this;
+    }
+    onCompileStart() {
+        this.mainWindow.webContents.send(ipc_1.ChannelStatusCompile);
     }
     onCompileComplete() {
         this.project.moduleManager.reset();
@@ -77,6 +86,10 @@ class AGOGOS {
                 src.path = path_1.default.resolve(this.workDir, file);
                 this.project.sourceFiles.push(src);
             }
+        });
+        this.mainWindow.webContents.send(ipc_1.ChannelStatusReady, {
+            processLib: this.project.moduleManager.processManager.exportProcessData(),
+            typeLib: this.project.moduleManager.typeManager.exportTypesData()
         });
     }
     onGetProcessData(filename) {

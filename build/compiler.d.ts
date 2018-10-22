@@ -6,6 +6,7 @@ export declare const CompilerIpc: {
     Diagnostic: string;
     Status: string;
     PostCompile: string;
+    BeforeCompile: string;
 };
 export interface CompilerDiagnostic {
     code: number;

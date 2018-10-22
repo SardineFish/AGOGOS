@@ -201,6 +201,15 @@ export interface MapObject<TValue>
     [key: string]: TValue;
 }
 
+export function toMapObject<TValue>(map: Map<string, TValue>): MapObject<TValue>
+{
+    let mapObj: MapObject<TValue> = {};
+    for (const key of map.keys()) {
+        mapObj[key] = map.get(key);
+    }
+    return mapObj;
+}
+
 export interface ProcessNodeData
 {
     name: string;
@@ -211,9 +220,15 @@ export interface ProcessNodeData
 export class PropertyData
 {
     type: string;
+    properties?: MapObject<PropertyData>;
     value: any;
     input?: EndPoint;
     output?: EndPoint;
+}
+export class TypeData
+{
+    type: string;
+    properties?: MapObject<TypeData>;
 }
 
 export class ObjectData
@@ -222,4 +237,25 @@ export class ObjectData
     name: string;
     properties: Map<string, PropertyData> = new Map();
 }
-
+export class NullSafe<T>
+{
+    private nullSafeObj: T | null;
+    public safe(): T | null;
+    public safe<TNext>(callback: (obj: T) => TNext): NullSafe<TNext>;
+    public safe<TNext>(callback?: (obj: T) => TNext): T | null | NullSafe<TNext>
+    {
+        if (!callback)
+            return this.nullSafeObj;
+        if (this.nullSafeObj === undefined || this.nullSafeObj === null)
+            return new NullSafe(null);
+        return new NullSafe(callback(this.nullSafeObj));
+    }
+    constructor(obj: T)
+    {
+        this.nullSafeObj = obj;
+    }
+}
+export function NULL<T>(obj: T): NullSafe<T>
+{
+    return new NullSafe(obj);
+}

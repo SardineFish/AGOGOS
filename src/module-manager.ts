@@ -1,7 +1,7 @@
 import { ProcessUnit, ProcessUtility } from "./process-unit";
 import { getType, BuildinTypes, getProcess, getTypedef } from "./meta-data";
 import Path from "path";
-import { ProcessNodeData } from "./lib";
+import { ProcessNodeData, PropertyData, MapObject, TypeData } from "./lib";
 import agogos from "./user-lib/agogos"
 import { SourceFile } from "./project";
 
@@ -57,6 +57,16 @@ export class ModuleManager
     }
 }
 
+const IgnoreResolveTypes =
+    [
+        BuildinTypes.array,
+        BuildinTypes.boolean,
+        BuildinTypes.number,
+        BuildinTypes.object,
+        BuildinTypes.string,
+        BuildinTypes.void
+    ];
+
 class TypeManager
 {
     private typeLib: Map<string, typeof Object> = new Map();
@@ -82,6 +92,41 @@ class TypeManager
         if (this.typeLib.has(name))
             throw new Error("Type existed.");
         this.typeLib.set(name, constructor);
+    }
+    public getType(name: string): typeof Object
+    {
+        if (!this.typeLib.has(name))
+            return null;
+        return this.typeLib.get(name);
+    }
+    public getTypeData(name: string): TypeData
+    {
+        let constructor = this.getType(name);
+        if (!constructor)
+            return null;
+        let obj = new constructor();
+        let properties: MapObject<TypeData> = {};
+        for (const key in obj)
+        {
+            if (obj.hasOwnProperty(key))
+            {
+                properties[key] = {
+                    type: getType(obj, key)
+                };
+            }
+        }
+        return {
+            type: name,
+            properties: properties
+        };
+    }
+    public exportTypesData(): MapObject<TypeData>
+    {
+        let mapObj: MapObject<TypeData> = {};
+        for (const key of this.typeLib.keys()) {
+            mapObj[key] = this.getTypeData(key);
+        }
+        return mapObj;
     }
 }
 
@@ -115,5 +160,13 @@ class ProcessManager
             process.name = name;
         process.__processType = name;
         return process;
+    }
+    public exportProcessData(): MapObject<ProcessNodeData>
+    {
+        let mapObj: MapObject<ProcessNodeData> = {};
+        for (const key of this.processLib.keys()) {
+            mapObj[key] = this.getProcessData(key);
+        }
+        return mapObj;
     }
 }

@@ -1,8 +1,8 @@
 import { AGOGOSProject } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
-import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
+import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer, ChannelStatusCompile, ProjectCompiled, ChannelStatusReady } from "./ipc";
 import Path from "path";
-import { ConsoleMessage, StatusOutput } from "./lib";
+import { ConsoleMessage, StatusOutput, toMapObject } from "./lib";
 import linq from "linq";
 
 export class AGOGOS
@@ -52,7 +52,18 @@ export class AGOGOS
                 .then(() => this.showStatus("Project Ready"));
             this.project.tsCompiler.onCompileCompleteCallback = () => this.onCompileComplete();
         }
+        if (this.project.tsCompiler.compiled)
+        {
+            this.mainWindow.webContents.send(ChannelStatusReady, <ProjectCompiled>{
+                processLib: this.project.moduleManager.processManager.exportProcessData(),
+                typeLib: this.project.moduleManager.typeManager.exportTypesData()
+            });
+        }
         return this;
+    }
+    onCompileStart()
+    {
+        this.mainWindow.webContents.send(ChannelStatusCompile);
     }
     onCompileComplete()
     {
@@ -68,6 +79,10 @@ export class AGOGOS
                 src.path = Path.resolve(this.workDir, file);
                 this.project.sourceFiles.push(src);
             }
+        });
+        this.mainWindow.webContents.send(ChannelStatusReady, <ProjectCompiled>{
+            processLib: this.project.moduleManager.processManager.exportProcessData(),
+            typeLib: this.project.moduleManager.typeManager.exportTypesData()
         });
     }
     onGetProcessData(filename: string)

@@ -1,7 +1,7 @@
-import { EndPoint, StatusOutput, ConsoleMessage } from "./lib";
+import { EndPoint, StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, PropertyData, TypeData } from "./lib";
 import { AGOGOSProject, ProjectFile } from "./project";
 import { ipcRenderer, remote } from "electron";
-import { ChannelProjectSettings } from "./ipc";
+import { ChannelProjectSettings, ChannelStatusCompile, ChannelStatusReady, ProjectCompiled } from "./ipc";
 import { NodeData } from "../../react-tree-viewer/dist";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -62,6 +62,10 @@ export class AGOGOSRenderer
     public ipc: GeneralIPC;
     public app: App;
 
+    public processLib: MapObject<ProcessNodeData>;
+    public typeLib: MapObject<TypeData>;
+    public ready = false;
+
     public get console() { return this.app.console };
     constructor()
     {
@@ -72,6 +76,14 @@ export class AGOGOSRenderer
         this.ipc = new GeneralIPC({
             receive: (msg) => ipcRenderer.on(ChannelIpcCall, (event: Event, args: any) => msg(args)),
             send: (args) => ipcRenderer.send(ChannelIpcCall, args)
+        });
+        ipcRenderer.on(ChannelStatusCompile, () => this.ready = false);
+        ipcRenderer.on(ChannelStatusReady, (event: Event, args: ProjectCompiled) =>
+        {   
+            this.console.log("Ready");
+            this.processLib = args.processLib;
+            this.typeLib = args.typeLib;
+            this.ready = true;
         });
         return this;
     }
@@ -217,6 +229,7 @@ class App extends React.Component<AppArgs, AppState>
     }
     componentDidMount()
     {
+        this.props.callback(this);
         ipcRenderer.once(ChannelStartup, (event: Event, args: Startup) =>
         {
             this.setState({

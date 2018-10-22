@@ -43,6 +43,7 @@ export interface StatusOutput {
 export interface MapObject<TValue> {
     [key: string]: TValue;
 }
+export declare function toMapObject<TValue>(map: Map<string, TValue>): MapObject<TValue>;
 export interface ProcessNodeData {
     name: string;
     processType: string;
@@ -51,12 +52,24 @@ export interface ProcessNodeData {
 }
 export declare class PropertyData {
     type: string;
+    properties?: MapObject<PropertyData>;
     value: any;
     input?: EndPoint;
     output?: EndPoint;
+}
+export declare class TypeData {
+    type: string;
+    properties?: MapObject<TypeData>;
 }
 export declare class ObjectData {
     owner: any;
     name: string;
     properties: Map<string, PropertyData>;
 }
+export declare class NullSafe<T> {
+    private nullSafeObj;
+    safe(): T | null;
+    safe<TNext>(callback: (obj: T) => TNext): NullSafe<TNext>;
+    constructor(obj: T);
+}
+export declare function NULL<T>(obj: T): NullSafe<T>;

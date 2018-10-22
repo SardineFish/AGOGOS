@@ -24,16 +24,19 @@ export declare class AGOGOSProject extends IPackageJSON {
 }
 declare class TSCompiler {
     ready: boolean;
+    compiled: boolean;
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
     srcFiles: string[];
     onCompileCompleteCallback: () => void;
+    onCompileStartCallback: () => void;
     outputMap: Map<string, string>;
     constructor(src: string, out: string);
     init(): Promise<void>;
     compile(): Promise<ReadonlyArray<typescript.Diagnostic>>;
     watch(): Promise<TSCompiler>;
+    private onBeforeCompile;
     private onCompileComplete;
     private onDiagnostic;
     private onStatusReport;

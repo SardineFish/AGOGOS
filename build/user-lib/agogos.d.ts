@@ -6,6 +6,7 @@ declare const agogos: {
     boolean: BuildinTypes.boolean;
     void: BuildinTypes.void;
     object: BuildinTypes.object;
+    array: BuildinTypes.array;
     type: typeof type;
     Unit: typeof ProcessUnit;
     process: typeof process;

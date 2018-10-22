@@ -1,4 +1,4 @@
-import { StatusOutput, ConsoleMessage } from "./lib";
+import { StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, TypeData } from "./lib";
 import { AGOGOSProject, ProjectFile } from "./project";
 import { NodeData } from "../../react-tree-viewer/dist";
 import * as React from "react";
@@ -15,6 +15,9 @@ export declare class AGOGOSRenderer {
     static instance: AGOGOSRenderer;
     ipc: GeneralIPC;
     app: App;
+    processLib: MapObject<ProcessNodeData>;
+    typeLib: MapObject<TypeData>;
+    ready: boolean;
     readonly console: {
         log: (message: any, type?: "log" | "warn" | "error") => void;
     };

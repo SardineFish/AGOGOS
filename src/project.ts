@@ -122,11 +122,13 @@ export class AGOGOSProject extends IPackageJSON
 class TSCompiler
 {
     ready: boolean = false;
+    compiled: boolean = false;
     compileProcessIPC: ProcessIPC;
     srcDirectory: string;
     outDirectory: string;
     srcFiles: string[];
     onCompileCompleteCallback: () => void;
+    onCompileStartCallback: () => void;
     outputMap: Map<string, string> = new Map();
     constructor(src: string, out: string)
     {
@@ -150,11 +152,16 @@ class TSCompiler
         this.compileProcessIPC.add(CompilerIpc.Diagnostic, (diagnostic) => this.onDiagnostic(diagnostic));
         this.compileProcessIPC.add(CompilerIpc.Status, (status) => this.onStatusReport(status));
         this.compileProcessIPC.add(CompilerIpc.PostCompile, (result) => this.onCompileComplete(result));
+        this.compileProcessIPC.add(CompilerIpc.BeforeCompile, () => this.onBeforeCompile());
         
 
         await this.compileProcessIPC.call(CompilerIpc.StartWatch);
         
         return this;
+    }
+    private onBeforeCompile()
+    {
+        this.compiled = false;
     }
     private onCompileComplete(result: CompileResult)
     {
@@ -162,6 +169,7 @@ class TSCompiler
         this.outputMap = new Map();
         this.srcFiles.forEach(f => this.outputMap.set(f, Path.resolve(this.outDirectory, Path.join(Path.dirname(f), Path.parse(f).name + ".js"))));
         AGOGOS.instance.console.log(this.srcFiles);
+        this.compiled = true;
         if (this.onCompileCompleteCallback)
             this.onCompileCompleteCallback();
     }

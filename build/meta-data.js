@@ -18,8 +18,13 @@ function DectatorFactory(name, defaultValue = null, dataWrapper = v => v) {
     ];
 }
 const typeMetadataKey = Symbol("type");
-function type(typeName) {
-    return Reflect.metadata(typeMetadataKey, typeName);
+function type(typeDef) {
+    if (typeDef instanceof Function) {
+        let type = getTypedef(typeDef);
+        type = type ? type : BuildinTypes.object;
+        return Reflect.metadata(typeMetadataKey, type);
+    }
+    return Reflect.metadata(typeMetadataKey, typeDef);
 }
 exports.type = type;
 function getType(target, propertyKey) {
@@ -36,6 +41,7 @@ var BuildinTypes;
     BuildinTypes["boolean"] = "boolean";
     BuildinTypes["void"] = "void";
     BuildinTypes["object"] = "object";
+    BuildinTypes["array"] = "array";
 })(BuildinTypes = exports.BuildinTypes || (exports.BuildinTypes = {}));
 const [jsonIgnore, getJsonIgnore] = DectatorFactory("jsonIgnore", true);
 exports.jsonIgnore = jsonIgnore;

@@ -4,7 +4,7 @@ declare type DecoratorFunc<T> = (value?: T) => {
     (target: Object, propertyKey: string | symbol): void;
 };
 declare type MetadataFunc = (target: any, propKey?: string) => any;
-export declare function type(typeName: string): {
+export declare function type(typeDef: string | Function): {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;
 };
@@ -14,7 +14,8 @@ export declare enum BuildinTypes {
     number = "number",
     boolean = "boolean",
     void = "void",
-    object = "object"
+    object = "object",
+    array = "array"
 }
 declare const jsonIgnore: DecoratorFunc<boolean>, getJsonIgnore: MetadataFunc;
 export { jsonIgnore, getJsonIgnore };

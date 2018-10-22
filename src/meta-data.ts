@@ -24,9 +24,16 @@ function DectatorFactory<T>(name: string, defaultValue: T = null, dataWrapper: (
     ];
 }
 const typeMetadataKey = Symbol("type");
-export function type(typeName:string)
+export function type(typeDef:string|Function)
 {
-    return Reflect.metadata(typeMetadataKey, typeName);
+    if (typeDef instanceof Function)
+    {
+        let type = getTypedef(typeDef);
+        type = type ? type : BuildinTypes.object;
+
+        return Reflect.metadata(typeMetadataKey, type);
+    }
+    return Reflect.metadata(typeMetadataKey, typeDef);
 }
 export function getType(target: any, propertyKey: string)
 {
@@ -41,7 +48,8 @@ export enum BuildinTypes
     number = "number",
     boolean = "boolean",
     void = "void",
-    object = "object"
+    object = "object", 
+    array = "array",
 }
 const [jsonIgnore, getJsonIgnore] = DectatorFactory<boolean>("jsonIgnore", true);
 export { jsonIgnore, getJsonIgnore };

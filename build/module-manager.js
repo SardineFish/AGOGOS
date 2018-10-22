@@ -52,6 +52,14 @@ class ModuleManager {
     }
 }
 exports.ModuleManager = ModuleManager;
+const IgnoreResolveTypes = [
+    meta_data_1.BuildinTypes.array,
+    meta_data_1.BuildinTypes.boolean,
+    meta_data_1.BuildinTypes.number,
+    meta_data_1.BuildinTypes.object,
+    meta_data_1.BuildinTypes.string,
+    meta_data_1.BuildinTypes.void
+];
 class TypeManager {
     constructor() {
         this.typeLib = new Map();
@@ -73,6 +81,36 @@ class TypeManager {
         if (this.typeLib.has(name))
             throw new Error("Type existed.");
         this.typeLib.set(name, constructor);
+    }
+    getType(name) {
+        if (!this.typeLib.has(name))
+            return null;
+        return this.typeLib.get(name);
+    }
+    getTypeData(name) {
+        let constructor = this.getType(name);
+        if (!constructor)
+            return null;
+        let obj = new constructor();
+        let properties = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                properties[key] = {
+                    type: meta_data_1.getType(obj, key)
+                };
+            }
+        }
+        return {
+            type: name,
+            properties: properties
+        };
+    }
+    exportTypesData() {
+        let mapObj = {};
+        for (const key of this.typeLib.keys()) {
+            mapObj[key] = this.getTypeData(key);
+        }
+        return mapObj;
     }
 }
 class ProcessManager {
@@ -101,6 +139,13 @@ class ProcessManager {
             process.name = name;
         process.__processType = name;
         return process;
+    }
+    exportProcessData() {
+        let mapObj = {};
+        for (const key of this.processLib.keys()) {
+            mapObj[key] = this.getProcessData(key);
+        }
+        return mapObj;
     }
 }
 //# sourceMappingURL=module-manager.js.map

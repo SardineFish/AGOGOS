@@ -52,15 +52,23 @@ function diffProjectFilesRenderer(files, fileNode) {
 }
 exports.diffProjectFilesRenderer = diffProjectFilesRenderer;
 class AGOGOSRenderer {
-    get console() { return this.app.console; }
-    ;
     constructor() {
+        this.ready = false;
         AGOGOSRenderer.instance = this;
     }
+    get console() { return this.app.console; }
+    ;
     init() {
         this.ipc = new ipc_2.GeneralIPC({
             receive: (msg) => electron_1.ipcRenderer.on(ipc_2.ChannelIpcCall, (event, args) => msg(args)),
             send: (args) => electron_1.ipcRenderer.send(ipc_2.ChannelIpcCall, args)
+        });
+        electron_1.ipcRenderer.on(ipc_1.ChannelStatusCompile, () => this.ready = false);
+        electron_1.ipcRenderer.on(ipc_1.ChannelStatusReady, (event, args) => {
+            this.console.log("Ready");
+            this.processLib = args.processLib;
+            this.typeLib = args.typeLib;
+            this.ready = true;
         });
         return this;
     }
@@ -170,6 +178,7 @@ class App extends React.Component {
         });
     }
     componentDidMount() {
+        this.props.callback(this);
         electron_1.ipcRenderer.once(ipc_2.ChannelStartup, (event, args) => {
             this.setState({
                 workDir: args.workDir,

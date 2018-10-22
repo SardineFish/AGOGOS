@@ -2,6 +2,7 @@ import { promisify } from "util";
 import { ipcRenderer, ipcMain } from "electron";
 import { AGOGOSProject, ProjectFile } from "./project";
 import { fork, ChildProcess } from "child_process";
+import { MapObject, PropertyData, ProcessNodeData } from "./lib";
 export interface Startup
 {
     workDir: string;
@@ -16,6 +17,8 @@ export const ChannelStatus = "agogos-status";
 export const ChannelProjectReady = "agogos-ready";
 export const ChannelGetProcess = "get-process";
 export const ChannelIpcCall = "_ipc-call";
+export const ChannelStatusCompile = "status-compile";
+export const ChannelStatusReady = "status-ready";
 export const IPCRenderer = {
     GetProcess:"get-process-data"
 }
@@ -123,4 +126,9 @@ export class ProcessIPC extends GeneralIPC
         })
         this.process = process;
     }
+}
+export class ProjectCompiled
+{
+    typeLib: MapObject<PropertyData>;
+    processLib: MapObject<ProcessNodeData>
 }

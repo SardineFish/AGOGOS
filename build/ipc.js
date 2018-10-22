@@ -10,6 +10,8 @@ exports.ChannelStatus = "agogos-status";
 exports.ChannelProjectReady = "agogos-ready";
 exports.ChannelGetProcess = "get-process";
 exports.ChannelIpcCall = "_ipc-call";
+exports.ChannelStatusCompile = "status-compile";
+exports.ChannelStatusReady = "status-ready";
 exports.IPCRenderer = {
     GetProcess: "get-process-data"
 };
@@ -79,4 +81,7 @@ class ProcessIPC extends GeneralIPC {
     }
 }
 exports.ProcessIPC = ProcessIPC;
+class ProjectCompiled {
+}
+exports.ProjectCompiled = ProjectCompiled;
 //# sourceMappingURL=ipc.js.map
