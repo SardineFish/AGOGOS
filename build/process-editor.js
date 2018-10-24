@@ -44,7 +44,8 @@ class EditorString extends ValueEditor {
         this.input = react_1.default.createRef();
     }
     componentDidMount() {
-        this.input.current.value = this.props.editvalue;
+        this.input.current.value = this.props.editvalue ? this.props.editvalue : "";
+        this.props.onChange(this.input.current.value);
     }
     onChange(e) {
         this.props.onChange(e.target.value);
@@ -60,7 +61,8 @@ class EditorNumber extends ValueEditor {
         this.input = react_1.default.createRef();
     }
     componentDidMount() {
-        this.input.current.valueAsNumber = this.props.editvalue;
+        this.input.current.valueAsNumber = this.props.editvalue ? this.props.editvalue : 0;
+        this.props.onChange(this.input.current.valueAsNumber);
     }
     onChange(e) {
         this.props.onChange(e.target.valueAsNumber);
@@ -76,7 +78,8 @@ class EditorBoolean extends ValueEditor {
         this.input = react_1.default.createRef();
     }
     componentDidMount() {
-        this.input.current.checked = this.props.editvalue;
+        this.input.current.checked = this.props.editvalue ? this.props.editvalue : false;
+        this.props.onChange(this.input.current.checked);
     }
     onChange(e) {
         this.props.onChange(e.target.checked);
@@ -86,14 +89,43 @@ class EditorBoolean extends ValueEditor {
         return this.doRender((react_1.default.createElement("input", Object.assign({ type: "checkbox", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (editable ? {} : { checked: this.props.editvalue })))));
     }
 }
+const BuildinTypesList = [
+    "string",
+    "number",
+    "boolean",
+    "void",
+    "object",
+    "array"
+];
 class EditorObject extends react_1.default.Component {
     constructor(props) {
         super(props);
         this.nodeRef = react_1.default.createRef();
         this.state = { extend: false };
+        this.objData = this.props.objectData ? this.props.objectData : {
+            type: this.props.type,
+            value: {},
+            properties: {}
+        };
+        if (!this.objData.properties)
+            this.objData.properties = {};
+        if (!this.objData.value)
+            this.objData.value = {};
+    }
+    componentDidMount() {
+        lib_1.NULL(this.props.onChange)
+            .safe(f => f(this.objData))
+            .safe();
     }
     onValueChange(key, value) {
-        this.props.objectData.properties[key] = value;
+        const typeData = lib_renderer_1.AGOGOSRenderer.instance.typeLib[this.props.type];
+        if (BuildinTypesList.includes(typeData.properties[key].type))
+            this.objData.properties[key] = {
+                type: typeData.properties[key].type,
+                value: value
+            };
+        else
+            this.objData.properties[key] = value;
     }
     onPortMouseDown(port) {
         if (this.props.onConnectStart) {

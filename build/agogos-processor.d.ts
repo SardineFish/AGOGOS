@@ -6,9 +6,11 @@ export declare class AGOGOSProcessor {
     private processDependencies;
     private hasOutput;
     private outputLib;
+    private moduleManager;
     constructor(moduleManager: ModuleManager, processes: MapObject<ProcessNodeData>);
     run(): void;
     private process;
     private applyDependence;
     private resolveProcess;
+    private resolveProperty;
 }

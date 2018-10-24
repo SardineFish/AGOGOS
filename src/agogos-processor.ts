@@ -1,5 +1,5 @@
 import { ProcessUnit } from "./process-unit";
-import { ProcessNodeData, MapObject } from "./lib";
+import { ProcessNodeData, MapObject, PropertyData } from "./lib";
 import { ModuleManager } from "./module-manager";
 import agogos from "./user-lib/agogos";
 
@@ -10,9 +10,11 @@ export class AGOGOSProcessor
     private processDependencies: Map<string, ProcessDependence[]> = new Map();
     private hasOutput: Map<string, boolean> = new Map();
     private outputLib: Map<string, any> = new Map();
+    private moduleManager: ModuleManager;
 
     constructor(moduleManager:ModuleManager,processes: MapObject<ProcessNodeData>)
     {
+        this.moduleManager = moduleManager;
         for (const key in processes)
         {
             let processData = processes[key];
@@ -103,7 +105,38 @@ export class AGOGOSProcessor
             }
             else
             {
+                if (!property.value)
+                    property.value = this.moduleManager.typeManager.instantiate(property.type);
                 process[key] = property.value;
+                dependencies = dependencies.concat(this.resolveProperty(process, process[key], data.properties[key], key));
+            }
+        }
+        return dependencies;
+    }
+
+    private resolveProperty(process: ProcessUnit, prop: any, data: PropertyData, pathToProp: string): ProcessDependence[]
+    {
+        let dependencies: ProcessDependence[] = [];
+        if (!data || !data.properties)
+            return dependencies;
+        for (const key in data.properties)
+        {
+            let property = data.properties[key];
+            if (property.input)
+            {
+                dependencies.push({
+                    self: process,
+                    target: this.processLib.get(property.input.process),
+                    pathSelf: pathToProp + "."+ key,
+                    type: property.input.property.startsWith("output") ? "output" : "args",
+                    pathTarget: property.input.property
+                });
+                this.hasOutput.set(property.input.process, true);
+            }
+            else
+            {
+                prop[key] = property.value;
+                dependencies = dependencies.concat(this.resolveProperty(process, prop[key], data.properties[key], pathToProp + "." + key));
             }
         }
         return dependencies;

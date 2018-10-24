@@ -11,6 +11,7 @@ class AGOGOSProcessor {
         this.processDependencies = new Map();
         this.hasOutput = new Map();
         this.outputLib = new Map();
+        this.moduleManager = moduleManager;
         for (const key in processes) {
             let processData = processes[key];
             let process = moduleManager.processManager.instantiateProcess(processData.processType);
@@ -80,7 +81,33 @@ class AGOGOSProcessor {
                 this.hasOutput.set(property.input.process, true);
             }
             else {
+                if (!property.value)
+                    property.value = this.moduleManager.typeManager.instantiate(property.type);
                 process[key] = property.value;
+                dependencies = dependencies.concat(this.resolveProperty(process, process[key], data.properties[key], key));
+            }
+        }
+        return dependencies;
+    }
+    resolveProperty(process, prop, data, pathToProp) {
+        let dependencies = [];
+        if (!data || !data.properties)
+            return dependencies;
+        for (const key in data.properties) {
+            let property = data.properties[key];
+            if (property.input) {
+                dependencies.push({
+                    self: process,
+                    target: this.processLib.get(property.input.process),
+                    pathSelf: pathToProp + "." + key,
+                    type: property.input.property.startsWith("output") ? "output" : "args",
+                    pathTarget: property.input.property
+                });
+                this.hasOutput.set(property.input.process, true);
+            }
+            else {
+                prop[key] = property.value;
+                dependencies = dependencies.concat(this.resolveProperty(process, prop[key], data.properties[key], pathToProp + "." + key));
             }
         }
         return dependencies;

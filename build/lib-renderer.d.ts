@@ -20,7 +20,7 @@ export declare class AGOGOSRenderer {
     ready: boolean;
     processesData: MapObject<ProcessNodeData>;
     readonly console: {
-        log: (message: any, type?: "log" | "warn" | "error") => void;
+        log: (message: any, type?: "error" | "log" | "warn") => void;
     };
     constructor();
     init(): AGOGOSRenderer;
@@ -41,7 +41,7 @@ declare class App extends React.Component<AppArgs, AppState> {
     constructor(props: AppArgs);
     consoleHistory: ConsoleMessage[];
     console: {
-        log: (message: any, type?: "log" | "warn" | "error") => void;
+        log: (message: any, type?: "error" | "log" | "warn") => void;
     };
     readonly latestConsole: ConsoleMessage;
     onFolderExtend(nodeData: NodeData): NodeData;

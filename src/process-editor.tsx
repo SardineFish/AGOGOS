@@ -111,7 +111,8 @@ class EditorString extends ValueEditor<string>
     }
     componentDidMount()
     {
-        this.input.current!.value = this.props.editvalue;
+        this.input.current!.value = this.props.editvalue ? this.props.editvalue : "";
+        this.props.onChange(this.input.current!.value);
     }
     onChange(e: ChangeEvent<HTMLInputElement>)
     {
@@ -141,7 +142,8 @@ class EditorNumber extends ValueEditor<number>
     }
     componentDidMount()
     {
-        this.input.current!.valueAsNumber = this.props.editvalue;
+        this.input.current!.valueAsNumber = this.props.editvalue ? this.props.editvalue : 0;
+        this.props.onChange(this.input.current!.valueAsNumber);
     }
     onChange(e: ChangeEvent<HTMLInputElement>)
     {
@@ -171,7 +173,8 @@ class EditorBoolean extends ValueEditor<boolean>
     }
     componentDidMount()
     {
-        this.input.current!.checked = this.props.editvalue;
+        this.input.current!.checked = this.props.editvalue ? this.props.editvalue : false;
+        this.props.onChange(this.input.current!.checked);
     }
     onChange(e: ChangeEvent<HTMLInputElement>)
     {
@@ -191,6 +194,14 @@ class EditorBoolean extends ValueEditor<boolean>
     }
 }
 
+const BuildinTypesList = [
+    "string",
+    "number",
+    "boolean",
+    "void",
+    "object",
+    "array"];
+
 
 interface ObjectEditorProps extends EditorProps<object>
 {
@@ -205,15 +216,38 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
 {
     input: RefObject<HTMLInputElement>;
     nodeRef: RefObject<HTMLDivElement>;
+    objData: PropertyData;
     constructor(props: ObjectEditorProps)
     {
         super(props);
         this.nodeRef = React.createRef();
         this.state = { extend: false };
+        this.objData = this.props.objectData ? this.props.objectData : {
+            type: this.props.type,
+            value: {},
+            properties: {}
+        };
+        if (!this.objData.properties)
+            this.objData.properties = {};
+        if (!this.objData.value)
+            this.objData.value = {};
+    }
+    componentDidMount()
+    {
+        NULL(this.props.onChange)
+            .safe(f => f(this.objData))
+            .safe();
     }
     onValueChange(key: string, value: any)
     {
-        this.props.objectData.properties[key] = value;
+        const typeData = AGOGOSRenderer.instance.typeLib[this.props.type];
+        if (BuildinTypesList.includes(typeData.properties[key].type))
+            this.objData.properties[key] = {
+                type: typeData.properties[key].type,
+                value: value
+            };
+        else
+            this.objData.properties[key] = value;
     }
     onPortMouseDown(port: "input" | "output")
     {

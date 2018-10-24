@@ -138,6 +138,13 @@ class TypeManager
         }
         return mapObj;
     }
+    public instantiate(name: string)
+    {
+        let constructor = this.getType(name);
+        if (!constructor)
+            return null;
+        return new constructor();
+    }
 }
 
 class ProcessManager

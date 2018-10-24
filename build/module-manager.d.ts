@@ -16,6 +16,7 @@ declare class TypeManager {
     getType(name: string): typeof Object;
     getTypeData(name: string): TypeData;
     exportTypesData(): MapObject<TypeData>;
+    instantiate(name: string): Object;
 }
 declare class ProcessManager {
     private processLib;
