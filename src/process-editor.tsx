@@ -393,7 +393,7 @@ class ObjectEditor extends Editor
                     }
                 </EditorContent>);
         return (
-            <Editor editorHeader={editorHeader} ctnt={editorContent} {...others}>
+            <Editor editorHeader={editorHeader} editorContent={editorContent} {...others}>
             </Editor>
 
         )
@@ -522,7 +522,7 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
                                     property={outputProperty}
                                     label="Output"
                                     allowInput={false}
-                                    allowOutput={false}
+                                    allowOutput={true}
                                     editable={false}
                                     connecting={this.state.connecting}
                                     onConnectStart={this.props.onConnectStart}

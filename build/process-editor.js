@@ -254,7 +254,7 @@ class ObjectEditor extends Editor {
                 let ChildEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(childType);
                 return (react_1.default.createElement(ChildEditor, { key: key, ref: key, process: this.props.process, property: childProperty, label: key, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput, editable: this.props.editable, connecting: this.props.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: e => this.onChildConnectStart(e), onConnectEnd: e => this.onChildConnectEnd(e) }));
             })));
-        return (react_1.default.createElement(Editor, Object.assign({ editorHeader: editorHeader, ctnt: editorContent }, others)));
+        return (react_1.default.createElement(Editor, Object.assign({ editorHeader: editorHeader, editorContent: editorContent }, others)));
     }
 }
 class ProcessEditor extends react_1.default.Component {
@@ -317,7 +317,7 @@ class ProcessEditor extends react_1.default.Component {
             react_1.default.createElement("div", { className: "node-output" }, (() => {
                 let outputProperty = this.props.process.processOutput;
                 let OutputEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(this.props.process.processOutput.type);
-                return (react_1.default.createElement(OutputEditor, { ref: "output", process: this.props.process.name, property: outputProperty, label: "Output", allowInput: false, allowOutput: false, editable: false, connecting: this.state.connecting, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                return (react_1.default.createElement(OutputEditor, { ref: "output", process: this.props.process.name, property: outputProperty, label: "Output", allowInput: false, allowOutput: true, editable: false, connecting: this.state.connecting, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
             })())));
     }
 }

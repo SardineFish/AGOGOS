@@ -100,6 +100,7 @@ class ProcessSpace extends react_1.default.Component {
         let target = this.pendingConnection.obj.target;
         if (source.port === target.port) {
             lib_renderer_1.AGOGOSRenderer.instance.console.log("Can not connect same port.", "warn");
+            this.pendingConnection.element.remove();
             resetConnection();
             return;
         }
@@ -109,6 +110,7 @@ class ProcessSpace extends react_1.default.Component {
         }
         if (this.processes.get(target.process).process.properties[target.property].input) {
             lib_renderer_1.AGOGOSRenderer.instance.console.log("Already has input connection.", "warn");
+            this.pendingConnection.element.remove();
             resetConnection();
             return;
         }

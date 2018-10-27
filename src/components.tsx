@@ -140,6 +140,7 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         if (source.port === target.port)
         {
             AGOGOSRenderer.instance.console.log("Can not connect same port.", "warn");
+            this.pendingConnection.element.remove();
             resetConnection();
             return;
         }
@@ -152,6 +153,7 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         if (this.processes.get(target.process).process.properties[target.property].input)
         {
             AGOGOSRenderer.instance.console.log("Already has input connection.", "warn");
+            this.pendingConnection.element.remove();
             resetConnection();
             return;
         }
