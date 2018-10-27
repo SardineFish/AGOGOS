@@ -2,13 +2,13 @@ import React, { HTMLProps, RefObject, ChangeEventHandler, ChangeEvent, MouseEven
 import { TestProcessNode, KeyProcess } from "./process-unit";
 import linq from "linq";
 import { getKeys } from "./utility";
-import { getType, BuildinTypes } from "./meta-data";
+import { getType, BuildinTypes, typedef } from "./meta-data";
 import ReactDOM from "react-dom";
-import { Vector2, vec2, EndPoint, ProcessNodeData, PropertyData, TypeData, NULL } from "./lib";
+import { Vector2, vec2, EndPoint, ProcessNodeData, PropertyData, TypeData, NULL, getElementType } from "./lib";
 import { RenderedConnection } from "./components";
 import { AGOGOSRenderer } from "./lib-renderer";
+import { EditorManager } from "./editor-manager";
 
-type EditorValueChangeCallback<T> = (value: T) => void;
 type RefCallback<T> = (ref: T) => void;
 type EventHandler<T> = (e: T) => void;
 export interface DragMoveEvent
@@ -23,177 +23,6 @@ export interface ConnectEvent
     source: EndPoint;
     target: EndPoint;
 }
-interface ProcessNodeProps extends HTMLProps<HTMLDivElement>
-{
-    node: ProcessNodeData;
-    onDragMove?: EventHandler<DragMoveEvent>;
-    onDragMoveStart?: EventHandler<DragMoveEvent>;
-    connecting?: boolean;
-    portFilter?: string;
-    onNameChange?: EventHandler<string>;
-    onConnectEnd?: EventHandler<EndPoint>;
-    onConnectStart?: EventHandler<EndPoint>;
-    refCallback?: RefCallback<ReactProcessNode>;
-}
-
-interface EditorProps<T>
-{
-    label: string;
-    className?: string;
-    allowInput?: boolean;
-    allowOutput?: boolean;
-    node: ProcessNodeData;
-    propertyName: string;
-    key?: string | number;
-    type?: string;
-    editvalue: T;
-    editable?: boolean;
-    onChange?: EditorValueChangeCallback<T>;
-    connecting?: boolean;
-    portFilter?: string;
-    onConnectEnd?: EventHandler<EndPoint>;
-    onConnectStart?: EventHandler<EndPoint>;
-}
-interface ProcessNodeState
-{
-    connecting: boolean;
-    portFilter: string;
-}
-class ValueEditor<T> extends React.Component<EditorProps<T>>
-{
-    onPortMouseDown(port:"input"|"output")
-    {
-        if (this.props.onConnectStart)
-        {
-            this.props.onConnectStart({
-                process: this.props.node.name,
-                property: this.props.propertyName,
-                port: port
-            });
-        }
-    }
-    onPortMouseUp(port: "input" | "output")
-    {
-        if (this.props.connecting && this.props.onConnectEnd)
-            this.props.onConnectEnd({
-                process: this.props.node.name,
-                property: this.props.propertyName,
-                port: port
-            });
-    }
-    doRender(element:JSX.Element)
-    {
-        return (
-            <span className={["editor",`editor-${this.props.propertyName}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
-                {
-                    this.props.allowInput ?
-                        (<span className="port-input" onMouseDown={()=>this.onPortMouseDown("input")} onMouseUp={()=>this.onPortMouseUp("input")}></span>) : null
-                }
-                <span className="editor-label">{this.props.label}</span>
-                {
-                    element
-                }
-                {
-                    this.props.allowOutput ?
-                        (<span className="port-output" onMouseDown={() => this.onPortMouseDown("output")} onMouseUp={() => this.onPortMouseUp("output")}></span>) : null
-                }
-            </span>
-        )
-    }
-}
-class EditorString extends ValueEditor<string>
-{
-    input: RefObject<HTMLInputElement>;
-    constructor(props: EditorProps<string>)
-    {
-        super(props);
-        this.input = React.createRef();
-    }
-    componentDidMount()
-    {
-        this.input.current!.value = this.props.editvalue ? this.props.editvalue : "";
-        this.props.onChange(this.input.current!.value);
-    }
-    onChange(e: ChangeEvent<HTMLInputElement>)
-    {
-        this.props.onChange(e.target.value);
-    }
-    render()
-    {
-        const editable = this.props.editable === undefined ? true : this.props.editable;
-        return this.doRender((
-            <input
-                type="text"
-                className="editor-content"
-                onChange={(e) => this.onChange(e)}
-                ref={this.input}
-                {...(editable ? {} : { value: this.props.editvalue })} />
-        ));
-    }
-}
-
-class EditorNumber extends ValueEditor<number>
-{
-    input: RefObject<HTMLInputElement>;
-    constructor(props: EditorProps<number>)
-    {
-        super(props);
-        this.input = React.createRef();
-    }
-    componentDidMount()
-    {
-        this.input.current!.valueAsNumber = this.props.editvalue ? this.props.editvalue : 0;
-        this.props.onChange(this.input.current!.valueAsNumber);
-    }
-    onChange(e: ChangeEvent<HTMLInputElement>)
-    {
-        this.props.onChange(e.target.valueAsNumber);
-    }
-    render()
-    {
-        const editable = this.props.editable === undefined ? true : this.props.editable;
-        return this.doRender((
-            <input
-                type="number"
-                className="editor-content"
-                onChange={(e) => this.onChange(e)}
-                ref={this.input}
-                {...(editable ? {} : { value: this.props.editvalue })} />
-        ));
-    }
-}
-
-class EditorBoolean extends ValueEditor<boolean>
-{
-    input: RefObject<HTMLInputElement>;
-    constructor(props: EditorProps<boolean>)
-    {
-        super(props);
-        this.input = React.createRef();
-    }
-    componentDidMount()
-    {
-        this.input.current!.checked = this.props.editvalue ? this.props.editvalue : false;
-        this.props.onChange(this.input.current!.checked);
-    }
-    onChange(e: ChangeEvent<HTMLInputElement>)
-    {
-        this.props.onChange(e.target.checked);
-    }
-    render()
-    {
-        const editable = this.props.editable === undefined ? true : this.props.editable;
-        return this.doRender((
-            <input
-                type="checkbox"
-                className="editor-content"
-                onChange={(e) => this.onChange(e)}
-                ref={this.input}
-                {...(editable ? {} : { checked: this.props.editvalue })} />
-        ));
-    }
-}
-
 const BuildinTypesList = [
     "string",
     "number",
@@ -201,53 +30,40 @@ const BuildinTypesList = [
     "void",
     "object",
     "array"];
-
-
-interface ObjectEditorProps extends EditorProps<object>
+/*
+interface ArrayEditorProps extends EditorProps<any[]>
 {
-    objectData: PropertyData;
-    type: string;
 }
-interface ObjectEditorState
+interface ArrayEditorState
 {
     extend: boolean;
+    arrayData: PropertyData;
 }
-class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
+
+class ArrayEditor extends React.Component<ArrayEditorProps, ArrayEditorState>
 {
-    input: RefObject<HTMLInputElement>;
     nodeRef: RefObject<HTMLDivElement>;
-    objData: PropertyData;
-    constructor(props: ObjectEditorProps)
+    constructor(props: ArrayEditorProps)
     {
         super(props);
         this.nodeRef = React.createRef();
-        this.state = { extend: false };
-        this.objData = this.props.objectData ? this.props.objectData : {
-            type: this.props.type,
-            value: {},
-            properties: {}
+        this.state = {
+            extend: false,
+            arrayData: this.props.editvalue ? this.props.editvalue : {
+                type: this.props.type,
+                elementType: getElementType(this.props.type),
+                elements:[]
+            }
         };
-        if (!this.objData.properties)
-            this.objData.properties = {};
-        if (!this.objData.value)
-            this.objData.value = {};
-    }
+    }   
     componentDidMount()
     {
-        NULL(this.props.onChange)
-            .safe(f => f(this.objData))
-            .safe();
+        if (this.props.onChange)
+            this.props.onChange(this.state.arrayData);
     }
-    onValueChange(key: string, value: any)
+    onValueChange(idx: number, value: any)
     {
-        const typeData = AGOGOSRenderer.instance.typeLib[this.props.type];
-        if (BuildinTypesList.includes(typeData.properties[key].type))
-            this.objData.properties[key] = {
-                type: typeData.properties[key].type,
-                value: value
-            };
-        else
-            this.objData.properties[key] = value;
+        this.state.arrayData.elements[idx] = value;
     }
     onPortMouseDown(port: "input" | "output")
     {
@@ -291,23 +107,122 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
     }
+}*/
+class EditorContent extends React.Component
+{
     render()
     {
-        const typeData = AGOGOSRenderer.instance.typeLib[this.props.type];
         return (
-            <div className={["object-editor",this.state.extend?"extend":"fold"].join(" ")} ref={this.nodeRef}>
-                <span className={["editor", "editor-header", `editor-${this.props.propertyName}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
+            <div className="editor-children">
+                {this.props.children}
+            </div>
+        )
+    }
+}
+interface EditorProps
+{
+    process: string;
+    className?: string;
+    allowInput?: boolean;
+    allowOutput?: boolean;
+    property: PropertyData;
+    label: string;
+    onConnectEnd?: EventHandler<EndPoint>;
+    onConnectStart?: EventHandler<EndPoint>;
+    editorHeader?: React.ReactNode;
+    editorContent?: React.ReactNode;
+    editable?: boolean;
+    connecting?: boolean;
+    onChanged?: (data: PropertyData) => void;
+}
+interface EditorState
+{
+    extend: boolean;
+}
+export class Editor
+    <P extends EditorProps = EditorProps,
+    S extends EditorState = EditorState>
+    extends React.Component<P, S>
+{
+    nodeRef: RefObject<HTMLDivElement>;
+    constructor(props: P)
+    {
+        super(props);
+        this.props.property.properties = this.props.property.properties || {};
+        this.props.property.elements = this.props.property.elements || [];
+        this.state = {
+            extend: false
+        } as S;
+        this.nodeRef = React.createRef();
+    }
+    onPortMouseDown(port: "input" | "output")
+    {
+        if (this.props.onConnectStart)
+        {
+            this.props.onConnectStart({
+                process: this.props.process,
+                property: this.props.property.name,
+                port: port
+            });
+        }
+    }
+    onPortMouseUp(port: "input" | "output")
+    {
+        if (this.props.connecting && this.props.onConnectEnd)
+            this.props.onConnectEnd({
+                process: this.props.process,
+                property: this.props.property.name,
+                port: port
+            });
+    }
+    onChildrenChanged(data: PropertyData)
+    {
+        this.props.property.properties[data.name] = data;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    onChildConnectStart(endpoint: EndPoint)
+    {
+        endpoint.property = `${this.props.property.name}.${endpoint.property}`;
+        if (this.props.onConnectStart)
+            this.props.onConnectStart(endpoint);
+    }
+    onChildConnectEnd(endpoint: EndPoint)
+    {
+        endpoint.property = `${this.props.property.name}.${endpoint.property}`;
+        if (this.props.onConnectEnd)
+            this.props.onConnectEnd(endpoint);
+    }
+    getPortPos(key: string, port: string): Vector2
+    {
+        let keys = key.split(".");
+        if (keys.length > 1 && (this.refs[keys[0]] as ObjectEditor).state.extend)
+        {
+            return (this.refs[keys[0]] as ObjectEditor).getPortPos(keys.slice(1).join('.'), port);
+        }
+        let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
+        return vec2(rect.left + 5, rect.top + 5);
+    }
+    render()
+    {
+        return (
+            <div className={["object-editor", this.state.extend ? "extend" : "fold"].join(" ")} ref={this.nodeRef}>
+                <span className={["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
                     {
                         this.props.allowInput ?
                             (<span className="port-input" onMouseDown={() => this.onPortMouseDown("input")} onMouseUp={() => this.onPortMouseUp("input")}></span>) : null
                     }
                     {
-                        typeData ?
+                        this.props.editorContent ?
                             <span className={`fold-icon ${this.state.extend ? "extend" : "fold"}`} onClick={() => this.setState({ extend: !this.state.extend })}></span>
-                            :null
+                            : null
                     }
                     <span className="editor-label">{this.props.label}</span>
-                    <span className="editor-content">{`object: ${this.props.type}`}</span>
+                    {
+                        this.props.editorHeader ?
+                            this.props.editorHeader
+                            : `object: ${this.props.property.type}`
+                    }
                     {
                         this.props.allowOutput ?
                             (<span className="port-output" onMouseDown={() => this.onPortMouseDown("output")} onMouseUp={() => this.onPortMouseUp("output")}></span>) : null
@@ -315,81 +230,7 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
                 </span>
                 {
                     this.state.extend ?
-                        <div className="editor-children">
-                            {
-                                getKeys(typeData.properties).map((key, idx) =>
-                                {
-                                    switch (typeData.properties[key].type)
-                                    {
-                                        case BuildinTypes.string:
-                                            return (<EditorString
-                                                node={this.props.node}
-                                                propertyName={key}
-                                                label={key}
-                                                allowInput={this.props.allowInput}
-                                                allowOutput={this.props.allowOutput}
-                                                ref={key}
-                                                editvalue={this.props.objectData!.properties[key].value}
-                                                key={idx}
-                                                onChange={(value) => this.onValueChange(key, value)}
-                                                connecting={this.props.connecting}
-                                                portFilter={this.props.portFilter}
-                                                onConnectStart={(endpoint)=>this.onChildConnectStart(endpoint)}
-                                                onConnectEnd={(endpoint)=>this.onChildConnectEnd(endpoint)} />);
-                                        case BuildinTypes.number:
-                                            return (<EditorNumber
-                                                node={this.props.node}
-                                                propertyName={key}
-                                                label={key}
-                                                allowInput={this.props.allowInput}
-                                                allowOutput={this.props.allowOutput}
-                                                ref={key}
-                                                editvalue={NULL(this.props.objectData).safe(() => this.props.objectData.value).safe(() => this.props.objectData.properties).safe(p => p[key]).safe(p => p.value).safe()}
-                                                key={idx}
-                                                onChange={(value) => this.onValueChange(key, value)}
-                                                connecting={this.props.connecting}
-                                                portFilter={this.props.portFilter}
-                                                onConnectStart={(endpoint) => this.onChildConnectStart(endpoint)}
-                                                onConnectEnd={(endpoint) => this.onChildConnectEnd(endpoint)} />);
-                                        case BuildinTypes.boolean:
-                                            return (<EditorBoolean
-                                                node={this.props.node}
-                                                propertyName={key}
-                                                label={key}
-                                                allowInput={this.props.allowInput}
-                                                allowOutput={this.props.allowOutput}
-                                                ref={key}
-                                                editvalue={NULL(this.props.objectData).safe(() => this.props.objectData.value).safe(() => this.props.objectData.properties).safe(p => p[key]).safe(p => p.value).safe()}
-                                                key={idx}
-                                                onChange={(value) => this.onValueChange(key, value)}
-                                                connecting={this.props.connecting}
-                                                portFilter={this.props.portFilter}
-                                                onConnectStart={(endpoint) => this.onChildConnectStart(endpoint)}
-                                                onConnectEnd={(endpoint) => this.onChildConnectEnd(endpoint)} />);
-                                        default:
-                                            return (
-                                                <EditorObject
-                                                    node={this.props.node}
-                                                    propertyName={key}
-                                                    type={typeData.properties[key].type}
-                                                    objectData={NULL(this.props.objectData).safe(data=>data.value).safe(()=>this.props.objectData.properties[key]).safe()}
-                                                    label={key}
-                                                    allowInput={this.props.allowInput}
-                                                    allowOutput={this.props.allowOutput}
-                                                    ref={key}
-                                                    editvalue={NULL(this.props.objectData).safe(()=>this.props.objectData.value).safe(() => this.props.objectData.properties).safe(p => p[key]).safe(p => p.value).safe()}
-                                                    key={idx}
-                                                    onChange={(value) => this.onValueChange(key, value)}
-                                                    connecting={this.props.connecting}
-                                                    portFilter={this.props.portFilter}
-                                                    onConnectStart={(endpoint) => this.onChildConnectStart(endpoint)}
-                                                    onConnectEnd={(endpoint) => this.onChildConnectEnd(endpoint)}
-                                                />
-                                            )
-                                    }
-                                })
-                            }
-                        </div>
+                        this.props.editorContent
                         : null
                 }
             </div>
@@ -397,29 +238,194 @@ class EditorObject extends React.Component<ObjectEditorProps,ObjectEditorState>
     }
 }
 
-export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNodeState>
+class StringEditor extends Editor
 {
-    constructor(props:ProcessNodeProps)
+    input: RefObject<HTMLInputElement>;
+    constructor(props: EditorProps)
+    {
+        super(props);
+        this.input = React.createRef();
+    }
+    componentDidMount()
+    {
+        this.input.current.value = this.props.property.value ? this.props.property.value : "";
+        this.props.property.value = this.input.current.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    onChange(e: ChangeEvent<HTMLInputElement>)
+    {
+        this.props.property.value = e.target.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    render()
+    {
+        let { children, editorHeader, ...others } = this.props;
+        editorHeader = (<input
+            type="text"
+            className="editor-content"
+            onChange={(e) => this.onChange(e)}
+            ref={this.input}
+            {...(this.props.editable ? {} : { value: this.props.property.value })} />);
+        
+        return (
+            <Editor header={editorHeader} {...others}>
+            </Editor>
+        )
+    }
+}
+
+class NumberEditor extends Editor
+{
+    input: RefObject<HTMLInputElement>;
+    constructor(props: EditorProps)
+    {
+        super(props);
+        this.input = React.createRef();
+    }
+    componentDidMount()
+    {
+        this.input!.current.value = this.props.property.value ? this.props.property.value : 0;
+        this.props.property.value = this.input.current.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    onChange(e: ChangeEvent<HTMLInputElement>)
+    {
+        this.props.property.value = e.target.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    render()
+    {
+        let { children, editorHeader, ...others } = this.props;
+        editorHeader = (<input
+            type="number"
+            className="editor-content"
+            onChange={(e) => this.onChange(e)}
+            ref={this.input}
+            {...(this.props.editable ? {} : { value: this.props.property.value })} />);
+        
+        return (
+            <Editor editorHeader={editorHeader} {...others}>
+            </Editor>
+        );
+    }
+}
+
+class BooleanEditor extends Editor
+{
+    input: RefObject<HTMLInputElement>;
+    constructor(props: EditorProps)
+    {
+        super(props);
+        this.input = React.createRef();
+    }
+    componentDidMount()
+    {
+        this.input.current.value = this.props.property.value ? this.props.property.value : 0;
+        this.props.property.value = this.input.current.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    onChange(e: ChangeEvent<HTMLInputElement>)
+    {
+        this.props.property.value = e.target.value;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    render()
+    {
+        let { children, editorHeader, ...others } = this.props;
+        editorHeader = (<input
+            type="checkbox"
+            className="editor-content"
+            onChange={(e) => this.onChange(e)}
+            ref={this.input}
+            {...(this.props.editable ? {} : { value: this.props.property.value })} />);
+        return (
+            <Editor editorHeader={editorHeader} {...others}>
+            </Editor>
+        );
+    }
+}
+
+class ObjectEditor extends Editor
+{
+    render()
+    {
+        const typeData = AGOGOSRenderer.instance.typeLib[this.props.property.type];
+        let { children, editorHeader, editorContent, ...others } = this.props;
+        editorHeader = (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
+        if (typeData)
+            editorContent = (
+                <EditorContent>
+                    {
+                        getKeys(typeData.properties).map((key, idx) =>
+                        {
+                            let childType = typeData.properties[key].type;
+                            let childProperty = this.props.property.properties[key];
+                            if (!childProperty)
+                                childProperty = {
+                                    name: key,
+                                    type: childType,
+                                };
+                            this.props.property.properties[key] = childProperty;
+                            let ChildEditor = AGOGOSRenderer.instance.editorManager.getEditor(childType);
+                            return (
+                                <ChildEditor
+                                    key={key}
+                                    ref={key}
+                                    process={this.props.process}
+                                    property={childProperty}
+                                    label={key}
+                                    allowInput={this.props.allowInput}
+                                    allowOutput={this.props.allowOutput}
+                                    editable={this.props.editable}
+                                    connecting={this.props.connecting}
+                                    onChanged={(data) => this.onChildrenChanged(data)}
+                                    onConnectStart={e => this.onChildConnectStart(e)}
+                                    onConnectEnd={e => this.onChildConnectEnd(e)}
+                                />
+                            )
+                        })
+                    }
+                </EditorContent>);
+        return (
+            <Editor editorHeader={editorHeader} ctnt={editorContent} {...others}>
+            </Editor>
+
+        )
+    }
+}
+interface ProcessEditorProps
+{
+    process:ProcessNodeData
+    onDragMove?: EventHandler<DragMoveEvent>;
+    onDragMoveStart?: EventHandler<DragMoveEvent>;
+    onNameChange?: EventHandler<string>;
+    onConnectEnd?: EventHandler<EndPoint>;
+    onConnectStart?: EventHandler<EndPoint>;
+    refCallback?: RefCallback<ProcessEditor>;
+    onChanged?: (data: ProcessNodeData) => void;
+}
+interface ProcessEditorState
+{
+    connecting: boolean;
+}
+export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEditorState>
+{
+    nodeRef: RefObject<HTMLDivElement>;
+    drag: boolean = false;
+    holdPos: Vector2;
+    constructor(props: ProcessEditorProps)
     {
         super(props);
         this.state = {
-            portFilter: props.portFilter,
-            connecting: props.connecting
+            connecting: false
         };
         this.nodeRef = React.createRef();
-    }
-    drag: boolean = false;
-    holdPos: Vector2;
-    nodeRef: RefObject<HTMLDivElement>;
-    onValueChange(key: string, e: any)
-    {
-        if (key === "name" && this.props.onNameChange)
-        {
-            this.props.onNameChange(e);
-            this.props.node.name = e;
-        }
-        else
-            this.props.node.properties[key].value = e;
     }
     onMouseDown(e: MouseEvent<HTMLElement>)
     {
@@ -455,144 +461,75 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
             this.props.refCallback(this);
         }
     }
+    onChildrenChanged(data: PropertyData)
+    {
+        this.props.process.properties[data.name] = data;
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.process);
+    }
     getPortPos(key: string, port: string): Vector2
     {
         let keys = key.split(".");
-        if (keys.length > 1 && (this.refs[keys[0]] as EditorObject).state.extend)
+        if (keys.length > 1 && (this.refs[keys[0]] as ObjectEditor).state.extend)
         {
-            return (this.refs[keys[0]] as EditorObject).getPortPos(keys.slice(1).join('.'), port);
+            return (this.refs[keys[0]] as ObjectEditor).getPortPos(keys.slice(1).join('.'), port);
         }
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
     }
     render()
     {
-        const outputType = this.props.node.processOutput.type;
+        const outputType = this.props.process.processOutput.type;
         return (
             <div className="node-wrapper" ref={this.nodeRef}>
-                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.node.processType}</header>
+                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.process.processType}</header>
                 <div className="node-content">
                     {
-                        Array.from(getKeys(this.props.node.properties))
-                            .map((key, idx) =>
-                            {
-                                switch (this.props.node.properties[key].type)
-                                {
-                                    case BuildinTypes.string:
-                                        return (<EditorString
-                                            node={this.props.node}
-                                            propertyName={key}
-                                            label={key}
-                                            allowOutput
-                                            ref={key}
-                                            editvalue={this.props.node.properties[key].value}
-                                            key={idx} allowInput
-                                            onChange={(value) => this.onValueChange(key, value)}
-                                            connecting={this.state.connecting}
-                                            portFilter={this.state.portFilter}
-                                            onConnectStart={this.props.onConnectStart}
-                                            onConnectEnd={this.props.onConnectEnd}/>);
-                                    case BuildinTypes.number:
-                                        return (<EditorNumber
-                                            node={this.props.node}
-                                            propertyName={key}
-                                            label={key}
-                                            allowOutput
-                                            ref={key}
-                                            editvalue={this.props.node.properties[key].value}
-                                            key={idx} allowInput onChange={(value) => this.onValueChange(key, value)}
-                                            connecting={this.state.connecting}
-                                            portFilter={this.state.portFilter}
-                                            onConnectStart={this.props.onConnectStart}
-                                            onConnectEnd={this.props.onConnectEnd}/>);
-                                    case BuildinTypes.boolean:
-                                        return (<EditorBoolean
-                                            node={this.props.node}
-                                            propertyName={key}
-                                            label={key}
-                                            allowOutput
-                                            ref={key}
-                                            editvalue={this.props.node.properties[key].value}
-                                            key={idx} allowInput onChange={(value) => this.onValueChange(key, value)}
-                                            connecting={this.state.connecting}
-                                            portFilter={this.state.portFilter}
-                                            onConnectStart={this.props.onConnectStart}
-                                            onConnectEnd={this.props.onConnectEnd} />);
-                                    default:
-                                        return (
-                                            <EditorObject
-                                                type={this.props.node.properties[key].type}
-                                                node={this.props.node}
-                                                propertyName={key}
-                                                objectData={this.props.node.properties[key]}
-                                                label={key}
-                                                allowOutput
-                                                ref={key}
-                                                editvalue={this.props.node.properties[key].value}
-                                                key={idx} allowInput onChange={(value) => this.onValueChange(key, value)}
-                                                connecting={this.state.connecting}
-                                                portFilter={this.state.portFilter}
-                                                onConnectStart={this.props.onConnectStart}
-                                                onConnectEnd={this.props.onConnectEnd} 
-                                            />
-                                        )
-                                }
-                            })
+                        getKeys(this.props.process.properties).map((key, idx) =>
+                        {
+                            let childType = this.props.process.properties[key].type;
+                            let childProperty = this.props.process.properties[key];
+                            let ChildEditor = AGOGOSRenderer.instance.editorManager.getEditor(childType);
+                            return (
+                                <ChildEditor
+                                    key={key}
+                                    ref={key}
+                                    process={this.props.process.name}
+                                    property={childProperty}
+                                    label={key}
+                                    allowInput={true}
+                                    allowOutput={true}
+                                    editable={true}
+                                    connecting={this.state.connecting}
+                                    onChanged={(data) => this.onChildrenChanged(data)}
+                                    onConnectStart={this.props.onConnectStart}
+                                    onConnectEnd={this.props.onConnectEnd}
+                                />
+                            )
+                        })
                     }
                 </div>
                 <div className="node-output">
                     {
-                        linq.from([
-                            {
-                                key: BuildinTypes.string, handler: () => (<EditorString
-                                    node={this.props.node}
-                                    propertyName="output"
-                                    label="Output"
+                        (() =>
+                        {
+                            let outputProperty = this.props.process.processOutput;
+                            let OutputEditor = AGOGOSRenderer.instance.editorManager.getEditor(this.props.process.processOutput.type);
+                            return (
+                                <OutputEditor
                                     ref="output"
-                                    editvalue=""
-                                    allowOutput
-                                    onConnectStart={this.props.onConnectStart}
-                                    onConnectEnd={this.props.onConnectEnd} />)
-                            },
-                            {
-                                key: BuildinTypes.number, handler: () => (<EditorNumber
-                                    node={this.props.node}
-                                    propertyName="output"
+                                    process={this.props.process.name}
+                                    property={outputProperty}
                                     label="Output"
-                                    ref="output"
-                                    editvalue={NaN}
-                                    allowOutput
+                                    allowInput={false}
+                                    allowOutput={false}
+                                    editable={false}
+                                    connecting={this.state.connecting}
                                     onConnectStart={this.props.onConnectStart}
-                                    onConnectEnd={this.props.onConnectEnd}/>)
-                            },
-                            {
-                                key: BuildinTypes.boolean, handler: () => (<EditorBoolean
-                                    node={this.props.node}
-                                    propertyName="output"
-                                    label="Output"
-                                    ref="output"
-                                    editvalue={false}
-                                    allowOutput
-                                    onConnectStart={this.props.onConnectStart}
-                                    onConnectEnd={this.props.onConnectEnd}/>)
-                            },
-                            {
-                                key: outputType, handler: () => (<EditorObject
-                                    node={this.props.node}
-                                    objectData={this.props.node.processOutput}
-                                    propertyName="output"
-                                    label="Output"
-                                    ref="output"
-                                    editvalue={null}
-                                    type={outputType}
-                                    allowOutput
-                                    onConnectStart={this.props.onConnectStart}
-                                    onConnectEnd={this.props.onConnectEnd} />)
-                            },
-                        ])
-                            .where(proc => proc.key === outputType)
-                            .firstOrDefault()
-                            .handler()
+                                    onConnectEnd={this.props.onConnectEnd}
+                                />
+                            )
+                        })()
                     }
                 </div>
             </div>
@@ -600,24 +537,19 @@ export class ReactProcessNode extends React.Component<ProcessNodeProps,ProcessNo
     }
 }
 
-
-
-export function renderProcessNode(props: ProcessNodeProps, pos:Vector2=vec2(0,0)): HTMLElement
+export function renderProcessNode(props: ProcessEditorProps, pos: Vector2 = vec2(0, 0)): HTMLElement
 {
     let element = document.createElement("div");
     element.className = "process-node";
     element.style.left = `${pos.x}px`;
     element.style.top = `${pos.y}px`;
-    let { ref, ...others } = props;
     const reactElement = (
-        <ReactProcessNode
-            {...others}/>
+        <ProcessEditor
+            {...props} />
     );
     ReactDOM.render(reactElement, element)
     return element;
 }
-
-
 interface ConnectLineProps
 {
     from: Vector2;
@@ -666,7 +598,7 @@ export class ConnectLine extends React.Component<ConnectLineProps, ConnectLinePr
                 /> */
     }
 }
-export function RenderConnectLine(props: ConnectLineProps): Promise<{line: ConnectLine,element:HTMLElement }>
+export function RenderConnectLine(props: ConnectLineProps): Promise<{ line: ConnectLine, element: HTMLElement }>
 {
     return new Promise((resolver) =>
     {
@@ -681,4 +613,13 @@ export function RenderConnectLine(props: ConnectLineProps): Promise<{line: Conne
         );
         ReactDOM.render(reactElement, element);
     });
+}
+
+export function InitEditor(editorManager: EditorManager)
+{
+    editorManager.addEditor(BuildinTypes.number, NumberEditor as any);
+    editorManager.addEditor(BuildinTypes.string, StringEditor as any);
+    editorManager.addEditor(BuildinTypes.boolean, BooleanEditor as any);
+    editorManager.addEditor(BuildinTypes.object, ObjectEditor as any);
+    editorManager.setDefault(ObjectEditor as any);
 }

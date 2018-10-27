@@ -21,7 +21,7 @@ const typeMetadataKey = Symbol("type");
 function type(typeDef) {
     if (typeDef instanceof Function) {
         let type = getTypedef(typeDef);
-        type = type ? type : BuildinTypes.object;
+        type = type ? type : exports.BuildinTypes.object;
         return Reflect.metadata(typeMetadataKey, type);
     }
     return Reflect.metadata(typeMetadataKey, typeDef);
@@ -30,19 +30,25 @@ exports.type = type;
 function getType(target, propertyKey) {
     let type = Reflect.getMetadata(typeMetadataKey, target, propertyKey);
     if (!type)
-        return BuildinTypes.object;
+        return exports.BuildinTypes.object;
     return type;
 }
 exports.getType = getType;
-var BuildinTypes;
-(function (BuildinTypes) {
-    BuildinTypes["string"] = "string";
-    BuildinTypes["number"] = "number";
-    BuildinTypes["boolean"] = "boolean";
-    BuildinTypes["void"] = "void";
-    BuildinTypes["object"] = "object";
-    BuildinTypes["array"] = "array";
-})(BuildinTypes = exports.BuildinTypes || (exports.BuildinTypes = {}));
+exports.BuildinTypes = {
+    string: "string",
+    number: "number",
+    boolean: "boolean",
+    void: "void",
+    object: "object",
+    array: (type) => {
+        let typeName = type;
+        if (type instanceof Function) {
+            typeName = getTypedef(type);
+            typeName = typeName ? typeName : exports.BuildinTypes.object;
+        }
+        return `${typeName}[]`;
+    },
+};
 const [jsonIgnore, getJsonIgnore] = DectatorFactory("jsonIgnore", true);
 exports.jsonIgnore = jsonIgnore;
 exports.getJsonIgnore = getJsonIgnore;
@@ -73,4 +79,15 @@ function getTypedef(constructor) {
         return null;
 }
 exports.getTypedef = getTypedef;
+function iterableProcess(constructor) {
+    if (constructor)
+        constructor.__iterableProcess = true;
+}
+exports.iterableProcess = iterableProcess;
+function isIterableProcess(constructor) {
+    if (constructor)
+        return constructor.__iterableProcess ? true : false;
+    return false;
+}
+exports.isIterableProcess = isIterableProcess;
 //# sourceMappingURL=meta-data.js.map

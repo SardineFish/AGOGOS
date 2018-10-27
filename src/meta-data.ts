@@ -42,15 +42,24 @@ export function getType(target: any, propertyKey: string)
         return BuildinTypes.object;
     return type;
 }
-export enum BuildinTypes
+export const BuildinTypes =
 {
-    string = "string",
-    number = "number",
-    boolean = "boolean",
-    void = "void",
-    object = "object", 
-    array = "array",
-}
+    string: "string",
+    number: "number",
+    boolean: "boolean",
+    void: "void",
+    object: "object",
+    array: (type: string | Function) =>
+    {
+        let typeName = type;
+        if (type instanceof Function)
+        {
+            typeName = getTypedef(type);
+            typeName = typeName ? typeName : BuildinTypes.object;
+        }
+        return `${typeName}[]`;
+    },
+};
 const [jsonIgnore, getJsonIgnore] = DectatorFactory<boolean>("jsonIgnore", true);
 export { jsonIgnore, getJsonIgnore };
     
@@ -69,6 +78,7 @@ export function getProcess(constructor: Function): string
         return null;
 }
 
+
 export function typedef(constructor: Function)
 {
     if (constructor)
@@ -82,4 +92,16 @@ export function getTypedef(constructor: Function): string
         return (constructor as any).__agogosType;
     else
         return null;
+}
+
+export function iterableProcess(constructor: Function)
+{
+    if (constructor)
+        (constructor as any).__iterableProcess = true;
+}
+export function isIterableProcess(constructor: Function)
+{
+    if (constructor)
+        return (constructor as any).__iterableProcess ? true : false;
+    return false;
 }

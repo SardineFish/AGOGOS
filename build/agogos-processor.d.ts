@@ -3,13 +3,15 @@ import { ModuleManager } from "./module-manager";
 export declare class AGOGOSProcessor {
     private processList;
     private processLib;
-    private processDependencies;
+    private backwardDependencies;
+    private forwardDependencies;
     private hasOutput;
     private outputLib;
     private moduleManager;
     constructor(moduleManager: ModuleManager, processes: MapObject<ProcessNodeData>);
     run(): void;
-    private process;
+    private backwardProcess;
+    private forwardProcess;
     private applyDependence;
     private resolveProcess;
     private resolveProperty;

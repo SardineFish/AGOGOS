@@ -5,6 +5,7 @@ import * as React from "react";
 import { NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
 import { GeneralIPC } from "./ipc";
 import { ProjectFileData } from "./lib-renderer";
+import { EditorManager } from "./editor-manager";
 export declare function GetProjectSettings(): AGOGOSProject;
 export declare function PopupProjectMenu(context: string): void;
 export declare function diffProjectFilesRenderer(files: ProjectFile, fileNode: NodeData): NodeData;
@@ -17,6 +18,7 @@ export declare class AGOGOSRenderer {
     app: App;
     processLib: MapObject<ProcessNodeData>;
     typeLib: MapObject<TypeData>;
+    editorManager: EditorManager;
     ready: boolean;
     processesData: MapObject<ProcessNodeData>;
     readonly console: {

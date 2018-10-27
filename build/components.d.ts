@@ -1,13 +1,13 @@
 import React, { HTMLProps, RefObject } from "react";
 import ViewPort from "../../react-free-viewport/dist";
-import { ReactProcessNode, ConnectLine } from "./process-editor";
+import { ConnectLine, ProcessEditor } from "./process-editor";
 import { Vector2, Connection, EndPoint, ProcessNodeData } from "./lib";
 interface PaneProps extends HTMLProps<HTMLDivElement> {
     header: string;
 }
 interface RenderedProcessNode {
     process: ProcessNodeData;
-    renderer: ReactProcessNode;
+    renderer: ProcessEditor;
 }
 interface RenderedObject<TObj, TRenderer extends React.Component> {
     obj: TObj;

@@ -1,15 +1,16 @@
-import { type, BuildinTypes, process, typedef } from "../meta-data";
+import { type, process, typedef, iterableProcess } from "../meta-data";
 import { ProcessUnit } from "../process-unit";
 declare const agogos: {
-    string: BuildinTypes.string;
-    number: BuildinTypes.number;
-    boolean: BuildinTypes.boolean;
-    void: BuildinTypes.void;
-    object: BuildinTypes.object;
-    array: BuildinTypes.array;
+    string: string;
+    number: string;
+    boolean: string;
+    void: string;
+    object: string;
+    array: (type: string | Function) => string;
     type: typeof type;
     Unit: typeof ProcessUnit;
     process: typeof process;
+    iterable: typeof iterableProcess;
     typedef: typeof typedef;
     console: {
         log: (message: any) => void;

@@ -23,6 +23,8 @@ const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
 const lib_1 = require("./lib");
 const project_1 = require("./project");
+const editor_manager_1 = require("./editor-manager");
+const process_editor_1 = require("./process-editor");
 const { Menu } = electron_1.remote;
 const $ = (selector) => document.querySelector(selector);
 function GetProjectSettings() {
@@ -56,6 +58,8 @@ class AGOGOSRenderer {
         this.ready = false;
         this.processesData = null;
         AGOGOSRenderer.instance = this;
+        this.editorManager = new editor_manager_1.EditorManager();
+        process_editor_1.InitEditor(this.editorManager);
     }
     get console() { return this.app.console; }
     ;

@@ -51,10 +51,13 @@ export interface ProcessNodeData {
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
-export declare class PropertyData {
+export declare class PropertyData<T = any> {
+    name: string;
     type: string;
+    elementType?: string;
+    elements?: PropertyData[];
     properties?: MapObject<PropertyData>;
-    value: any;
+    value?: T;
     input?: EndPoint;
     output?: EndPoint;
 }
@@ -74,3 +77,4 @@ export declare class NullSafe<T> {
     constructor(obj: T);
 }
 export declare function NULL<T>(obj: T): NullSafe<T>;
+export declare function getElementType(typeName: string): string;

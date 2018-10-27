@@ -17,6 +17,8 @@ import linq from "linq";
 import { ProjectFileData } from "./lib-renderer";
 import { switchCase } from "./lib";
 import { ProjFile } from "./project";
+import { EditorManager } from "./editor-manager";
+import { InitEditor } from "./process-editor";
 
 const { Menu } = remote;
 const $ = (selector: string): HTMLElement => document.querySelector(selector);
@@ -64,6 +66,7 @@ export class AGOGOSRenderer
 
     public processLib: MapObject<ProcessNodeData>;
     public typeLib: MapObject<TypeData>;
+    public editorManager: EditorManager;
     public ready = false;
 
     public processesData: MapObject<ProcessNodeData>  = null;
@@ -72,6 +75,8 @@ export class AGOGOSRenderer
     constructor()
     {
         AGOGOSRenderer.instance = this;
+        this.editorManager = new EditorManager();
+        InitEditor(this.editorManager);
     }
     init():AGOGOSRenderer
     {

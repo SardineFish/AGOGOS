@@ -30,7 +30,11 @@ class ProcessUtility {
         let data = {
             name: process.name,
             processType: process.__processType,
-            processOutput: { type: meta_data_1.getType(process, exports.KeyProcess), value: null },
+            processOutput: {
+                name: "output",
+                type: meta_data_1.getType(process, exports.KeyProcess),
+                value: null
+            },
             properties: {}
         };
         data.name = process.name;
@@ -38,7 +42,11 @@ class ProcessUtility {
             if (privateKeys.includes(key))
                 continue;
             if (process.hasOwnProperty(key)) {
-                data.properties[key] = { type: meta_data_1.getType(process, key), value: process[key] };
+                data.properties[key] = {
+                    name: key,
+                    type: meta_data_1.getType(process, key),
+                    value: process[key]
+                };
             }
         }
         //console.log(JSON.stringify(data));

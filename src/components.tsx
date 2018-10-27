@@ -4,7 +4,7 @@ import { TestProcessNode, KeyProcess } from "./process-unit";
 import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
-import { renderProcessNode, DragMoveEvent, ReactProcessNode, ConnectLine, RenderConnectLine} from "./process-editor"
+import { renderProcessNode, DragMoveEvent, ConnectLine, RenderConnectLine, ProcessEditor} from "./process-editor"
 import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject } from "./lib";
 import { IPCRenderer } from "./ipc";
 import { AGOGOSRenderer } from "./lib-renderer";
@@ -17,7 +17,7 @@ interface PaneProps extends HTMLProps<HTMLDivElement>
 interface RenderedProcessNode
 {
     process: ProcessNodeData;
-    renderer: ReactProcessNode;
+    renderer: ProcessEditor;
 }
 interface RenderedObject<TObj, TRenderer extends React.Component>
 {
@@ -87,7 +87,7 @@ export class ProcessSpace extends React.Component<HTMLProps<HTMLDivElement>>
         }
     });*/
         let element = renderProcessNode({
-            node: process,
+            process: process,
             onDragMoveStart: onDragStart,
             onDragMove: onNodeDragMove,
             onConnectStart: (p) => this.startConnection(p),

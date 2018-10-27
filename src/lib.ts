@@ -223,11 +223,14 @@ export interface ProcessNodeData
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
-export class PropertyData
+export class PropertyData<T=any>
 {
+    name: string;
     type: string;
+    elementType?: string;
+    elements?: PropertyData[];
     properties?: MapObject<PropertyData>;
-    value: any;
+    value?: T;
     input?: EndPoint;
     output?: EndPoint;
 }
@@ -264,4 +267,11 @@ export class NullSafe<T>
 export function NULL<T>(obj: T): NullSafe<T>
 {
     return new NullSafe(obj);
+}
+
+export function getElementType(typeName: string)
+{
+    if (!typeName.endsWith("[]"))
+        return null;
+    return typeName.substr(0, typeName.length - 2);
 }

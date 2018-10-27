@@ -7,6 +7,7 @@ const agogos = {
     type: meta_data_1.type,
     Unit: process_unit_1.ProcessUnit,
     process: meta_data_1.process,
+    iterable: meta_data_1.iterableProcess,
     typedef: meta_data_1.typedef,
     console: {
         log: (message) => agogos_1.AGOGOS.instance.console.log(message),

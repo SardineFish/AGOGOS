@@ -9,17 +9,19 @@ export declare function type(typeDef: string | Function): {
     (target: Object, propertyKey: string | symbol): void;
 };
 export declare function getType(target: any, propertyKey: string): any;
-export declare enum BuildinTypes {
-    string = "string",
-    number = "number",
-    boolean = "boolean",
-    void = "void",
-    object = "object",
-    array = "array"
-}
+export declare const BuildinTypes: {
+    string: string;
+    number: string;
+    boolean: string;
+    void: string;
+    object: string;
+    array: (type: string | Function) => string;
+};
 declare const jsonIgnore: DecoratorFunc<boolean>, getJsonIgnore: MetadataFunc;
 export { jsonIgnore, getJsonIgnore };
 export declare function process(constructor: Function): void;
 export declare function getProcess(constructor: Function): string;
 export declare function typedef(constructor: Function): any;
 export declare function getTypedef(constructor: Function): string;
+export declare function iterableProcess(constructor: Function): void;
+export declare function isIterableProcess(constructor: Function): boolean;

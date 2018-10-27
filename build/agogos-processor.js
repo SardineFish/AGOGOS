@@ -8,7 +8,8 @@ class AGOGOSProcessor {
     constructor(moduleManager, processes) {
         this.processList = [];
         this.processLib = new Map();
-        this.processDependencies = new Map();
+        this.backwardDependencies = new Map();
+        this.forwardDependencies = new Map();
         this.hasOutput = new Map();
         this.outputLib = new Map();
         this.moduleManager = moduleManager;
@@ -21,22 +22,50 @@ class AGOGOSProcessor {
         }
         this.processList.forEach(process => {
             let dependencies = this.resolveProcess(process, processes[process.name]);
-            this.processDependencies.set(process.name, dependencies);
+            this.backwardDependencies.set(process.name, dependencies);
+            // Build forward dependencies
+            dependencies.forEach(dp => {
+                if (!this.forwardDependencies.has(dp.target.name))
+                    this.forwardDependencies.set(dp.target.name, []);
+                this.forwardDependencies.get(dp.target.name).push(dp.self.name);
+            });
         });
     }
     run() {
-        this.processList.forEach(async (process) => {
+        this.processList;
+        /*this.processList.forEach(async process =>
+        {
             if (!this.hasOutput.has(process.name))
-                await this.process(process);
-        });
+                await this.backwardProcess(process);
+        })*/
     }
-    async process(process) {
+    async backwardProcess(process) {
         try {
-            let dependencies = this.processDependencies.get(process.name);
+            let dependencies = this.backwardDependencies.get(process.name);
             if (dependencies) {
                 for (let i = 0; i < dependencies.length; i++) {
                     if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
-                        await this.process(dependencies[i].target);
+                        await this.backwardProcess(dependencies[i].target);
+                    this.applyDependence(dependencies[i]);
+                }
+            }
+            let result = process.process();
+            if (result instanceof Promise)
+                this.outputLib.set(process.name, await result);
+            else
+                this.outputLib.set(process.name, process.process());
+        }
+        catch (ex) {
+            agogos_1.default.console.error(`Faild to process ${process.name}: ${ex.message}`);
+        }
+    }
+    async forwardProcess(process) {
+        try {
+            let dependencies = this.backwardDependencies.get(process.name);
+            if (dependencies) {
+                for (let i = 0; i < dependencies.length; i++) {
+                    if (dependencies[i].type === "output" && !this.outputLib.has(dependencies[i].target.name))
+                        await this.backwardProcess(dependencies[i].target);
                     this.applyDependence(dependencies[i]);
                 }
             }

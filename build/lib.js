@@ -180,4 +180,10 @@ function NULL(obj) {
     return new NullSafe(obj);
 }
 exports.NULL = NULL;
+function getElementType(typeName) {
+    if (!typeName.endsWith("[]"))
+        return null;
+    return typeName.substr(0, typeName.length - 2);
+}
+exports.getElementType = getElementType;
 //# sourceMappingURL=lib.js.map

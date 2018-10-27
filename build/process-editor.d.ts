@@ -1,5 +1,6 @@
-import React, { HTMLProps, RefObject, MouseEvent } from "react";
-import { Vector2, EndPoint, ProcessNodeData } from "./lib";
+import React, { RefObject, MouseEvent } from "react";
+import { Vector2, EndPoint, ProcessNodeData, PropertyData } from "./lib";
+import { EditorManager } from "./editor-manager";
 declare type RefCallback<T> = (ref: T) => void;
 declare type EventHandler<T> = (e: T) => void;
 export interface DragMoveEvent {
@@ -12,35 +13,62 @@ export interface ConnectEvent {
     source: EndPoint;
     target: EndPoint;
 }
-interface ProcessNodeProps extends HTMLProps<HTMLDivElement> {
-    node: ProcessNodeData;
+interface EditorProps {
+    process: string;
+    className?: string;
+    allowInput?: boolean;
+    allowOutput?: boolean;
+    property: PropertyData;
+    label: string;
+    onConnectEnd?: EventHandler<EndPoint>;
+    onConnectStart?: EventHandler<EndPoint>;
+    editorHeader?: React.ReactNode;
+    editorContent?: React.ReactNode;
+    editable?: boolean;
+    connecting?: boolean;
+    onChanged?: (data: PropertyData) => void;
+}
+interface EditorState {
+    extend: boolean;
+}
+export declare class Editor<P extends EditorProps = EditorProps, S extends EditorState = EditorState> extends React.Component<P, S> {
+    nodeRef: RefObject<HTMLDivElement>;
+    constructor(props: P);
+    onPortMouseDown(port: "input" | "output"): void;
+    onPortMouseUp(port: "input" | "output"): void;
+    onChildrenChanged(data: PropertyData): void;
+    onChildConnectStart(endpoint: EndPoint): void;
+    onChildConnectEnd(endpoint: EndPoint): void;
+    getPortPos(key: string, port: string): Vector2;
+    render(): JSX.Element;
+}
+interface ProcessEditorProps {
+    process: ProcessNodeData;
     onDragMove?: EventHandler<DragMoveEvent>;
     onDragMoveStart?: EventHandler<DragMoveEvent>;
-    connecting?: boolean;
-    portFilter?: string;
     onNameChange?: EventHandler<string>;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
-    refCallback?: RefCallback<ReactProcessNode>;
+    refCallback?: RefCallback<ProcessEditor>;
+    onChanged?: (data: ProcessNodeData) => void;
 }
-interface ProcessNodeState {
+interface ProcessEditorState {
     connecting: boolean;
-    portFilter: string;
 }
-export declare class ReactProcessNode extends React.Component<ProcessNodeProps, ProcessNodeState> {
-    constructor(props: ProcessNodeProps);
+export declare class ProcessEditor extends React.Component<ProcessEditorProps, ProcessEditorState> {
+    nodeRef: RefObject<HTMLDivElement>;
     drag: boolean;
     holdPos: Vector2;
-    nodeRef: RefObject<HTMLDivElement>;
-    onValueChange(key: string, e: any): void;
+    constructor(props: ProcessEditorProps);
     onMouseDown(e: MouseEvent<HTMLElement>): void;
     onMouseMove(e: MouseEvent<HTMLElement>): void;
     onMouseUp(e: MouseEvent<HTMLElement>): void;
     componentDidMount(): void;
+    onChildrenChanged(data: PropertyData): void;
     getPortPos(key: string, port: string): Vector2;
     render(): JSX.Element;
 }
-export declare function renderProcessNode(props: ProcessNodeProps, pos?: Vector2): HTMLElement;
+export declare function renderProcessNode(props: ProcessEditorProps, pos?: Vector2): HTMLElement;
 interface ConnectLineProps {
     from: Vector2;
     to: Vector2;
@@ -55,4 +83,5 @@ export declare function RenderConnectLine(props: ConnectLineProps): Promise<{
     line: ConnectLine;
     element: HTMLElement;
 }>;
+export declare function InitEditor(editorManager: EditorManager): void;
 export {};

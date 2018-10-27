@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import { ReactProcessNode } from "./process-editor";
+import {  } from "./process-editor";
 import { type, BuildinTypes, getType } from "./meta-data";
 import { ProcessNodeData } from "./lib";
 export const KeyProcess = "process";
@@ -30,7 +30,11 @@ export class ProcessUtility
         let data: ProcessNodeData = {
             name: process.name,
             processType: process.__processType, 
-            processOutput: { type: getType(process, KeyProcess), value: null },
+            processOutput: {
+                name: "output",
+                type: getType(process, KeyProcess),
+                value: null
+            },
             properties: {}
         };
         data.name = process.name;
@@ -40,7 +44,11 @@ export class ProcessUtility
                 continue;
             if (process.hasOwnProperty(key))
             {
-                data.properties[key] = { type: getType(process, key), value: process[key] };
+                data.properties[key] = {
+                    name: key,
+                    type: getType(process, key),
+                    value: process[key]
+                };
             }
         }
         //console.log(JSON.stringify(data));

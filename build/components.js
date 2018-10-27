@@ -54,7 +54,7 @@ class ProcessSpace extends react_1.default.Component {
         }
     });*/
         let element = process_editor_1.renderProcessNode({
-            node: process,
+            process: process,
             onDragMoveStart: onDragStart,
             onDragMove: onNodeDragMove,
             onConnectStart: (p) => this.startConnection(p),
