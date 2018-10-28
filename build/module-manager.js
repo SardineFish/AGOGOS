@@ -27,7 +27,7 @@ class ModuleManager {
         try {
             const importObj = require(filePath);
             if (importObj.default) {
-                let obj = new importObj.default();
+                //let obj = new importObj.default();
                 let processName = meta_data_1.getProcess(importObj.default);
                 let typeName = meta_data_1.getTypedef(importObj.default);
                 let editorName = meta_data_1.getEditor(importObj.default);

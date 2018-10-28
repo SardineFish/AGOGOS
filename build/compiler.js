@@ -61,7 +61,8 @@ class TSCompiler {
                     strictNullChecks: false,
                     outDir: this.outDirectory,
                     rootDir: this.srcDirectory,
-                    experimentalDecorators: true
+                    experimentalDecorators: true,
+                    jsx: "react",
                 },
             }));
         }

@@ -20,7 +20,6 @@ import { ProjFile } from "./project";
 import { EditorManager } from "./editor-manager";
 import { InitEditor } from "./process-editor";
 
-const { Menu } = remote;
 const $ = (selector: string): HTMLElement => document.querySelector(selector);
 
 export function GetProjectSettings(): AGOGOSProject
@@ -29,6 +28,7 @@ export function GetProjectSettings(): AGOGOSProject
 }
 export function PopupProjectMenu(context: string)
 {
+    const { Menu } = remote;
     Menu.buildFromTemplate([
         {
             label: "New File",

@@ -1,5 +1,9 @@
 import { type, process, typedef, iterableProcess } from "../meta-data";
 import { ProcessUnit } from "../process-unit";
+import { Editor, NumberEditor, StringEditor, BooleanEditor, ObjectEditor } from "../editor-lib";
+import { editor } from "../meta-data";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 declare const agogos: {
     string: string;
     number: string;
@@ -12,6 +16,14 @@ declare const agogos: {
     process: typeof process;
     iterable: typeof iterableProcess;
     typedef: typeof typedef;
+    editor: {
+        Editor: typeof Editor;
+        NumberEditor: typeof NumberEditor;
+        StringEditor: typeof StringEditor;
+        BooleanEditor: typeof BooleanEditor;
+        ObjectEditor: typeof ObjectEditor;
+        customEditor: typeof editor;
+    };
     console: {
         log: (message: any) => void;
         warn: (message: any) => void;
@@ -19,3 +31,4 @@ declare const agogos: {
     };
 };
 export default agogos;
+export { React, ReactDOM };

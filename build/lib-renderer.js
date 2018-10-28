@@ -25,13 +25,13 @@ const lib_1 = require("./lib");
 const project_1 = require("./project");
 const editor_manager_1 = require("./editor-manager");
 const process_editor_1 = require("./process-editor");
-const { Menu } = electron_1.remote;
 const $ = (selector) => document.querySelector(selector);
 function GetProjectSettings() {
     return electron_1.ipcRenderer.sendSync(ipc_1.ChannelProjectSettings);
 }
 exports.GetProjectSettings = GetProjectSettings;
 function PopupProjectMenu(context) {
+    const { Menu } = electron_1.remote;
     Menu.buildFromTemplate([
         {
             label: "New File",
