@@ -11,7 +11,7 @@ class EditorManager {
     }
     importEditor(src) {
         try {
-            const importObj = require(src.path);
+            const importObj = require(src.compiledFile);
             var editor = importObj.default;
             var editorName = meta_data_1.getEditor(editor);
             if (!editorName)
