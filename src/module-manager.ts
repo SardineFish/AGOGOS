@@ -1,20 +1,21 @@
 import { ProcessUnit, ProcessUtility } from "./process-unit";
-import { getType, BuildinTypes, getProcess, getTypedef } from "./meta-data";
+import { getType, BuildinTypes, getProcess, getTypedef, getEditor } from "./meta-data";
 import Path from "path";
-import { ProcessNodeData, PropertyData, MapObject, TypeData } from "./lib";
+import { ProcessNodeData, PropertyData, MapObject, TypeData, SourceFile } from "./lib";
 import agogos from "./user-lib/agogos"
-import { SourceFile } from "./project";
 
 export class ModuleManager
 {
     public typeManager: TypeManager = new TypeManager();
     public processManager: ProcessManager = new ProcessManager();
+    public editorModules: SourceFile[] = [];
     private moduleLib: Map<string, SourceFile> = new Map();
 
     public reset()
     {
         this.typeManager.resetLib();
         this.processManager.resetLib();
+        this.editorModules = [];
         for (const path of this.moduleLib.keys()) {
             delete require.cache[path];
         }
@@ -30,6 +31,7 @@ export class ModuleManager
                 let obj = new importObj.default();
                 let processName = getProcess(importObj.default);
                 let typeName = getTypedef(importObj.default);
+                let editorName = getEditor(importObj.default);
                 let srcFile: SourceFile;
                 if (processName)
                 {
@@ -50,8 +52,19 @@ export class ModuleManager
                         path: Path.resolve(filePath),
                         type: "file",
                         moduleType: "typedef",
-                        moduleName: processName
+                        moduleName: typeName
                     };
+                }
+                if (editorName)
+                {
+                    srcFile = {
+                        name: Path.basename(filePath),
+                        path: Path.resolve(filePath),
+                        type: "file",
+                        moduleType: "editor",
+                        moduleName: editorName
+                    };
+                    this.editorModules.push(srcFile);
                 }
                 this.moduleLib.set(filePath, srcFile);
                 return srcFile;

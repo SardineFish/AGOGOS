@@ -1,4 +1,4 @@
-import { type, process, typedef, iterableProcess } from "../meta-data";
+import { type, process, typedef, iterableProcess, editor } from "../meta-data";
 import { ProcessUnit } from "../process-unit";
 declare const agogos: {
     string: string;
@@ -10,6 +10,7 @@ declare const agogos: {
     type: typeof type;
     Unit: typeof ProcessUnit;
     process: typeof process;
+    editor: typeof editor;
     iterable: typeof iterableProcess;
     typedef: typeof typedef;
     console: {

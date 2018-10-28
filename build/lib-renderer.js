@@ -73,10 +73,13 @@ class AGOGOSRenderer {
         });
         electron_1.ipcRenderer.on(ipc_1.ChannelStatusCompile, () => this.ready = false);
         electron_1.ipcRenderer.on(ipc_1.ChannelStatusReady, (event, args) => {
-            this.console.log("Ready");
             this.processLib = args.processLib;
             this.typeLib = args.typeLib;
+            this.editorManager.reset();
+            process_editor_1.InitEditor(this.editorManager);
+            args.customEditor.forEach(src => this.editorManager.importEditor(src));
             this.ready = true;
+            this.console.log("Ready");
         });
         return this;
     }

@@ -11,11 +11,13 @@ class ModuleManager {
     constructor() {
         this.typeManager = new TypeManager();
         this.processManager = new ProcessManager();
+        this.editorModules = [];
         this.moduleLib = new Map();
     }
     reset() {
         this.typeManager.resetLib();
         this.processManager.resetLib();
+        this.editorModules = [];
         for (const path of this.moduleLib.keys()) {
             delete require.cache[path];
         }
@@ -28,6 +30,7 @@ class ModuleManager {
                 let obj = new importObj.default();
                 let processName = meta_data_1.getProcess(importObj.default);
                 let typeName = meta_data_1.getTypedef(importObj.default);
+                let editorName = meta_data_1.getEditor(importObj.default);
                 let srcFile;
                 if (processName) {
                     this.processManager.addProcess(processName, importObj.default);
@@ -46,8 +49,18 @@ class ModuleManager {
                         path: path_1.default.resolve(filePath),
                         type: "file",
                         moduleType: "typedef",
-                        moduleName: processName
+                        moduleName: typeName
                     };
+                }
+                if (editorName) {
+                    srcFile = {
+                        name: path_1.default.basename(filePath),
+                        path: path_1.default.resolve(filePath),
+                        type: "file",
+                        moduleType: "editor",
+                        moduleName: editorName
+                    };
+                    this.editorModules.push(srcFile);
                 }
                 this.moduleLib.set(filePath, srcFile);
                 return srcFile;

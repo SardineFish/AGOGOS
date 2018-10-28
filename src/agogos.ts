@@ -90,7 +90,8 @@ export class AGOGOS
         });
         this.mainWindow.webContents.send(ChannelStatusReady, <ProjectCompiled>{
             processLib: this.project.moduleManager.processManager.exportProcessData(),
-            typeLib: this.project.moduleManager.typeManager.exportTypesData()
+            typeLib: this.project.moduleManager.typeManager.exportTypesData(),
+            customEditor: this.project.moduleManager.editorModules
         });
     }
     onGetProcessData(filename: string)

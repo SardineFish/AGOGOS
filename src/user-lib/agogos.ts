@@ -1,4 +1,4 @@
-import { type, BuildinTypes, process, typedef, iterableProcess } from "../meta-data";
+import { type, BuildinTypes, process, typedef, iterableProcess, editor } from "../meta-data";
 import { AGOGOS } from "../agogos";
 import { ProcessUnit } from "../process-unit";
 
@@ -6,6 +6,7 @@ const agogos = {
     type,
     Unit: ProcessUnit,
     process,
+    editor,
     iterable: iterableProcess,
     typedef,
     console: {

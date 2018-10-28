@@ -65,6 +65,21 @@ function getProcess(constructor) {
         return null;
 }
 exports.getProcess = getProcess;
+function editor(constructor) {
+    const regexp = /(.*)(?:Editor)/i;
+    if (constructor && regexp.test(constructor.name)) {
+        let editorName = regexp.exec(constructor.name)[1].toString();
+        constructor.__agogosEditor = editorName;
+    }
+}
+exports.editor = editor;
+function getEditor(constructor) {
+    if (constructor)
+        return constructor.__agogosEditor;
+    else
+        return null;
+}
+exports.getEditor = getEditor;
 function typedef(constructor) {
     if (constructor)
         constructor.__agogosType = constructor.name;

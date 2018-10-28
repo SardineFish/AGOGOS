@@ -13,35 +13,6 @@ export interface ConnectEvent {
     source: EndPoint;
     target: EndPoint;
 }
-interface EditorProps {
-    process: string;
-    className?: string;
-    allowInput?: boolean;
-    allowOutput?: boolean;
-    property: PropertyData;
-    label: string;
-    onConnectEnd?: EventHandler<EndPoint>;
-    onConnectStart?: EventHandler<EndPoint>;
-    editorHeader?: React.ReactNode;
-    editorContent?: React.ReactNode;
-    editable?: boolean;
-    connecting?: boolean;
-    onChanged?: (data: PropertyData) => void;
-}
-interface EditorState {
-    extend: boolean;
-}
-export declare class Editor<P extends EditorProps = EditorProps, S extends EditorState = EditorState> extends React.Component<P, S> {
-    nodeRef: RefObject<HTMLDivElement>;
-    constructor(props: P);
-    onPortMouseDown(port: "input" | "output"): void;
-    onPortMouseUp(port: "input" | "output"): void;
-    onChildrenChanged(data: PropertyData): void;
-    onChildConnectStart(endpoint: EndPoint): void;
-    onChildConnectEnd(endpoint: EndPoint): void;
-    getPortPos(key: string, port: string): Vector2;
-    render(): JSX.Element;
-}
 interface ProcessEditorProps {
     process: ProcessNodeData;
     onDragMove?: EventHandler<DragMoveEvent>;

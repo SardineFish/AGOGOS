@@ -1,4 +1,6 @@
-import { Editor } from "./process-editor";
+import { SourceFile } from "./lib";
+import { getEditor } from "./meta-data";
+import { AGOGOSRenderer } from "./lib-renderer";
 
 export class EditorManager
 {
@@ -7,6 +9,22 @@ export class EditorManager
     public reset()
     {
         this.editorLib.clear();
+    }
+    public importEditor(src: SourceFile)
+    {
+        try
+        {
+            const importObj = require(src.path);
+            var editor = importObj.default as (typeof Editor);
+            var editorName = getEditor(editor);
+            if (!editorName)
+                return;
+            this.addEditor(editorName, editor);
+        }
+        catch (ex)
+        {
+            AGOGOSRenderer.instance.console.log(`Import failed: ${ex.message}`, "error");
+        }
     }
     public setDefault(editor: typeof Editor)
     {

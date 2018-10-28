@@ -1,9 +1,9 @@
 import { ProcessUnit } from "./process-unit";
-import { ProcessNodeData, MapObject, TypeData } from "./lib";
-import { SourceFile } from "./project";
+import { ProcessNodeData, MapObject, TypeData, SourceFile } from "./lib";
 export declare class ModuleManager {
     typeManager: TypeManager;
     processManager: ProcessManager;
+    editorModules: SourceFile[];
     private moduleLib;
     reset(): void;
     importSourceFile(filePath: string): SourceFile;

@@ -1,8 +1,8 @@
 import { getJsonIgnore } from "./meta-data";
-import { ProjectFile } from "./project";
 import Path from "path";
 import linq from "linq";
 import uuidv4 = require("uuid/v4");
+import { ProjectFile } from "./project";
 
 export const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
 
@@ -274,4 +274,14 @@ export function getElementType(typeName: string)
     if (!typeName.endsWith("[]"))
         return null;
     return typeName.substr(0, typeName.length - 2);
+}
+export interface SourceFile
+{
+    name: string;
+    type: "file" | "folder" | string;
+    path: string;
+    children?: ProjectFile[];
+    moduleType: "typedef" | "process" | "editor";
+    moduleName: string;
+    compiledFile?: string;
 }

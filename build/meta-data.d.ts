@@ -21,6 +21,8 @@ declare const jsonIgnore: DecoratorFunc<boolean>, getJsonIgnore: MetadataFunc;
 export { jsonIgnore, getJsonIgnore };
 export declare function process(constructor: Function): void;
 export declare function getProcess(constructor: Function): string;
+export declare function editor(constructor: Function): void;
+export declare function getEditor(constructor: Function): any;
 export declare function typedef(constructor: Function): any;
 export declare function getTypedef(constructor: Function): string;
 export declare function iterableProcess(constructor: Function): void;

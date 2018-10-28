@@ -2,7 +2,7 @@ import { promisify } from "util";
 import { ipcRenderer, ipcMain } from "electron";
 import { AGOGOSProject, ProjectFile } from "./project";
 import { fork, ChildProcess } from "child_process";
-import { MapObject, PropertyData, ProcessNodeData } from "./lib";
+import { MapObject, PropertyData, ProcessNodeData, SourceFile } from "./lib";
 export interface Startup
 {
     workDir: string;
@@ -21,7 +21,8 @@ export const ChannelStatusCompile = "status-compile";
 export const ChannelStatusReady = "status-ready";
 export const IPCRenderer = {
     GetProcess: "get-process-data",
-    GetProcessData: "get-process-data-from-renderer"
+    GetProcessData: "get-process-data-from-renderer",
+    SendCustomEditor: "send-custom-editor"
 };
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>
@@ -131,5 +132,6 @@ export class ProcessIPC extends GeneralIPC
 export class ProjectCompiled
 {
     typeLib: MapObject<PropertyData>;
-    processLib: MapObject<ProcessNodeData>
+    processLib: MapObject<ProcessNodeData>;
+    customEditor: SourceFile[];
 }

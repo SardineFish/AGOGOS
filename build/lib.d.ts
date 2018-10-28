@@ -78,3 +78,12 @@ export declare class NullSafe<T> {
 }
 export declare function NULL<T>(obj: T): NullSafe<T>;
 export declare function getElementType(typeName: string): string;
+export interface SourceFile {
+    name: string;
+    type: "file" | "folder" | string;
+    path: string;
+    children?: ProjectFile[];
+    moduleType: "typedef" | "process" | "editor";
+    moduleName: string;
+    compiledFile?: string;
+}

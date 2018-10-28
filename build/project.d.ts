@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { IPackageJSON } from "./package-json";
 import * as fs from "fs";
+import { SourceFile } from "./lib";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { ModuleManager } from "./module-manager";
@@ -47,11 +48,6 @@ export interface ProjectFile {
     path: string;
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
-}
-export interface SourceFile extends ProjectFile {
-    moduleType: "typedef" | "process";
-    moduleName: string;
-    compiledFile?: string;
 }
 export declare class ProjFile {
     static getDirectory(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;

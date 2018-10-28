@@ -3,7 +3,7 @@ import { IPackageJSON } from "./package-json";
 import Path from "path";
 import * as fs from "fs";
 import { jsonIgnore } from "./meta-data";
-import { JSONStringrify, diffFiles, foreachAsync } from "./lib";
+import { JSONStringrify, diffFiles, foreachAsync, SourceFile } from "./lib";
 import { promisify } from "util";
 import linq from "linq";
 import * as typescript from "typescript";
@@ -182,6 +182,7 @@ class TSCompiler
         AGOGOS.instance.console.log(`[Compiler] ${status}`);
     }
 }
+
 export interface ProjectFile
 {
     name: string;
@@ -189,12 +190,6 @@ export interface ProjectFile
     path: string;
     children?: ProjectFile[];
     watcher?: fs.FSWatcher;
-}
-export interface SourceFile extends ProjectFile
-{
-    moduleType: "typedef" | "process";
-    moduleName: string;
-    compiledFile?: string;
 }
 export class ProjFile
 {

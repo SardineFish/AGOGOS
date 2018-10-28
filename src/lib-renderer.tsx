@@ -91,10 +91,13 @@ export class AGOGOSRenderer
         ipcRenderer.on(ChannelStatusCompile, () => this.ready = false);
         ipcRenderer.on(ChannelStatusReady, (event: Event, args: ProjectCompiled) =>
         {   
-            this.console.log("Ready");
             this.processLib = args.processLib;
             this.typeLib = args.typeLib;
+            this.editorManager.reset();
+            InitEditor(this.editorManager);
+            args.customEditor.forEach(src => this.editorManager.importEditor(src));
             this.ready = true;
+            this.console.log("Ready");
         });
         return this;
     }

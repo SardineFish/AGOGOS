@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { ProjectFile } from "./project";
 import { ChildProcess } from "child_process";
-import { MapObject, PropertyData, ProcessNodeData } from "./lib";
+import { MapObject, PropertyData, ProcessNodeData, SourceFile } from "./lib";
 export interface Startup {
     workDir: string;
     projectFile: ProjectFile;
@@ -19,6 +19,7 @@ export declare const ChannelStatusReady = "status-ready";
 export declare const IPCRenderer: {
     GetProcess: string;
     GetProcessData: string;
+    SendCustomEditor: string;
 };
 export declare function waitIpcRenderer<T>(channel: string, timeout?: number): Promise<T>;
 export declare function waitIpcMain<T>(channel: string, timeout?: number): Promise<T>;
@@ -50,5 +51,6 @@ export declare class ProcessIPC extends GeneralIPC {
 export declare class ProjectCompiled {
     typeLib: MapObject<PropertyData>;
     processLib: MapObject<ProcessNodeData>;
+    customEditor: SourceFile[];
 }
 export {};
