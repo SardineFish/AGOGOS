@@ -1,10 +1,11 @@
 import { PropertyData, EndPoint, Vector2, vec2 } from "./lib";
-import React, { RefObject, ChangeEvent } from "react";
+import { RefObject, ChangeEvent } from "react";
+import * as React from "react";
 import { AGOGOSRenderer } from "./lib-renderer";
 import { getKeys } from "./utility";
 type RefCallback<T> = (ref: T) => void;
 type EventHandler<T> = (e: T) => void;
-class EditorContent extends React.Component
+export class EditorContent extends React.Component
 {
     render()
     {
@@ -15,7 +16,7 @@ class EditorContent extends React.Component
         )
     }
 }
-interface EditorProps
+export interface EditorProps
 {
     process: string;
     className?: string;
@@ -25,30 +26,27 @@ interface EditorProps
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
-    editorHeader?: React.ReactNode;
-    editorContent?: React.ReactNode;
+    header?: React.ReactNode;
+    content?: React.ReactNode;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
 }
-interface EditorState
+export interface EditorState
 {
     extend: boolean;
 }
-export class Editor
-    <P extends EditorProps = EditorProps,
-    S extends EditorState = EditorState>
-    extends React.Component<P, S>
+export class Editor extends React.Component<EditorProps, EditorState>
 {
     nodeRef: RefObject<HTMLDivElement>;
-    constructor(props: P)
+    constructor(props: EditorProps)
     {
         super(props);
         this.props.property.properties = this.props.property.properties || {};
         this.props.property.elements = this.props.property.elements || [];
         this.state = {
             extend: false
-        } as S;
+        };
         this.nodeRef = React.createRef();
     }
     onPortMouseDown(port: "input" | "output")
@@ -109,14 +107,14 @@ export class Editor
                             (<span className="port-input" onMouseDown={() => this.onPortMouseDown("input")} onMouseUp={() => this.onPortMouseUp("input")}></span>) : null
                     }
                     {
-                        this.props.editorContent ?
+                        this.props.content ?
                             <span className={`fold-icon ${this.state.extend ? "extend" : "fold"}`} onClick={() => this.setState({ extend: !this.state.extend })}></span>
                             : null
                     }
                     <span className="editor-label">{this.props.label}</span>
                     {
-                        this.props.editorHeader ?
-                            this.props.editorHeader
+                        this.props.header ?
+                            this.props.header
                             : `object: ${this.props.property.type}`
                     }
                     {
@@ -126,7 +124,7 @@ export class Editor
                 </span>
                 {
                     this.state.extend ?
-                        this.props.editorContent
+                        this.props.content
                         : null
                 }
             </div>
@@ -157,8 +155,8 @@ export class StringEditor extends Editor
     }
     render()
     {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (<input
+        let { children, header, ...others } = this.props;
+        header = (<input
             type="text"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
@@ -166,7 +164,7 @@ export class StringEditor extends Editor
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
         
         return (
-            <Editor header={editorHeader} {...others}>
+            <Editor header={header} {...others}>
             </Editor>
         )
     }
@@ -195,8 +193,8 @@ export class NumberEditor extends Editor
     }
     render()
     {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (<input
+        let { children, header, ...others } = this.props;
+        header = (<input
             type="number"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
@@ -204,7 +202,7 @@ export class NumberEditor extends Editor
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
         
         return (
-            <Editor editorHeader={editorHeader} {...others}>
+            <Editor header={header} {...others}>
             </Editor>
         );
     }
@@ -233,15 +231,15 @@ export class BooleanEditor extends Editor
     }
     render()
     {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (<input
+        let { children, header, ...others } = this.props;
+        header = (<input
             type="checkbox"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
             ref={this.input}
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
         return (
-            <Editor editorHeader={editorHeader} {...others}>
+            <Editor header={header} {...others}>
             </Editor>
         );
     }
@@ -252,10 +250,10 @@ export class ObjectEditor extends Editor
     render()
     {
         const typeData = AGOGOSRenderer.instance.typeLib[this.props.property.type];
-        let { children, editorHeader, editorContent, ...others } = this.props;
-        editorHeader = (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
+        let { children, header, content, ...others } = this.props;
+        header = (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
         if (typeData)
-            editorContent = (
+            content = (
                 <EditorContent>
                     {
                         getKeys(typeData.properties).map((key, idx) =>
@@ -289,7 +287,7 @@ export class ObjectEditor extends Editor
                     }
                 </EditorContent>);
         return (
-            <Editor editorHeader={editorHeader} editorContent={editorContent} {...others}>
+            <Editor header={header} content={content} {...others}>
             </Editor>
 
         )

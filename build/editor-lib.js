@@ -1,18 +1,23 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("./lib");
-const react_1 = __importDefault(require("react"));
+const React = __importStar(require("react"));
 const lib_renderer_1 = require("./lib-renderer");
 const utility_1 = require("./utility");
-class EditorContent extends react_1.default.Component {
+class EditorContent extends React.Component {
     render() {
-        return (react_1.default.createElement("div", { className: "editor-children" }, this.props.children));
+        return (React.createElement("div", { className: "editor-children" }, this.props.children));
     }
 }
-class Editor extends react_1.default.Component {
+exports.EditorContent = EditorContent;
+class Editor extends React.Component {
     constructor(props) {
         super(props);
         this.props.property.properties = this.props.property.properties || {};
@@ -20,7 +25,7 @@ class Editor extends react_1.default.Component {
         this.state = {
             extend: false
         };
-        this.nodeRef = react_1.default.createRef();
+        this.nodeRef = React.createRef();
     }
     onPortMouseDown(port) {
         if (this.props.onConnectStart) {
@@ -63,21 +68,21 @@ class Editor extends react_1.default.Component {
         return lib_1.vec2(rect.left + 5, rect.top + 5);
     }
     render() {
-        return (react_1.default.createElement("div", { className: ["object-editor", this.state.extend ? "extend" : "fold"].join(" "), ref: this.nodeRef },
-            react_1.default.createElement("span", { className: ["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className] : []).join(" ") },
+        return (React.createElement("div", { className: ["object-editor", this.state.extend ? "extend" : "fold"].join(" "), ref: this.nodeRef },
+            React.createElement("span", { className: ["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className] : []).join(" ") },
                 this.props.allowInput ?
-                    (react_1.default.createElement("span", { className: "port-input", onMouseDown: () => this.onPortMouseDown("input"), onMouseUp: () => this.onPortMouseUp("input") })) : null,
-                this.props.editorContent ?
-                    react_1.default.createElement("span", { className: `fold-icon ${this.state.extend ? "extend" : "fold"}`, onClick: () => this.setState({ extend: !this.state.extend }) })
+                    (React.createElement("span", { className: "port-input", onMouseDown: () => this.onPortMouseDown("input"), onMouseUp: () => this.onPortMouseUp("input") })) : null,
+                this.props.content ?
+                    React.createElement("span", { className: `fold-icon ${this.state.extend ? "extend" : "fold"}`, onClick: () => this.setState({ extend: !this.state.extend }) })
                     : null,
-                react_1.default.createElement("span", { className: "editor-label" }, this.props.label),
-                this.props.editorHeader ?
-                    this.props.editorHeader
+                React.createElement("span", { className: "editor-label" }, this.props.label),
+                this.props.header ?
+                    this.props.header
                     : `object: ${this.props.property.type}`,
                 this.props.allowOutput ?
-                    (react_1.default.createElement("span", { className: "port-output", onMouseDown: () => this.onPortMouseDown("output"), onMouseUp: () => this.onPortMouseUp("output") })) : null),
+                    (React.createElement("span", { className: "port-output", onMouseDown: () => this.onPortMouseDown("output"), onMouseUp: () => this.onPortMouseUp("output") })) : null),
             this.state.extend ?
-                this.props.editorContent
+                this.props.content
                 : null));
     }
 }
@@ -85,7 +90,7 @@ exports.Editor = Editor;
 class StringEditor extends Editor {
     constructor(props) {
         super(props);
-        this.input = react_1.default.createRef();
+        this.input = React.createRef();
     }
     componentDidMount() {
         this.input.current.value = this.props.property.value ? this.props.property.value : "";
@@ -99,16 +104,16 @@ class StringEditor extends Editor {
             this.props.onChanged(this.props.property);
     }
     render() {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (react_1.default.createElement("input", Object.assign({ type: "text", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
-        return (react_1.default.createElement(Editor, Object.assign({ header: editorHeader }, others)));
+        let { children, header, ...others } = this.props;
+        header = (React.createElement("input", Object.assign({ type: "text", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
+        return (React.createElement(Editor, Object.assign({ header: header }, others)));
     }
 }
 exports.StringEditor = StringEditor;
 class NumberEditor extends Editor {
     constructor(props) {
         super(props);
-        this.input = react_1.default.createRef();
+        this.input = React.createRef();
     }
     componentDidMount() {
         this.input.current.value = this.props.property.value ? this.props.property.value : 0;
@@ -122,16 +127,16 @@ class NumberEditor extends Editor {
             this.props.onChanged(this.props.property);
     }
     render() {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (react_1.default.createElement("input", Object.assign({ type: "number", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
-        return (react_1.default.createElement(Editor, Object.assign({ editorHeader: editorHeader }, others)));
+        let { children, header, ...others } = this.props;
+        header = (React.createElement("input", Object.assign({ type: "number", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
+        return (React.createElement(Editor, Object.assign({ header: header }, others)));
     }
 }
 exports.NumberEditor = NumberEditor;
 class BooleanEditor extends Editor {
     constructor(props) {
         super(props);
-        this.input = react_1.default.createRef();
+        this.input = React.createRef();
     }
     componentDidMount() {
         this.input.current.value = this.props.property.value ? this.props.property.value : 0;
@@ -145,19 +150,19 @@ class BooleanEditor extends Editor {
             this.props.onChanged(this.props.property);
     }
     render() {
-        let { children, editorHeader, ...others } = this.props;
-        editorHeader = (react_1.default.createElement("input", Object.assign({ type: "checkbox", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
-        return (react_1.default.createElement(Editor, Object.assign({ editorHeader: editorHeader }, others)));
+        let { children, header, ...others } = this.props;
+        header = (React.createElement("input", Object.assign({ type: "checkbox", className: "editor-content", onChange: (e) => this.onChange(e), ref: this.input }, (this.props.editable ? {} : { value: this.props.property.value }))));
+        return (React.createElement(Editor, Object.assign({ header: header }, others)));
     }
 }
 exports.BooleanEditor = BooleanEditor;
 class ObjectEditor extends Editor {
     render() {
         const typeData = lib_renderer_1.AGOGOSRenderer.instance.typeLib[this.props.property.type];
-        let { children, editorHeader, editorContent, ...others } = this.props;
-        editorHeader = (react_1.default.createElement("span", { className: "editor-content" }, `object: ${this.props.property.type}`));
+        let { children, header, content, ...others } = this.props;
+        header = (React.createElement("span", { className: "editor-content" }, `object: ${this.props.property.type}`));
         if (typeData)
-            editorContent = (react_1.default.createElement(EditorContent, null, utility_1.getKeys(typeData.properties).map((key, idx) => {
+            content = (React.createElement(EditorContent, null, utility_1.getKeys(typeData.properties).map((key, idx) => {
                 let childType = typeData.properties[key].type;
                 let childProperty = this.props.property.properties[key];
                 if (!childProperty)
@@ -167,9 +172,9 @@ class ObjectEditor extends Editor {
                     };
                 this.props.property.properties[key] = childProperty;
                 let ChildEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(childType);
-                return (react_1.default.createElement(ChildEditor, { key: key, ref: key, process: this.props.process, property: childProperty, label: key, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput, editable: this.props.editable, connecting: this.props.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: e => this.onChildConnectStart(e), onConnectEnd: e => this.onChildConnectEnd(e) }));
+                return (React.createElement(ChildEditor, { key: key, ref: key, process: this.props.process, property: childProperty, label: key, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput, editable: this.props.editable, connecting: this.props.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: e => this.onChildConnectStart(e), onConnectEnd: e => this.onChildConnectEnd(e) }));
             })));
-        return (react_1.default.createElement(Editor, Object.assign({ editorHeader: editorHeader, editorContent: editorContent }, others)));
+        return (React.createElement(Editor, Object.assign({ header: header, content: content }, others)));
     }
 }
 exports.ObjectEditor = ObjectEditor;

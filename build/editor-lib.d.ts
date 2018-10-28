@@ -1,7 +1,11 @@
 import { PropertyData, EndPoint, Vector2 } from "./lib";
-import React, { RefObject, ChangeEvent } from "react";
+import { RefObject, ChangeEvent } from "react";
+import * as React from "react";
 declare type EventHandler<T> = (e: T) => void;
-interface EditorProps {
+export declare class EditorContent extends React.Component {
+    render(): JSX.Element;
+}
+export interface EditorProps {
     process: string;
     className?: string;
     allowInput?: boolean;
@@ -10,18 +14,18 @@ interface EditorProps {
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
-    editorHeader?: React.ReactNode;
-    editorContent?: React.ReactNode;
+    header?: React.ReactNode;
+    content?: React.ReactNode;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
 }
-interface EditorState {
+export interface EditorState {
     extend: boolean;
 }
-export declare class Editor<P extends EditorProps = EditorProps, S extends EditorState = EditorState> extends React.Component<P, S> {
+export declare class Editor extends React.Component<EditorProps, EditorState> {
     nodeRef: RefObject<HTMLDivElement>;
-    constructor(props: P);
+    constructor(props: EditorProps);
     onPortMouseDown(port: "input" | "output"): void;
     onPortMouseUp(port: "input" | "output"): void;
     onChildrenChanged(data: PropertyData): void;

@@ -1,6 +1,7 @@
 import { SourceFile } from "./lib";
 import { getEditor } from "./meta-data";
 import { AGOGOSRenderer } from "./lib-renderer";
+import { Editor } from "./editor-lib";
 
 export class EditorManager
 {
