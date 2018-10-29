@@ -136,8 +136,8 @@ function InitEditor(editorManager) {
     editorManager.addEditor(meta_data_1.BuildinTypes.number, editor_lib_1.NumberEditor);
     editorManager.addEditor(meta_data_1.BuildinTypes.string, editor_lib_1.StringEditor);
     editorManager.addEditor(meta_data_1.BuildinTypes.boolean, editor_lib_1.BooleanEditor);
-    editorManager.addEditor(meta_data_1.BuildinTypes.object, editor_lib_1.ObjectEditor);
-    editorManager.setDefault(editor_lib_1.ObjectEditor);
+    editorManager.addEditor(meta_data_1.BuildinTypes.object, editor_lib_1.Editor);
+    editorManager.setDefault(editor_lib_1.Editor);
 }
 exports.InitEditor = InitEditor;
 //# sourceMappingURL=process-editor.js.map

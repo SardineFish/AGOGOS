@@ -374,3 +374,10 @@ svg *{
     }
     75%{content: "..."}
 }
+.editor-header-content{
+    flex: 1;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: stretch;
+}

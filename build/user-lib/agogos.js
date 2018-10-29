@@ -21,7 +21,7 @@ const agogosEditor = {
     NumberEditor: editor_lib_1.NumberEditor,
     StringEditor: editor_lib_1.StringEditor,
     BooleanEditor: editor_lib_1.BooleanEditor,
-    ObjectEditor: editor_lib_1.ObjectEditor,
+    EditorContent: editor_lib_1.EditorContent,
     customEditor: meta_data_2.editor
 };
 const agogos = {

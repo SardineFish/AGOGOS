@@ -8,7 +8,7 @@ import { Vector2, vec2, EndPoint, ProcessNodeData, PropertyData, TypeData, NULL,
 import { RenderedConnection } from "./components";
 import { AGOGOSRenderer } from "./lib-renderer";
 import { EditorManager } from "./editor-manager";
-import { ObjectEditor, NumberEditor, StringEditor, BooleanEditor } from "./editor-lib";
+import { NumberEditor, StringEditor, BooleanEditor, Editor } from "./editor-lib";
 
 type RefCallback<T> = (ref: T) => void;
 type EventHandler<T> = (e: T) => void;
@@ -180,9 +180,9 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
     getPortPos(key: string, port: string): Vector2
     {
         let keys = key.split(".");
-        if (keys.length > 1 && (this.refs[keys[0]] as ObjectEditor).state.extend)
+        if (keys.length > 1 && (this.refs[keys[0]] as Editor).state.extend)
         {
-            return (this.refs[keys[0]] as ObjectEditor).getPortPos(keys.slice(1).join('.'), port);
+            return (this.refs[keys[0]] as Editor).getPortPos(keys.slice(1).join('.'), port);
         }
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
@@ -330,6 +330,6 @@ export function InitEditor(editorManager: EditorManager)
     editorManager.addEditor(BuildinTypes.number, NumberEditor as any);
     editorManager.addEditor(BuildinTypes.string, StringEditor as any);
     editorManager.addEditor(BuildinTypes.boolean, BooleanEditor as any);
-    editorManager.addEditor(BuildinTypes.object, ObjectEditor as any);
-    editorManager.setDefault(ObjectEditor as any);
+    editorManager.addEditor(BuildinTypes.object, Editor as any);
+    editorManager.setDefault(Editor as any);
 }

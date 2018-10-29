@@ -14,13 +14,12 @@ export interface EditorProps {
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
-    header?: React.ReactNode;
-    content?: React.ReactNode;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
 }
 export interface EditorState {
+    [key: string]: any;
     extend: boolean;
 }
 export declare class Editor extends React.Component<EditorProps, EditorState> {
@@ -32,6 +31,10 @@ export declare class Editor extends React.Component<EditorProps, EditorState> {
     onChildConnectStart(endpoint: EndPoint): void;
     onChildConnectEnd(endpoint: EndPoint): void;
     getPortPos(key: string, port: string): Vector2;
+    applyChange(): void;
+    propertyEditor(name: string): JSX.Element;
+    renderHeader(): JSX.Element;
+    renderContent(): JSX.Element;
     render(): JSX.Element;
 }
 export declare class StringEditor extends Editor {
@@ -39,23 +42,20 @@ export declare class StringEditor extends Editor {
     constructor(props: EditorProps);
     componentDidMount(): void;
     onChange(e: ChangeEvent<HTMLInputElement>): void;
-    render(): JSX.Element;
+    renderHeader(): JSX.Element;
 }
 export declare class NumberEditor extends Editor {
     input: RefObject<HTMLInputElement>;
     constructor(props: EditorProps);
     componentDidMount(): void;
     onChange(e: ChangeEvent<HTMLInputElement>): void;
-    render(): JSX.Element;
+    renderHeader(): JSX.Element;
 }
 export declare class BooleanEditor extends Editor {
     input: RefObject<HTMLInputElement>;
     constructor(props: EditorProps);
     componentDidMount(): void;
     onChange(e: ChangeEvent<HTMLInputElement>): void;
-    render(): JSX.Element;
-}
-export declare class ObjectEditor extends Editor {
-    render(): JSX.Element;
+    renderHeader(): JSX.Element;
 }
 export {};

@@ -6,16 +6,22 @@ import { Editor } from "./editor-lib";
 export class EditorManager
 {
     private editorLib: Map<string, typeof Editor> = new Map();
+    private srcLib: SourceFile[] = [];
     private default: typeof Editor;
     public reset()
     {
         this.editorLib.clear();
+        this.srcLib.forEach(src =>
+        {
+            delete require.cache[src.compiledFile];
+        });
     }
     public importEditor(src: SourceFile)
     {
         try
         {
             const importObj = require(src.compiledFile);
+            this.srcLib.push(src);
             var editor = importObj.default as (typeof Editor);
             var editorName = getEditor(editor);
             if (!editorName)

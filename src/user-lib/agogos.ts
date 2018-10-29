@@ -1,7 +1,7 @@
 import { type, BuildinTypes, process, typedef, iterableProcess } from "../meta-data";
 import { AGOGOS } from "../agogos";
 import { ProcessUnit } from "../process-unit";
-import { Editor, NumberEditor, StringEditor, BooleanEditor, ObjectEditor, EditorProps, EditorState } from "../editor-lib";
+import { Editor, NumberEditor, StringEditor, BooleanEditor, EditorProps, EditorState, EditorContent } from "../editor-lib";
 import { editor } from "../meta-data";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -10,7 +10,7 @@ const agogosEditor = {
     NumberEditor,
     StringEditor,
     BooleanEditor,
-    ObjectEditor,
+    EditorContent,
     customEditor: editor
 };
 

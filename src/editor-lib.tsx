@@ -26,14 +26,13 @@ export interface EditorProps
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
-    header?: React.ReactNode;
-    content?: React.ReactNode;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
 }
 export interface EditorState
 {
+    [key: string]: any;
     extend: boolean;
 }
 export class Editor extends React.Component<EditorProps, EditorState>
@@ -90,15 +89,69 @@ export class Editor extends React.Component<EditorProps, EditorState>
     getPortPos(key: string, port: string): Vector2
     {
         let keys = key.split(".");
-        if (keys.length > 1 && (this.refs[keys[0]] as ObjectEditor).state.extend)
+        if (keys.length > 1 && (this.refs[keys[0]] as Editor).state.extend)
         {
-            return (this.refs[keys[0]] as ObjectEditor).getPortPos(keys.slice(1).join('.'), port);
+            return (this.refs[keys[0]] as Editor).getPortPos(keys.slice(1).join('.'), port);
         }
         let rect = this.nodeRef.current!.querySelector(`.editor-${keys[0]} .port-${port}`).getBoundingClientRect();
         return vec2(rect.left + 5, rect.top + 5);
     }
+    applyChange()
+    {
+        if (this.props.onChanged)
+            this.props.onChanged(this.props.property);
+    }
+    propertyEditor(name: string)
+    {
+        const typeData = AGOGOSRenderer.instance.typeLib[this.props.property.type];
+        let childType = typeData.properties[name].type;
+        let childProperty = this.props.property.properties[name];
+        if (!childProperty)
+            childProperty = {
+                name: name,
+                type: childType,
+            };
+        this.props.property.properties[name] = childProperty;
+        let ChildEditor = AGOGOSRenderer.instance.editorManager.getEditor(childType);
+        return (
+            <ChildEditor
+                key={name}
+                ref={name}
+                process={this.props.process}
+                property={childProperty}
+                label={name}
+                allowInput={this.props.allowInput}
+                allowOutput={this.props.allowOutput}
+                editable={this.props.editable}
+                connecting={this.props.connecting}
+                onChanged={(data) => this.onChildrenChanged(data)}
+                onConnectStart={e => this.onChildConnectStart(e)}
+                onConnectEnd={e => this.onChildConnectEnd(e)}
+            />
+        )
+    }
+    renderHeader()
+    {
+        return (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
+    }
+    renderContent()
+    {
+        const typeData = AGOGOSRenderer.instance.typeLib[this.props.property.type];
+        if (!typeData)
+            return null;
+        return (
+            <EditorContent>
+                {
+                    getKeys(typeData.properties).map((key, idx) =>this.propertyEditor(key))
+                }
+            </EditorContent>
+        );
+    }
     render()
     {
+        const header = this.renderHeader();
+        const content = this.renderContent();
+
         return (
             <div className={["object-editor", this.state.extend ? "extend" : "fold"].join(" ")} ref={this.nodeRef}>
                 <span className={["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
@@ -107,16 +160,17 @@ export class Editor extends React.Component<EditorProps, EditorState>
                             (<span className="port-input" onMouseDown={() => this.onPortMouseDown("input")} onMouseUp={() => this.onPortMouseUp("input")}></span>) : null
                     }
                     {
-                        this.props.content ?
+                        content ?
                             <span className={`fold-icon ${this.state.extend ? "extend" : "fold"}`} onClick={() => this.setState({ extend: !this.state.extend })}></span>
                             : null
                     }
                     <span className="editor-label">{this.props.label}</span>
-                    {
-                        this.props.header ?
-                            this.props.header
+                    <span className="editor-header-content">{
+                        header ?
+                            header
                             : `object: ${this.props.property.type}`
                     }
+                    </span>
                     {
                         this.props.allowOutput ?
                             (<span className="port-output" onMouseDown={() => this.onPortMouseDown("output")} onMouseUp={() => this.onPortMouseUp("output")}></span>) : null
@@ -124,7 +178,7 @@ export class Editor extends React.Component<EditorProps, EditorState>
                 </span>
                 {
                     this.state.extend ?
-                        this.props.content
+                        content
                         : null
                 }
             </div>
@@ -153,20 +207,14 @@ export class StringEditor extends Editor
         if (this.props.onChanged)
             this.props.onChanged(this.props.property);
     }
-    render()
+    renderHeader()
     {
-        let { children, header, ...others } = this.props;
-        header = (<input
+        return (<input
             type="text"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
             ref={this.input}
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
-        
-        return (
-            <Editor header={header} {...others}>
-            </Editor>
-        )
     }
 }
 
@@ -191,20 +239,14 @@ export class NumberEditor extends Editor
         if (this.props.onChanged)
             this.props.onChanged(this.props.property);
     }
-    render()
+    renderHeader()
     {
-        let { children, header, ...others } = this.props;
-        header = (<input
+        return (<input
             type="number"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
             ref={this.input}
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
-        
-        return (
-            <Editor header={header} {...others}>
-            </Editor>
-        );
     }
 }
 
@@ -229,30 +271,25 @@ export class BooleanEditor extends Editor
         if (this.props.onChanged)
             this.props.onChanged(this.props.property);
     }
-    render()
+    renderHeader()
     {
-        let { children, header, ...others } = this.props;
-        header = (<input
+        return (<input
             type="checkbox"
             className="editor-content"
             onChange={(e) => this.onChange(e)}
             ref={this.input}
             {...(this.props.editable ? {} : { value: this.props.property.value })} />);
-        return (
-            <Editor header={header} {...others}>
-            </Editor>
-        );
     }
 }
-
+/*
 export class ObjectEditor extends Editor
 {
     render()
     {
         const typeData = AGOGOSRenderer.instance.typeLib[this.props.property.type];
         let { children, header, content, ...others } = this.props;
-        header = (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
-        if (typeData)
+        header = header ? header : (<span className="editor-content">{`object: ${this.props.property.type}`}</span>);
+        if (!content && typeData)
             content = (
                 <EditorContent>
                     {
@@ -292,4 +329,4 @@ export class ObjectEditor extends Editor
 
         )
     }
-}
+}*/

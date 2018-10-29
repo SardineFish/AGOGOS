@@ -68,7 +68,8 @@ class AGOGOS {
         if (this.project.tsCompiler.compiled) {
             this.mainWindow.webContents.send(ipc_1.ChannelStatusReady, {
                 processLib: this.project.moduleManager.processManager.exportProcessData(),
-                typeLib: this.project.moduleManager.typeManager.exportTypesData()
+                typeLib: this.project.moduleManager.typeManager.exportTypesData(),
+                customEditor: this.project.moduleManager.editorModules
             });
         }
         return this;

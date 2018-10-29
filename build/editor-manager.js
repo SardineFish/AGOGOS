@@ -5,13 +5,18 @@ const lib_renderer_1 = require("./lib-renderer");
 class EditorManager {
     constructor() {
         this.editorLib = new Map();
+        this.srcLib = [];
     }
     reset() {
         this.editorLib.clear();
+        this.srcLib.forEach(src => {
+            delete require.cache[src.compiledFile];
+        });
     }
     importEditor(src) {
         try {
             const importObj = require(src.compiledFile);
+            this.srcLib.push(src);
             var editor = importObj.default;
             var editorName = meta_data_1.getEditor(editor);
             if (!editorName)
