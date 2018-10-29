@@ -3,6 +3,8 @@ import Path from "path";
 import linq from "linq";
 import uuidv4 = require("uuid/v4");
 import { ProjectFile } from "./project";
+import { ModuleManager } from "./module-manager";
+import { getKeys } from "./utility";
 
 export const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
 
@@ -223,16 +225,53 @@ export interface ProcessNodeData
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
-export class PropertyData<T=any>
+export class PropertyData
 {
     name: string;
     type: string;
     elementType?: string;
     elements?: PropertyData[];
     properties?: MapObject<PropertyData>;
-    value?: T;
+    value?: any;
     input?: EndPoint;
     output?: EndPoint;
+}
+const atomType = ["number", "string", "boolean"];
+export function getPropertyData(name:string, type:string, obj: any, moduleManager:ModuleManager): PropertyData
+{
+    let data: PropertyData = {
+        name: name,
+        type: type,
+        properties: {},
+        elements: []
+    };
+    if (type.endsWith("[]"))
+    {
+        data.type = "array";
+        data.elementType = getElementType(type);
+        if (obj && obj instanceof Array)
+        {
+            for (var i = 0; i < obj.length; i++)
+                data.elements[i] = getPropertyData(i.toString(), data.elementType, obj[i], moduleManager);
+        }
+        return data;
+    }
+
+    const typeData = moduleManager.typeManager.getTypeData(type);
+    if (atomType.includes(type) || !obj || !typeData)
+    {
+        data.value = obj;
+        return data;
+    }
+
+    if(typeData)
+    {
+        getKeys(typeData.properties).forEach(key =>
+        {
+            data.properties[key] = getPropertyData(key, typeData.properties[key].type, data[key], moduleManager);
+        });
+    }
+    return data;
 }
 export class TypeData
 {

@@ -9,8 +9,8 @@ const path_1 = __importDefault(require("path"));
 const agogos_1 = __importDefault(require("./user-lib/agogos"));
 class ModuleManager {
     constructor() {
-        this.typeManager = new TypeManager();
-        this.processManager = new ProcessManager();
+        this.typeManager = new TypeManager(this);
+        this.processManager = new ProcessManager(this);
         this.editorModules = [];
         this.moduleLib = new Map();
     }
@@ -82,8 +82,9 @@ const IgnoreResolveTypes = [
     meta_data_1.BuildinTypes.void
 ];
 class TypeManager {
-    constructor() {
+    constructor(moduleManager) {
         this.typeLib = new Map();
+        this.moduleManager = moduleManager;
     }
     isInherit(derived, base) {
         switch (derived) {
@@ -143,11 +144,12 @@ class TypeManager {
     }
 }
 class ProcessManager {
-    constructor() {
+    constructor(moduleManager) {
         this.processLib = new Map();
+        this.moduleManager = moduleManager;
     }
     getProcessData(name) {
-        return process_unit_1.ProcessUtility.getProcessData(this.instantiateProcess(name));
+        return process_unit_1.ProcessUtility.getProcessData(this.instantiateProcess(name), this.moduleManager);
     }
     resetLib() {
         this.processLib.clear();

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const meta_data_1 = require("./meta-data");
 const linq_1 = __importDefault(require("linq"));
 const uuidv4 = require("uuid/v4");
+const utility_1 = require("./utility");
 exports.UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
 function getUUID() {
     return uuidv4();
@@ -154,6 +155,36 @@ exports.toMapObject = toMapObject;
 class PropertyData {
 }
 exports.PropertyData = PropertyData;
+const atomType = ["number", "string", "boolean"];
+function getPropertyData(name, type, obj, moduleManager) {
+    let data = {
+        name: name,
+        type: type,
+        properties: {},
+        elements: []
+    };
+    if (type.endsWith("[]")) {
+        data.type = "array";
+        data.elementType = getElementType(type);
+        if (obj && obj instanceof Array) {
+            for (var i = 0; i < obj.length; i++)
+                data.elements[i] = getPropertyData(i.toString(), data.elementType, obj[i], moduleManager);
+        }
+        return data;
+    }
+    const typeData = moduleManager.typeManager.getTypeData(type);
+    if (atomType.includes(type) || !obj || !typeData) {
+        data.value = obj;
+        return data;
+    }
+    if (typeData) {
+        utility_1.getKeys(typeData.properties).forEach(key => {
+            data.properties[key] = getPropertyData(key, typeData.properties[key].type, data[key], moduleManager);
+        });
+    }
+    return data;
+}
+exports.getPropertyData = getPropertyData;
 class TypeData {
 }
 exports.TypeData = TypeData;

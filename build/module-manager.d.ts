@@ -9,7 +9,9 @@ export declare class ModuleManager {
     importSourceFile(filePath: string): SourceFile;
 }
 declare class TypeManager {
+    moduleManager: ModuleManager;
     private typeLib;
+    constructor(moduleManager: ModuleManager);
     isInherit(derived: string, base: string): boolean;
     resetLib(): void;
     addType(name: string, constructor: typeof Object): void;
@@ -19,7 +21,9 @@ declare class TypeManager {
     instantiate(name: string): Object;
 }
 declare class ProcessManager {
+    moduleManager: ModuleManager;
     private processLib;
+    constructor(moduleManager: ModuleManager);
     getProcessData(name: string): ProcessNodeData;
     resetLib(): void;
     addProcess(name: string, ProcessType: typeof ProcessUnit): void;

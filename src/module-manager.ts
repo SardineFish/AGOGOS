@@ -6,8 +6,8 @@ import agogos from "./user-lib/agogos"
 
 export class ModuleManager
 {
-    public typeManager: TypeManager = new TypeManager();
-    public processManager: ProcessManager = new ProcessManager();
+    public typeManager: TypeManager = new TypeManager(this);
+    public processManager: ProcessManager = new ProcessManager(this);
     public editorModules: SourceFile[] = [];
     private moduleLib: Map<string, SourceFile> = new Map();
 
@@ -90,7 +90,12 @@ const IgnoreResolveTypes =
 
 class TypeManager
 {
+    moduleManager: ModuleManager;
     private typeLib: Map<string, typeof Object> = new Map();
+    constructor(moduleManager: ModuleManager)
+    {
+        this.moduleManager = moduleManager;
+    }
 
     public isInherit(derived: string, base: string)
     {
@@ -162,11 +167,16 @@ class TypeManager
 
 class ProcessManager
 {
+    moduleManager: ModuleManager;
     private processLib: Map<string, typeof ProcessUnit> = new Map();
+    constructor(moduleManager: ModuleManager)
+    {
+        this.moduleManager = moduleManager;
+    }
 
     public getProcessData(name: string): ProcessNodeData
     {
-        return ProcessUtility.getProcessData(this.instantiateProcess(name));
+        return ProcessUtility.getProcessData(this.instantiateProcess(name), this.moduleManager);
     }
     public resetLib()
     {

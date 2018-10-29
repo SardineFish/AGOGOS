@@ -1,4 +1,5 @@
 import { ProjectFile } from "./project";
+import { ModuleManager } from "./module-manager";
 export declare const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
 export declare function getUUID(): string;
 export declare class Vector2 {
@@ -51,16 +52,17 @@ export interface ProcessNodeData {
     properties: MapObject<PropertyData>;
     processOutput: PropertyData;
 }
-export declare class PropertyData<T = any> {
+export declare class PropertyData {
     name: string;
     type: string;
     elementType?: string;
     elements?: PropertyData[];
     properties?: MapObject<PropertyData>;
-    value?: T;
+    value?: any;
     input?: EndPoint;
     output?: EndPoint;
 }
+export declare function getPropertyData(name: string, type: string, obj: any, moduleManager: ModuleManager): PropertyData;
 export declare class TypeData {
     type: string;
     properties?: MapObject<TypeData>;

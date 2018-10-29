@@ -32,12 +32,10 @@ class AGOGOSProcessor {
         });
     }
     run() {
-        this.processList;
-        /*this.processList.forEach(async process =>
-        {
+        this.processList.forEach(async (process) => {
             if (!this.hasOutput.has(process.name))
                 await this.backwardProcess(process);
-        })*/
+        });
     }
     async backwardProcess(process) {
         try {
