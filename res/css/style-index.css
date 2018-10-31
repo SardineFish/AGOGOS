@@ -26,6 +26,16 @@ svg *{
 *:focus{
     outline: none;
 }
+.icon{
+    font-family: "Material Icons";
+    font-weight: normal;
+    font-style: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1;
+}
 .Resizer{
     position: relative;
     display: block;
@@ -205,6 +215,22 @@ svg *{
     color: #777;
     user-select: none;
     cursor: default;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: stretch;
+    align-items: center;
+}
+.node-name{
+    flex:1 1;
+}
+.node-actions {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    color: #CCC;
+}
+.node-actions > *{
+    cursor: pointer;
 }
 .process-node .node-content{
     padding: .5em;

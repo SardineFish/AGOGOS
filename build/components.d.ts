@@ -60,9 +60,12 @@ export declare class ProgramPage extends EditorPage<ProgramPageProps, ProgramPag
     componentDidUpdate(): void;
     addProcess(process: ProcessNodeData, pos: Vector2): void;
     addConnection(connection: Connection): Promise<RenderedConnection>;
+    removeConnection(connection: RenderedConnection): void;
     startConnection(endpoint: EndPoint): void;
     endConnection(endpoint: EndPoint): void;
+    onDisconnect(endpoint: EndPoint): void;
     updateConnectionLine(line: RenderedConnection): void;
+    onRemoveProcess(name: string): void;
     onDragMoveStart(process: string, e: DragMoveEvent): void;
     onDragMove(process: string, e: DragMoveEvent): void;
     onWindowMouseMove(e: MouseEvent): void;

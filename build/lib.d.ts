@@ -20,6 +20,9 @@ export interface Connection {
     source: EndPoint;
     target: EndPoint;
 }
+export declare function equalEndpoint(a: EndPoint, b: EndPoint): boolean;
+export declare function swapEndpoint(connection: Connection): Connection;
+export declare function getPropertyAtEndpoint(process: ProcessNodeData, endpoint: EndPoint): PropertyData;
 export declare function JSONStringrify(obj: any): string;
 export declare function diffFiles(oldFiles: ProjectFile[], newFiles: ProjectFile[]): DiffResult<ProjectFile>;
 export interface DiffResult<T> {

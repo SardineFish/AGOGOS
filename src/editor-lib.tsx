@@ -26,6 +26,7 @@ export interface EditorProps
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
+    onDisconnect?: EventHandler<EndPoint>;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
@@ -48,9 +49,18 @@ export class Editor extends React.Component<EditorProps, EditorState>
         };
         this.nodeRef = React.createRef();
     }
-    onPortMouseDown(port: "input" | "output")
+    onPortMouseDown(e:React.MouseEvent<HTMLElement>,port: "input" | "output")
     {
-        if (this.props.onConnectStart)
+        e.preventDefault();
+        if (e.button === 2 && this.props.onDisconnect)
+        {
+            this.props.onDisconnect({
+                process: this.props.process,
+                property: this.props.property.name,
+                port: port
+            });
+        }
+        else if (e.button === 0 && this.props.onConnectStart)
         {
             this.props.onConnectStart({
                 process: this.props.process,
@@ -58,9 +68,11 @@ export class Editor extends React.Component<EditorProps, EditorState>
                 port: port
             });
         }
+        
     }
-    onPortMouseUp(port: "input" | "output")
+    onPortMouseUp(e: React.MouseEvent<HTMLElement>,port: "input" | "output")
     {
+        e.preventDefault();
         if (this.props.connecting && this.props.onConnectEnd)
             this.props.onConnectEnd({
                 process: this.props.process,
@@ -85,6 +97,12 @@ export class Editor extends React.Component<EditorProps, EditorState>
         endpoint.property = `${this.props.property.name}.${endpoint.property}`;
         if (this.props.onConnectEnd)
             this.props.onConnectEnd(endpoint);
+    }
+    onChildDisconnect(endpoint: EndPoint)
+    {
+        endpoint.property = `${this.props.property.name}.${endpoint.property}`;
+        if (this.props.onDisconnect)
+            this.props.onDisconnect(endpoint);
     }
     getPortPos(key: string, port: string): Vector2
     {
@@ -127,6 +145,7 @@ export class Editor extends React.Component<EditorProps, EditorState>
                 onChanged={(data) => this.onChildrenChanged(data)}
                 onConnectStart={e => this.onChildConnectStart(e)}
                 onConnectEnd={e => this.onChildConnectEnd(e)}
+                onDisconnect={e=>this.onChildDisconnect(e)}
             />
         )
     }
@@ -157,7 +176,7 @@ export class Editor extends React.Component<EditorProps, EditorState>
                 <span className={["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className as string] : []).join(" ")} >
                     {
                         this.props.allowInput ?
-                            (<span className="port-input" onMouseDown={() => this.onPortMouseDown("input")} onMouseUp={() => this.onPortMouseUp("input")}></span>) : null
+                            (<span className="port-input" onMouseDown={(e) => this.onPortMouseDown(e, "input")} onMouseUp={(e) => this.onPortMouseUp(e, "input")}></span>) : null
                     }
                     {
                         content ?
@@ -173,7 +192,7 @@ export class Editor extends React.Component<EditorProps, EditorState>
                     </span>
                     {
                         this.props.allowOutput ?
-                            (<span className="port-output" onMouseDown={() => this.onPortMouseDown("output")} onMouseUp={() => this.onPortMouseUp("output")}></span>) : null
+                            (<span className="port-output" onMouseDown={(e) => this.onPortMouseDown(e, "output")} onMouseUp={(e) => this.onPortMouseUp(e, "output")}></span>) : null
                     }
                 </span>
                 {

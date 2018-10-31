@@ -44,6 +44,37 @@ export interface Connection{
     source: EndPoint;
     target: EndPoint;
 }
+export function equalEndpoint(a: EndPoint, b: EndPoint)
+{
+    return a.port === b.port &&
+        a.process === b.process &&
+        a.property === b.property;
+}
+export function swapEndpoint(connection: Connection)
+{
+    let t = connection.source;
+    connection.source = connection.target;
+    connection.target = t;
+    return connection;
+}
+function getPropertyRecursive(property: PropertyData, propertyPath: string): PropertyData
+{
+    let paths = propertyPath.split(".");
+    if (paths.length <= 0 || propertyPath==="")
+        return property;
+    if (paths.length === 1)
+        return property.properties[paths[0]];
+    else if (paths.length > 1)
+        return getPropertyRecursive(property.properties[paths[0]], paths.slice(1).join("."));
+}
+export function getPropertyAtEndpoint(process: ProcessNodeData, endpoint: EndPoint)
+{
+    let paths = endpoint.property.split(".");
+    if (paths[0] === "output")
+        return getPropertyRecursive(process.processOutput, paths.slice(1).join("."));
+    else
+        return getPropertyRecursive(process.properties[paths[0]], paths.slice(1).join("."));
+}
 function ObjectCast(obj: any): any
 {
     let out: any = {};

@@ -5,7 +5,7 @@ import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ConnectLine, RenderConnectLine, ProcessEditor } from "./process-editor"
-import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject, MapObject, mapAsync, removeAt } from "./lib";
+import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject, MapObject, mapAsync, removeAt, equalEndpoint, getPropertyAtEndpoint, swapEndpoint } from "./lib";
 import { IPCRenderer } from "./ipc";
 import { AGOGOSRenderer } from "./lib-renderer";
 import { AGOGOSProgram, ProcessLayout } from "./project";
@@ -166,39 +166,7 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
         }
         process.name = getUUID();
         console.log(process);
-        /*
-        let startPos: Vector2;
-        let holdPos: Vector2;
-        const onDragStart = (e: DragMoveEvent) =>
-        {
-            let style = getComputedStyle(element);
-            startPos = vec2(parseFloat(style.left), parseFloat(style.top));
-            holdPos = this.viewport.mousePosition(vec2(e.startX, e.startY));
-        };
-        const onNodeDragMove = (e: DragMoveEvent) =>
-        {
-            let dp = Vector2.minus(this.viewport.mousePosition(vec2(e.x, e.y)), holdPos);
-            let pos = Vector2.plus(startPos, dp);
-            element.style.left = `${pos.x}px`;
-            element.style.top = `${pos.y}px`;
-            return;
-            this.connections.forEach(cnn => this.updateConnectionLine(cnn));
-            if (this.connecting)
-                this.updateConnectionLine(this.pendingConnection);
-        };
-        */
-        //process.name = `Process${this.processes.size}`;
-
-        //this.processes.set(process.name, { process: process, renderer: null });
-
-        //AGOGOSRenderer.instance.processesData = toMapObject(this.processes, p => p.process);
-
-        /*let element = renderProcessNode({
-            node:process, onDragStart, onNodeDragMove, (p)=> this.startConnection(p), (p) => this.endConnection(p), (p) =>
-        {
-            this.processes.get(process.name).renderer = p;
-        }
-    });*/
+        
         let processes = this.state.processes;
         processes[process.name] = {
             position: pos,
@@ -207,23 +175,6 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
         this.setState({
             processes: processes
         });
-        /*
-        let element = renderProcessNode({
-            process: process,
-            onDragMoveStart: onDragStart,
-            onDragMove: onNodeDragMove,
-            onConnectStart: (p) => this.startConnection(p),
-            onConnectEnd: (p) => this.endConnection(p),
-            refCallback: (p) => this.processes.get(process.name).renderer = p
-        }, pos);
-
-        this.processes.set(process.name, {
-            obj: process,
-            renderer: null,
-            element: element
-        });
-
-        this.domRef.current!.querySelector(".viewport-wrapper")!.appendChild(element);*/
     }
     async addConnection(connection: Connection): Promise<RenderedConnection>
     {
@@ -239,6 +190,15 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
             element,
             renderer: line
         };
+    }
+    removeConnection(connection: RenderedConnection)
+    {
+        connection.element.remove();
+        if (connection.obj.source.port === "input")
+            swapEndpoint(connection.obj);
+        let source = getPropertyAtEndpoint(this.state.processes[connection.obj.source.process].process, connection.obj.source);
+        let target = getPropertyAtEndpoint(this.state.processes[connection.obj.target.process].process, connection.obj.target);
+        target.input = null;
     }
     startConnection(endpoint: EndPoint)
     {
@@ -257,11 +217,6 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
         {
             (this.refs[key] as ProcessEditor).setState({ connecting: true });
         });
-        /*this.processes.forEach(obj =>
-        {
-            obj.renderer.setState({ connecting: true });
-        });*/
-        //this.connecting = true;
 
         RenderConnectLine({
             from: pos,
@@ -318,6 +273,30 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
 
         //AGOGOSRenderer.instance.processesData = toMapObject(this.processes, p => p.obj);
     }
+    onDisconnect(endpoint: EndPoint)
+    {
+        let idx = linq.from(this.connections).lastIndexOf(cnn => equalEndpoint(cnn.obj.source, endpoint) || equalEndpoint(cnn.obj.target, endpoint));
+        if (idx >= 0)
+        {
+            let connection = removeAt(this.connections, idx);
+            removeAt(this.state.program.connections, idx);
+            this.connecting = true;
+            this.pendingConnection = connection;
+            if (connection.obj.source.port === "input")
+                swapEndpoint(connection.obj);
+            let source = getPropertyAtEndpoint(this.state.processes[connection.obj.source.process].process, connection.obj.source);
+            let target = getPropertyAtEndpoint(this.state.processes[connection.obj.target.process].process, connection.obj.target);
+            target.input = null;
+            if (equalEndpoint( connection.obj.target, endpoint))
+                connection.obj.target = null;
+            else
+                connection.obj.source = null;
+            getKeys(this.state.processes).forEach(key =>
+            {
+                (this.refs[key] as ProcessEditor).setState({ connecting: true });
+            });
+        }
+    }
     updateConnectionLine(line: RenderedConnection)
     {
         if (line.obj.target)
@@ -333,6 +312,21 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
                 from: this.viewport.mousePosition((this.refs[line.obj.source.process] as ProcessEditor).getPortPos(line.obj.source.property, line.obj.source.port)),
             });
         }
+    }
+    onRemoveProcess(name: string)
+    {
+        for (let i = 0; i < this.connections.length; i++)
+        {
+            if (this.connections[i].obj.source.process === name || this.connections[i].obj.target.process === name)
+                this.removeConnection(this.connections[i]);
+            removeAt(this.connections, i);
+            removeAt(this.state.program.connections, i);
+            i--;
+        }
+        delete this.state.program.processes[name];
+        this.setState({
+            program: this.state.program
+        });
     }
     onDragMoveStart(process:string, e:DragMoveEvent)
     {
@@ -401,7 +395,9 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
                                 onDragMoveStart={e => this.onDragMoveStart(key, e)}
                                 onDragMove={e => this.onDragMove(key, e)}
                                 onConnectStart={e => this.startConnection(e)}
-                                onConnectEnd={e=>this.endConnection(e)}
+                                onConnectEnd={e => this.endConnection(e)}
+                                onDisconnect={e => this.onDisconnect(e)}
+                                onRemove={e=>this.onRemoveProcess(e)}
                             ></ProcessEditor>
                         </LocatedComponent>
                     ))

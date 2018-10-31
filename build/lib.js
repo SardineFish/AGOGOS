@@ -27,6 +27,36 @@ class Vector2 {
 }
 exports.Vector2 = Vector2;
 exports.vec2 = (x, y) => new Vector2(x, y);
+function equalEndpoint(a, b) {
+    return a.port === b.port &&
+        a.process === b.process &&
+        a.property === b.property;
+}
+exports.equalEndpoint = equalEndpoint;
+function swapEndpoint(connection) {
+    let t = connection.source;
+    connection.source = connection.target;
+    connection.target = t;
+    return connection;
+}
+exports.swapEndpoint = swapEndpoint;
+function getPropertyRecursive(property, propertyPath) {
+    let paths = propertyPath.split(".");
+    if (paths.length <= 0 || propertyPath === "")
+        return property;
+    if (paths.length === 1)
+        return property.properties[paths[0]];
+    else if (paths.length > 1)
+        return getPropertyRecursive(property.properties[paths[0]], paths.slice(1).join("."));
+}
+function getPropertyAtEndpoint(process, endpoint) {
+    let paths = endpoint.property.split(".");
+    if (paths[0] === "output")
+        return getPropertyRecursive(process.processOutput, paths.slice(1).join("."));
+    else
+        return getPropertyRecursive(process.properties[paths[0]], paths.slice(1).join("."));
+}
+exports.getPropertyAtEndpoint = getPropertyAtEndpoint;
 function ObjectCast(obj) {
     let out = {};
     for (const key in obj) {

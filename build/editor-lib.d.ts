@@ -14,6 +14,7 @@ export interface EditorProps {
     label: string;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
+    onDisconnect?: EventHandler<EndPoint>;
     editable?: boolean;
     connecting?: boolean;
     onChanged?: (data: PropertyData) => void;
@@ -25,11 +26,12 @@ export interface EditorState {
 export declare class Editor extends React.Component<EditorProps, EditorState> {
     nodeRef: RefObject<HTMLDivElement>;
     constructor(props: EditorProps);
-    onPortMouseDown(port: "input" | "output"): void;
-    onPortMouseUp(port: "input" | "output"): void;
+    onPortMouseDown(e: React.MouseEvent<HTMLElement>, port: "input" | "output"): void;
+    onPortMouseUp(e: React.MouseEvent<HTMLElement>, port: "input" | "output"): void;
     onChildrenChanged(data: PropertyData): void;
     onChildConnectStart(endpoint: EndPoint): void;
     onChildConnectEnd(endpoint: EndPoint): void;
+    onChildDisconnect(endpoint: EndPoint): void;
     getPortPos(key: string, port: string): Vector2;
     applyChange(): void;
     propertyEditor(name: string): JSX.Element;

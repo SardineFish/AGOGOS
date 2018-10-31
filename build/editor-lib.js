@@ -27,8 +27,16 @@ class Editor extends React.Component {
         };
         this.nodeRef = React.createRef();
     }
-    onPortMouseDown(port) {
-        if (this.props.onConnectStart) {
+    onPortMouseDown(e, port) {
+        e.preventDefault();
+        if (e.button === 2 && this.props.onDisconnect) {
+            this.props.onDisconnect({
+                process: this.props.process,
+                property: this.props.property.name,
+                port: port
+            });
+        }
+        else if (e.button === 0 && this.props.onConnectStart) {
             this.props.onConnectStart({
                 process: this.props.process,
                 property: this.props.property.name,
@@ -36,7 +44,8 @@ class Editor extends React.Component {
             });
         }
     }
-    onPortMouseUp(port) {
+    onPortMouseUp(e, port) {
+        e.preventDefault();
         if (this.props.connecting && this.props.onConnectEnd)
             this.props.onConnectEnd({
                 process: this.props.process,
@@ -58,6 +67,11 @@ class Editor extends React.Component {
         endpoint.property = `${this.props.property.name}.${endpoint.property}`;
         if (this.props.onConnectEnd)
             this.props.onConnectEnd(endpoint);
+    }
+    onChildDisconnect(endpoint) {
+        endpoint.property = `${this.props.property.name}.${endpoint.property}`;
+        if (this.props.onDisconnect)
+            this.props.onDisconnect(endpoint);
     }
     getPortPos(key, port) {
         let keys = key.split(".");
@@ -82,7 +96,7 @@ class Editor extends React.Component {
             };
         this.props.property.properties[name] = childProperty;
         let ChildEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(childType);
-        return (React.createElement(ChildEditor, { key: name, ref: name, process: this.props.process, property: childProperty, label: name, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput, editable: this.props.editable, connecting: this.props.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: e => this.onChildConnectStart(e), onConnectEnd: e => this.onChildConnectEnd(e) }));
+        return (React.createElement(ChildEditor, { key: name, ref: name, process: this.props.process, property: childProperty, label: name, allowInput: this.props.allowInput, allowOutput: this.props.allowOutput, editable: this.props.editable, connecting: this.props.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: e => this.onChildConnectStart(e), onConnectEnd: e => this.onChildConnectEnd(e), onDisconnect: e => this.onChildDisconnect(e) }));
     }
     renderHeader() {
         return (React.createElement("span", { className: "editor-content" }, `object: ${this.props.property.type}`));
@@ -99,7 +113,7 @@ class Editor extends React.Component {
         return (React.createElement("div", { className: ["object-editor", this.state.extend ? "extend" : "fold"].join(" "), ref: this.nodeRef },
             React.createElement("span", { className: ["editor", "editor-header", `editor-${this.props.property.name}`].concat(this.props.className ? [this.props.className] : []).join(" ") },
                 this.props.allowInput ?
-                    (React.createElement("span", { className: "port-input", onMouseDown: () => this.onPortMouseDown("input"), onMouseUp: () => this.onPortMouseUp("input") })) : null,
+                    (React.createElement("span", { className: "port-input", onMouseDown: (e) => this.onPortMouseDown(e, "input"), onMouseUp: (e) => this.onPortMouseUp(e, "input") })) : null,
                 content ?
                     React.createElement("span", { className: `fold-icon ${this.state.extend ? "extend" : "fold"}`, onClick: () => this.setState({ extend: !this.state.extend }) })
                     : null,
@@ -108,7 +122,7 @@ class Editor extends React.Component {
                     header
                     : `object: ${this.props.property.type}`),
                 this.props.allowOutput ?
-                    (React.createElement("span", { className: "port-output", onMouseDown: () => this.onPortMouseDown("output"), onMouseUp: () => this.onPortMouseUp("output") })) : null),
+                    (React.createElement("span", { className: "port-output", onMouseDown: (e) => this.onPortMouseDown(e, "output"), onMouseUp: (e) => this.onPortMouseUp(e, "output") })) : null),
             this.state.extend ?
                 content
                 : null));

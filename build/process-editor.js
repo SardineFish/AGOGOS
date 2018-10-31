@@ -46,6 +46,11 @@ class ProcessEditor extends react_1.default.Component {
             this.drag = false;
         }
     }
+    onRemoveClick(e) {
+        e.preventDefault();
+        if (this.props.onRemove)
+            this.props.onRemove(this.props.process.name);
+    }
     componentDidMount() {
         window.addEventListener("mousemove", (e) => this.onMouseMove(e));
         if (this.props.refCallback) {
@@ -68,17 +73,20 @@ class ProcessEditor extends react_1.default.Component {
     render() {
         const outputType = this.props.process.processOutput.type;
         return (react_1.default.createElement("div", { className: "node-wrapper", ref: this.nodeRef },
-            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) }, this.props.process.processType),
+            react_1.default.createElement("header", { className: "node-header", onMouseDown: (e) => this.onMouseDown(e), onMouseUp: (e) => this.onMouseUp(e) },
+                react_1.default.createElement("span", { className: "node-name" }, this.props.process.processType),
+                react_1.default.createElement("span", { className: "node-actions" },
+                    react_1.default.createElement("span", { className: "button-delete-node icon", onClick: (e) => this.onRemoveClick(e) }, "delete"))),
             react_1.default.createElement("div", { className: "node-content" }, utility_1.getKeys(this.props.process.properties).map((key, idx) => {
                 let childType = this.props.process.properties[key].type;
                 let childProperty = this.props.process.properties[key];
                 let ChildEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(childType);
-                return (react_1.default.createElement(ChildEditor, { key: key, ref: key, process: this.props.process.name, property: childProperty, label: key, allowInput: true, allowOutput: true, editable: true, connecting: this.state.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                return (react_1.default.createElement(ChildEditor, { key: key, ref: key, process: this.props.process.name, property: childProperty, label: key, allowInput: true, allowOutput: true, editable: true, connecting: this.state.connecting, onChanged: (data) => this.onChildrenChanged(data), onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd, onDisconnect: this.props.onDisconnect }));
             })),
             react_1.default.createElement("div", { className: "node-output" }, (() => {
                 let outputProperty = this.props.process.processOutput;
                 let OutputEditor = lib_renderer_1.AGOGOSRenderer.instance.editorManager.getEditor(this.props.process.processOutput.type);
-                return (react_1.default.createElement(OutputEditor, { ref: "output", process: this.props.process.name, property: outputProperty, label: "Output", allowInput: false, allowOutput: true, editable: false, connecting: this.state.connecting, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd }));
+                return (react_1.default.createElement(OutputEditor, { ref: "output", process: this.props.process.name, property: outputProperty, label: "Output", allowInput: false, allowOutput: true, editable: false, connecting: this.state.connecting, onConnectStart: this.props.onConnectStart, onConnectEnd: this.props.onConnectEnd, onDisconnect: this.props.onDisconnect }));
             })())));
     }
 }

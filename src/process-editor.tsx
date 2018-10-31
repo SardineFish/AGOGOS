@@ -111,14 +111,16 @@ class ArrayEditor extends React.Component<ArrayEditorProps, ArrayEditorState>
 }*/
 interface ProcessEditorProps
 {
-    process:ProcessNodeData
+    process: ProcessNodeData
     onDragMove?: EventHandler<DragMoveEvent>;
     onDragMoveStart?: EventHandler<DragMoveEvent>;
     onNameChange?: EventHandler<string>;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
+    onDisconnect?: EventHandler<EndPoint>;
     refCallback?: RefCallback<ProcessEditor>;
     onChanged?: (data: ProcessNodeData) => void;
+    onRemove?: (process: string) => void
 }
 interface ProcessEditorState
 {
@@ -163,6 +165,12 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
             this.drag = false;
         }
     }
+    onRemoveClick(e: React.MouseEvent<HTMLElement>)
+    {
+        e.preventDefault();
+        if (this.props.onRemove)
+            this.props.onRemove(this.props.process.name);
+    }
     componentDidMount()
     {
         window.addEventListener("mousemove", (e: any) => this.onMouseMove(e));
@@ -192,7 +200,10 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
         const outputType = this.props.process.processOutput.type;
         return (
             <div className="node-wrapper" ref={this.nodeRef}>
-                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >{this.props.process.processType}</header>
+                <header className="node-header" onMouseDown={(e) => this.onMouseDown(e)} onMouseUp={(e) => this.onMouseUp(e)} >
+                    <span className="node-name">{this.props.process.processType}</span>
+                    <span className="node-actions"><span className="button-delete-node icon" onClick={(e)=>this.onRemoveClick(e)}>delete</span></span>
+                </header>
                 <div className="node-content">
                     {
                         getKeys(this.props.process.properties).map((key, idx) =>
@@ -214,6 +225,7 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
                                     onChanged={(data) => this.onChildrenChanged(data)}
                                     onConnectStart={this.props.onConnectStart}
                                     onConnectEnd={this.props.onConnectEnd}
+                                    onDisconnect={this.props.onDisconnect}
                                 />
                             )
                         })
@@ -237,6 +249,7 @@ export class ProcessEditor extends React.Component<ProcessEditorProps,ProcessEdi
                                     connecting={this.state.connecting}
                                     onConnectStart={this.props.onConnectStart}
                                     onConnectEnd={this.props.onConnectEnd}
+                                    onDisconnect={this.props.onDisconnect}
                                 />
                             )
                         })()

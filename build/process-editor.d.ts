@@ -20,8 +20,10 @@ interface ProcessEditorProps {
     onNameChange?: EventHandler<string>;
     onConnectEnd?: EventHandler<EndPoint>;
     onConnectStart?: EventHandler<EndPoint>;
+    onDisconnect?: EventHandler<EndPoint>;
     refCallback?: RefCallback<ProcessEditor>;
     onChanged?: (data: ProcessNodeData) => void;
+    onRemove?: (process: string) => void;
 }
 interface ProcessEditorState {
     connecting: boolean;
@@ -34,6 +36,7 @@ export declare class ProcessEditor extends React.Component<ProcessEditorProps, P
     onMouseDown(e: MouseEvent<HTMLElement>): void;
     onMouseMove(e: MouseEvent<HTMLElement>): void;
     onMouseUp(e: MouseEvent<HTMLElement>): void;
+    onRemoveClick(e: React.MouseEvent<HTMLElement>): void;
     componentDidMount(): void;
     onChildrenChanged(data: PropertyData): void;
     getPortPos(key: string, port: string): Vector2;
