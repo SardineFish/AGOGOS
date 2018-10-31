@@ -86,7 +86,15 @@ class AGOGOS {
         let program;
         if (await util_1.promisify(fs_1.default.exists)(path)) {
             program = JSON.parse((await util_1.promisify(fs_1.default.readFile)(path)).toString());
-            program.filePath = path;
+            if (!program) {
+                program = {
+                    projectPath: this.project.projectDirectory,
+                    filePath: path,
+                    processes: {},
+                    connections: []
+                };
+                await util_1.promisify(fs_1.default.writeFile)(path, JSON.stringify(program));
+            }
         }
         else {
             program = {
@@ -97,7 +105,18 @@ class AGOGOS {
             };
             await util_1.promisify(fs_1.default.writeFile)(path, JSON.stringify(program));
         }
+        if (!program.connections || !(program.connections instanceof Array))
+            program.connections = [];
+        if (!program.processes)
+            program.processes = {};
+        program.filePath = path;
+        program.projectPath = this.project.projectDirectory;
         await this.ipc.call(ipc_1.IPCRenderer.SendProgram, program);
+        return program;
+    }
+    async saveProgram(program) {
+        await util_1.promisify(fs_1.default.writeFile)(program.filePath, JSON.stringify(program));
+        this.console.log(`Program saved to ${program.filePath}`);
         return program;
     }
     onCompileStart() {

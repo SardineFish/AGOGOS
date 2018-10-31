@@ -668,6 +668,8 @@ export class PageContainer extends React.Component<PageContainerProps, PageConta
             pageTitles: []
         };
     }
+    get currentIdx() { return this.state.activePageIdx }
+    set currentIdx(value: number) { this.openPage(value) }
     addPage(title: string, page: any)
     {
         var pages = this.state.pages;

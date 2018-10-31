@@ -7,6 +7,7 @@ const electron_1 = require("electron");
 const commander_1 = __importDefault(require("commander"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const ipc_1 = require("./ipc");
 const agogos_1 = require("./agogos");
 require("electron-reload")(electron_1.app.getAppPath());
 const pkg = require('../package.json');
@@ -58,6 +59,15 @@ function loadMenu() {
                     label: "Save Project",
                     click: () => agogos.project.save(),
                     accelerator: "CommandOrControl+Shift+S",
+                },
+                {
+                    label: "Save",
+                    accelerator: "CommandOrControl+S",
+                    click: async () => {
+                        let program = await agogos.ipc.call(ipc_1.IPCRenderer.GetProgram);
+                        if (program)
+                            agogos.saveProgram(program);
+                    }
                 }
             ]
         },

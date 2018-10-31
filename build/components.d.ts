@@ -102,6 +102,7 @@ interface PageContainerState {
 }
 export declare class PageContainer extends React.Component<PageContainerProps, PageContainerState> {
     constructor(props: PageContainerProps);
+    currentIdx: number;
     addPage(title: string, page: any): void;
     openPage(idx: number): void;
     render(): JSX.Element;

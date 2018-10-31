@@ -15,6 +15,7 @@ export declare class AGOGOS {
     reload(event: Event): Promise<AGOGOS>;
     run(): Promise<void>;
     openProgrm(path: string): Promise<AGOGOSProgram>;
+    saveProgram(program: AGOGOSProgram): Promise<AGOGOSProgram>;
     onCompileStart(): void;
     onCompileComplete(): void;
     onGetProcessData(filename: string): ProcessNodeData;

@@ -173,6 +173,7 @@ class App extends React.Component<AppArgs, AppState>
         };
     }
     consoleHistory: ConsoleMessage[] = [];
+    openedProgram: AGOGOSProgram[] = [];
     console = {
         log: (message: any, type: "log" | "warn" | "error" = "log") =>
         {
@@ -193,9 +194,12 @@ class App extends React.Component<AppArgs, AppState>
     {
         PopupProjectMenu(e.parent.data as string);
     }
-    openProgram()
+    openProgram(program:AGOGOSProgram)
     {
-        
+        (this.refs["page-container"] as PageContainer).addPage(path.basename(program.filePath), (
+            <ProgramPage label={path.basename(program.filePath)} program={program}></ProgramPage>
+        ));
+        this.openedProgram.push(program);
     }
     onProjectReady(projectFile: ProjectFile)
     {
@@ -258,7 +262,13 @@ class App extends React.Component<AppArgs, AppState>
             this.onProjectReady(args.projectFile);
         });
         ipcRenderer.send("ping", "ping");
-
+        AGOGOSRenderer.instance.ipc.add(IPCRenderer.GetProgram, () =>
+        {
+            let idx = (this.refs["page-container"] as PageContainer).currentIdx;
+            if (idx < 0)
+                return null;
+            return this.openedProgram[idx];
+        });
 
     }
     onFileDragStart(e: TreeNodeDragEvent)
@@ -273,10 +283,8 @@ class App extends React.Component<AppArgs, AppState>
         var data = e.node as ProjectFileData;
         if (path.extname(data.path) === `.${AGOGOSProgramExtension}`)
         {
-            let process = await AGOGOSRenderer.instance.ipc.call<AGOGOSProgram>(IPCRenderer.GetProgram, data.path);
-            (this.refs["page-container"] as PageContainer).addPage(path.basename(data.path), (
-                <ProgramPage label={path.basename(data.path)} program={process}></ProgramPage>
-            ));
+            let program = await AGOGOSRenderer.instance.ipc.call<AGOGOSProgram>(IPCRenderer.GetProgram, data.path);
+            this.openProgram(program);
         }
     }
     render()

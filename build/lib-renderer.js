@@ -121,6 +121,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.consoleHistory = [];
+        this.openedProgram = [];
         this.console = {
             log: (message, type = "log") => {
                 console.log(message);
@@ -147,7 +148,9 @@ class App extends React.Component {
     onProjectContextMenu(e) {
         PopupProjectMenu(e.parent.data);
     }
-    openProgram() {
+    openProgram(program) {
+        this.refs["page-container"].addPage(path_1.default.basename(program.filePath), (React.createElement(components_1.ProgramPage, { label: path_1.default.basename(program.filePath), program: program })));
+        this.openedProgram.push(program);
     }
     onProjectReady(projectFile) {
         let projectFileData = toProjectFileData(this.state.projectFile);
@@ -201,6 +204,12 @@ class App extends React.Component {
             this.onProjectReady(args.projectFile);
         });
         electron_1.ipcRenderer.send("ping", "ping");
+        AGOGOSRenderer.instance.ipc.add(ipc_2.IPCRenderer.GetProgram, () => {
+            let idx = this.refs["page-container"].currentIdx;
+            if (idx < 0)
+                return null;
+            return this.openedProgram[idx];
+        });
     }
     onFileDragStart(e) {
         e.dataTransfer.setData("text/plain", e.nodeData.data);
@@ -210,8 +219,8 @@ class App extends React.Component {
     async onFileNodeDoubleClick(e) {
         var data = e.node;
         if (path_1.default.extname(data.path) === `.${lib_1.AGOGOSProgramExtension}`) {
-            let process = await AGOGOSRenderer.instance.ipc.call(ipc_2.IPCRenderer.GetProgram, data.path);
-            this.refs["page-container"].addPage(path_1.default.basename(data.path), (React.createElement(components_1.ProgramPage, { label: path_1.default.basename(data.path), program: process })));
+            let program = await AGOGOSRenderer.instance.ipc.call(ipc_2.IPCRenderer.GetProgram, data.path);
+            this.openProgram(program);
         }
     }
     render() {

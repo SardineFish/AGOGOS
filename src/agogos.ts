@@ -2,7 +2,7 @@ import { AGOGOSProject, AGOGOSProgram } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
 import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer, ChannelStatusCompile, ProjectCompiled, ChannelStatusReady } from "./ipc";
 import Path from "path";
-import { ConsoleMessage, StatusOutput, toMapObject, ProcessNodeData, MapObject } from "./lib";
+import { ConsoleMessage, StatusOutput, toMapObject, ProcessNodeData, MapObject, JSONStringrify } from "./lib";
 import linq from "linq";
 import { AGOGOSProcessor } from "./agogos-processor";
 import { promisify } from "util";
@@ -79,7 +79,16 @@ export class AGOGOS
         if (await promisify(fs.exists)(path))
         {
             program = JSON.parse((await promisify(fs.readFile)(path)).toString());
-            program.filePath = path;
+            if (!program)
+            {
+                program = {
+                    projectPath: this.project.projectDirectory,
+                    filePath: path,
+                    processes: {},
+                    connections: []
+                };
+                await promisify(fs.writeFile)(path, JSON.stringify(program));
+            }
         }
         else
         {
@@ -91,7 +100,19 @@ export class AGOGOS
             };
             await promisify(fs.writeFile)(path, JSON.stringify(program));
         }
+        if (!program.connections || !(program.connections instanceof Array))
+            program.connections = [];
+        if (!program.processes)
+            program.processes = {};
+        program.filePath = path;
+        program.projectPath = this.project.projectDirectory;
         await this.ipc.call(IPCRenderer.SendProgram, program);
+        return program;
+    }
+    async saveProgram(program: AGOGOSProgram)
+    {
+        await promisify(fs.writeFile)(program.filePath, JSON.stringify(program));
+        this.console.log(`Program saved to ${program.filePath}`);
         return program;
     }
     onCompileStart()

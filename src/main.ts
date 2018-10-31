@@ -2,8 +2,8 @@ import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem, dialog } from "elec
 import program from "commander";
 import fs from "fs";
 import path from "path";
-import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged, FileChangeArgs } from "./ipc";
-import { AGOGOSProject } from "./project";
+import { Startup, ChannelStartup, ChannelProjectSettings, ChannelFileChanged, FileChangeArgs, IPCRenderer } from "./ipc";
+import { AGOGOSProject, AGOGOSProgram } from "./project";
 import { AGOGOS } from "./agogos";
 require("electron-reload")(app.getAppPath());
 
@@ -68,6 +68,16 @@ function loadMenu()
                     label: "Save Project",
                     click: () => agogos.project.save(),
                     accelerator: "CommandOrControl+Shift+S",
+                },
+                {
+                    label: "Save",
+                    accelerator: "CommandOrControl+S",
+                    click: async () =>
+                    {
+                        let program = await agogos.ipc.call<AGOGOSProgram>(IPCRenderer.GetProgram);
+                        if (program)
+                            agogos.saveProgram(program);
+                    }
                 }
             ]
         },

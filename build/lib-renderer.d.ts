@@ -43,13 +43,14 @@ interface AppState {
 declare class App extends React.Component<AppArgs, AppState> {
     constructor(props: AppArgs);
     consoleHistory: ConsoleMessage[];
+    openedProgram: AGOGOSProgram[];
     console: {
         log: (message: any, type?: "log" | "warn" | "error") => void;
     };
     readonly latestConsole: ConsoleMessage;
     onFolderExtend(nodeData: NodeData): NodeData;
     onProjectContextMenu(e: NodeMouseEvent): void;
-    openProgram(): void;
+    openProgram(program: AGOGOSProgram): void;
     onProjectReady(projectFile: ProjectFile): void;
     componentDidMount(): void;
     onFileDragStart(e: TreeNodeDragEvent): void;

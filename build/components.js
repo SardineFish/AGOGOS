@@ -467,6 +467,8 @@ class PageContainer extends react_1.default.Component {
             pageTitles: []
         };
     }
+    get currentIdx() { return this.state.activePageIdx; }
+    set currentIdx(value) { this.openPage(value); }
     addPage(title, page) {
         var pages = this.state.pages;
         pages.push(page);
