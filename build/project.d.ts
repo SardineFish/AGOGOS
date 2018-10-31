@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { IPackageJSON } from "./package-json";
 import * as fs from "fs";
-import { SourceFile } from "./lib";
+import { SourceFile, ProcessNodeData, Vector2, MapObject, Connection } from "./lib";
 import * as typescript from "typescript";
 import { ProcessIPC } from "./ipc";
 import { ModuleManager } from "./module-manager";
@@ -53,5 +53,15 @@ export declare class ProjFile {
     static getDirectory(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;
     static getFile(root: ProjectFile, path: string, pathType?: "relative" | "absolute"): ProjectFile;
     static orderFiles(files: ProjectFile[]): ProjectFile[];
+}
+export interface ProcessLayout {
+    process: ProcessNodeData;
+    position: Vector2;
+}
+export interface AGOGOSProgram {
+    filePath: string;
+    projectPath: string;
+    processes: MapObject<ProcessLayout>;
+    connections: Connection[];
 }
 export {};

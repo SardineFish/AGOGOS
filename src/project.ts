@@ -3,7 +3,7 @@ import { IPackageJSON } from "./package-json";
 import Path from "path";
 import * as fs from "fs";
 import { jsonIgnore } from "./meta-data";
-import { JSONStringrify, diffFiles, foreachAsync, SourceFile } from "./lib";
+import { JSONStringrify, diffFiles, foreachAsync, SourceFile, ProcessNodeData, Vector2, MapObject, Connection } from "./lib";
 import { promisify } from "util";
 import linq from "linq";
 import * as typescript from "typescript";
@@ -320,4 +320,17 @@ function watchFilesRecursive(file: ProjectFile, ignore: RegExp, callback: FileWa
     });
     if (file.children)
         file.children.filter(child => child.type === "folder").forEach(f => watchFilesRecursive(f, ignore, callback));
+}
+
+export interface ProcessLayout
+{
+    process: ProcessNodeData;
+    position: Vector2;
+}
+export interface AGOGOSProgram
+{
+    filePath: string;
+    projectPath: string;
+    processes: MapObject<ProcessLayout>;
+    connections: Connection[];
 }

@@ -1,5 +1,5 @@
-import { EndPoint, StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, PropertyData, TypeData } from "./lib";
-import { AGOGOSProject, ProjectFile } from "./project";
+import { EndPoint, StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, PropertyData, TypeData, AGOGOSProgramExtension } from "./lib";
+import { AGOGOSProject, ProjectFile, AGOGOSProgram } from "./project";
 import { ipcRenderer, remote } from "electron";
 import { ChannelProjectSettings, ChannelStatusCompile, ChannelStatusReady, ProjectCompiled } from "./ipc";
 import { NodeData } from "../../react-tree-viewer/dist";
@@ -12,7 +12,7 @@ import { Event, app, MenuItem } from "electron";
 import { ChannelStartup, Startup, ChannelFileChanged, FileChangeArgs, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer } from "./ipc";
 import fs from "fs";
 import path from "path";
-import { Pane, ProcessSpace, ProgressBar } from "./components";
+import { Pane, ProcessSpace, ProgressBar, PageContainer, ProgramPage } from "./components";
 import linq from "linq";
 import { ProjectFileData } from "./lib-renderer";
 import { switchCase } from "./lib";
@@ -64,6 +64,7 @@ export class AGOGOSRenderer
     public ipc: GeneralIPC;
     public app: App;
 
+    public program: AGOGOSProgram;
     public processLib: MapObject<ProcessNodeData>;
     public typeLib: MapObject<TypeData>;
     public editorManager: EditorManager;
@@ -192,6 +193,10 @@ class App extends React.Component<AppArgs, AppState>
     {
         PopupProjectMenu(e.parent.data as string);
     }
+    openProgram()
+    {
+        
+    }
     onProjectReady(projectFile: ProjectFile)
     {
         let projectFileData = toProjectFileData(this.state.projectFile);
@@ -263,6 +268,17 @@ class App extends React.Component<AppArgs, AppState>
 
         //this.console.log(e.nodeData.data);
     }
+    async onFileNodeDoubleClick(e: NodeMouseEvent)
+    {
+        var data = e.node as ProjectFileData;
+        if (path.extname(data.path) === `.${AGOGOSProgramExtension}`)
+        {
+            let process = await AGOGOSRenderer.instance.ipc.call<AGOGOSProgram>(IPCRenderer.GetProgram, data.path);
+            (this.refs["page-container"] as PageContainer).addPage(path.basename(data.path), (
+                <ProgramPage label={path.basename(data.path)} program={process}></ProgramPage>
+            ));
+        }
+    }
     render()
     {
         let data = this.state.dirData;
@@ -281,6 +297,7 @@ class App extends React.Component<AppArgs, AppState>
                                         onDragStart={(e) => this.onFileDragStart(e)}
                                         onContextMenu={e => this.onProjectContextMenu(e)}
                                         onExtend={(nodeData) => this.onFolderExtend(nodeData)}
+                                        onNodeDoubleClick={(e)=>this.onFileNodeDoubleClick(e)}
                                     />
                                 </Pane>
                                 <Pane id="res-lib" header="Library">
@@ -289,9 +306,7 @@ class App extends React.Component<AppArgs, AppState>
                             </SplitPane>
                         </div>
                         <div id="mid" className="pane">
-                            <ProcessSpace
-                                id="process-space"
-                            ></ProcessSpace>
+                            <PageContainer ref="page-container"></PageContainer>
                         </div>
                     </SplitPane>
                 </main>

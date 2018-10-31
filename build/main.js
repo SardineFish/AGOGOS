@@ -36,7 +36,17 @@ function loadMenu() {
             label: "File",
             submenu: [
                 {
-                    label: "New File",
+                    label: "New Program",
+                    click: () => {
+                        let path = electron_1.dialog.showSaveDialog({
+                            defaultPath: agogos.workDir,
+                            filters: [{
+                                    name: "AGOGOS Program",
+                                    extensions: ["ago"]
+                                }]
+                        });
+                        agogos.openProgrm(path);
+                    }
                 },
                 {
                     label: "New Project",

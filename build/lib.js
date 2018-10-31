@@ -8,6 +8,7 @@ const linq_1 = __importDefault(require("linq"));
 const uuidv4 = require("uuid/v4");
 const utility_1 = require("./utility");
 exports.UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+exports.AGOGOSProgramExtension = "ago";
 function getUUID() {
     return uuidv4();
 }

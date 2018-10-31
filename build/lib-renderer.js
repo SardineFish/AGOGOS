@@ -10,6 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const lib_1 = require("./lib");
 const electron_1 = require("electron");
 const ipc_1 = require("./ipc");
 const React = __importStar(require("react"));
@@ -21,7 +22,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const components_1 = require("./components");
 const linq_1 = __importDefault(require("linq"));
-const lib_1 = require("./lib");
+const lib_2 = require("./lib");
 const project_1 = require("./project");
 const editor_manager_1 = require("./editor-manager");
 const process_editor_1 = require("./process-editor");
@@ -96,7 +97,7 @@ function toProjectFileData(root) {
     return {
         extend: false,
         data: root.path,
-        icon: (React.createElement("span", { className: lib_1.switchCase(root.type, {
+        icon: (React.createElement("span", { className: lib_2.switchCase(root.type, {
                 "file": `node-icon file ${path_1.default.extname(root.path).replace(".", "")}`, "folder": "node-icon directory"
             }) }, " ")),
         children: children ? children.map(child => toProjectFileData(child)) : null,
@@ -145,6 +146,8 @@ class App extends React.Component {
     }
     onProjectContextMenu(e) {
         PopupProjectMenu(e.parent.data);
+    }
+    openProgram() {
     }
     onProjectReady(projectFile) {
         let projectFileData = toProjectFileData(this.state.projectFile);
@@ -204,6 +207,13 @@ class App extends React.Component {
         e.dataTransfer.dropEffect = "move";
         //this.console.log(e.nodeData.data);
     }
+    async onFileNodeDoubleClick(e) {
+        var data = e.node;
+        if (path_1.default.extname(data.path) === `.${lib_1.AGOGOSProgramExtension}`) {
+            let process = await AGOGOSRenderer.instance.ipc.call(ipc_2.IPCRenderer.GetProgram, data.path);
+            this.refs["page-container"].addPage(path_1.default.basename(data.path), (React.createElement(components_1.ProgramPage, { label: path_1.default.basename(data.path), program: process })));
+        }
+    }
     render() {
         let data = this.state.dirData;
         return (React.createElement("div", { id: "content" },
@@ -212,10 +222,10 @@ class App extends React.Component {
                     React.createElement("div", { id: "left-side" },
                         React.createElement(react_split_pane_1.default, { split: "horizontal", defaultSize: 400, allowResize: true },
                             React.createElement(components_1.Pane, { id: "work-dir", header: "Project" },
-                                React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, dragable: true, onDragStart: (e) => this.onFileDragStart(e), onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData) })),
+                                React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, dragable: true, onDragStart: (e) => this.onFileDragStart(e), onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData), onNodeDoubleClick: (e) => this.onFileNodeDoubleClick(e) })),
                             React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
                     React.createElement("div", { id: "mid", className: "pane" },
-                        React.createElement(components_1.ProcessSpace, { id: "process-space" })))),
+                        React.createElement(components_1.PageContainer, { ref: "page-container" })))),
             React.createElement("footer", { id: "status-bar" },
                 React.createElement("span", { id: "agogos-console" },
                     this.state.consoleHistory.length > 0 ?

@@ -1,5 +1,5 @@
 import { StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, TypeData } from "./lib";
-import { AGOGOSProject, ProjectFile } from "./project";
+import { AGOGOSProject, ProjectFile, AGOGOSProgram } from "./project";
 import { NodeData } from "../../react-tree-viewer/dist";
 import * as React from "react";
 import { NodeMouseEvent, TreeNodeDragEvent } from "../../react-tree-viewer";
@@ -16,6 +16,7 @@ export declare class AGOGOSRenderer {
     static instance: AGOGOSRenderer;
     ipc: GeneralIPC;
     app: App;
+    program: AGOGOSProgram;
     processLib: MapObject<ProcessNodeData>;
     typeLib: MapObject<TypeData>;
     editorManager: EditorManager;
@@ -48,9 +49,11 @@ declare class App extends React.Component<AppArgs, AppState> {
     readonly latestConsole: ConsoleMessage;
     onFolderExtend(nodeData: NodeData): NodeData;
     onProjectContextMenu(e: NodeMouseEvent): void;
+    openProgram(): void;
     onProjectReady(projectFile: ProjectFile): void;
     componentDidMount(): void;
     onFileDragStart(e: TreeNodeDragEvent): void;
+    onFileNodeDoubleClick(e: NodeMouseEvent): Promise<void>;
     render(): JSX.Element;
 }
 export {};

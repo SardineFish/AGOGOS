@@ -22,7 +22,9 @@ export const ChannelStatusReady = "status-ready";
 export const IPCRenderer = {
     GetProcess: "get-process-data",
     GetProcessData: "get-process-data-from-renderer",
-    SendCustomEditor: "send-custom-editor"
+    SendCustomEditor: "send-custom-editor",
+    GetProgram: "get-program",
+    SendProgram: "send-program"
 };
 
 export async function waitIpcRenderer<T>(channel: string, timeout: number = 500): Promise<T>

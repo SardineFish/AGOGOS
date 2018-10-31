@@ -9,6 +9,8 @@ const ipc_1 = require("./ipc");
 const path_1 = __importDefault(require("path"));
 const linq_1 = __importDefault(require("linq"));
 const agogos_processor_1 = require("./agogos-processor");
+const util_1 = require("util");
+const fs_1 = __importDefault(require("fs"));
 class AGOGOS {
     constructor() {
         this.console = {
@@ -49,6 +51,7 @@ class AGOGOS {
     }
     async reload(event) {
         this.ipc.add(ipc_1.IPCRenderer.GetProcess, (filename) => this.onGetProcessData(filename));
+        this.ipc.add(ipc_1.IPCRenderer.GetProgram, async (path) => await this.openProgrm(path));
         this.project.fileWatchCallback = (operation, oldFile, newFile) => {
             this.mainWindow.webContents.send(ipc_1.ChannelFileChanged, {
                 operation: operation,
@@ -78,6 +81,24 @@ class AGOGOS {
         let processesData = await this.ipc.call(ipc_1.IPCRenderer.GetProcessData);
         this.processor = new agogos_processor_1.AGOGOSProcessor(this.project.moduleManager, processesData);
         this.processor.run();
+    }
+    async openProgrm(path) {
+        let program;
+        if (await util_1.promisify(fs_1.default.exists)(path)) {
+            program = JSON.parse((await util_1.promisify(fs_1.default.readFile)(path)).toString());
+            program.filePath = path;
+        }
+        else {
+            program = {
+                projectPath: this.project.projectDirectory,
+                filePath: path,
+                processes: {},
+                connections: []
+            };
+            await util_1.promisify(fs_1.default.writeFile)(path, JSON.stringify(program));
+        }
+        await this.ipc.call(ipc_1.IPCRenderer.SendProgram, program);
+        return program;
     }
     onCompileStart() {
         this.mainWindow.webContents.send(ipc_1.ChannelStatusCompile);

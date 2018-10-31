@@ -1,6 +1,7 @@
 import { ProjectFile } from "./project";
 import { ModuleManager } from "./module-manager";
 export declare const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+export declare const AGOGOSProgramExtension = "ago";
 export declare function getUUID(): string;
 export declare class Vector2 {
     x: number;

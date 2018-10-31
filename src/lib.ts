@@ -7,6 +7,7 @@ import { ModuleManager } from "./module-manager";
 import { getKeys } from "./utility";
 
 export const UUIDNamespace = "18de3d21-d38a-4e78-884f-89463c8eb1c7";
+export const AGOGOSProgramExtension = "ago";
 
 export function getUUID()
 {

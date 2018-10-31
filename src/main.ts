@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem } from "electron";
+import { app, BrowserWindow, ipcMain, Event, Menu, MenuItem, dialog } from "electron";
 import program from "commander";
 import fs from "fs";
 import path from "path";
@@ -45,7 +45,18 @@ function loadMenu()
             label: "File",
             submenu: [
                 {
-                    label: "New File",
+                    label: "New Program",
+                    click: () =>
+                    {
+                        let path = dialog.showSaveDialog({
+                            defaultPath: agogos.workDir,
+                            filters: [{
+                                name: "AGOGOS Program",
+                                extensions: ["ago"]
+                            }]
+                        });
+                        agogos.openProgrm(path);
+                    }
                 },
                 {
                     label: "New Project",

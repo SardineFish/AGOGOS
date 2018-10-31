@@ -1,4 +1,4 @@
-import { AGOGOSProject } from "./project";
+import { AGOGOSProject, AGOGOSProgram } from "./project";
 import { BrowserWindow, Event } from "electron";
 import { GeneralIPC } from "./ipc";
 import { ProcessNodeData } from "./lib";
@@ -14,6 +14,7 @@ export declare class AGOGOS {
     init(workDir: string): Promise<AGOGOS>;
     reload(event: Event): Promise<AGOGOS>;
     run(): Promise<void>;
+    openProgrm(path: string): Promise<AGOGOSProgram>;
     onCompileStart(): void;
     onCompileComplete(): void;
     onGetProcessData(filename: string): ProcessNodeData;

@@ -20,6 +20,8 @@ export declare const IPCRenderer: {
     GetProcess: string;
     GetProcessData: string;
     SendCustomEditor: string;
+    GetProgram: string;
+    SendProgram: string;
 };
 export declare function waitIpcRenderer<T>(channel: string, timeout?: number): Promise<T>;
 export declare function waitIpcMain<T>(channel: string, timeout?: number): Promise<T>;

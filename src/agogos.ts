@@ -1,10 +1,12 @@
-import { AGOGOSProject } from "./project";
+import { AGOGOSProject, AGOGOSProgram } from "./project";
 import { BrowserWindow, ipcMain, Event } from "electron";
 import { ChannelFileChanged, FileChangeArgs, ChannelStartup, Startup, ChannelConsole, ChannelStatus, GeneralIPC, ChannelIpcCall, IPCRenderer, ChannelStatusCompile, ProjectCompiled, ChannelStatusReady } from "./ipc";
 import Path from "path";
 import { ConsoleMessage, StatusOutput, toMapObject, ProcessNodeData, MapObject } from "./lib";
 import linq from "linq";
 import { AGOGOSProcessor } from "./agogos-processor";
+import { promisify } from "util";
+import fs from "fs";
 
 export class AGOGOS
 {
@@ -36,6 +38,7 @@ export class AGOGOS
     async reload(event:Event):Promise<AGOGOS>
     {
         this.ipc.add(IPCRenderer.GetProcess, (filename: string) => this.onGetProcessData(filename));
+        this.ipc.add(IPCRenderer.GetProgram, async (path: string) => await this.openProgrm(path));
         this.project.fileWatchCallback = (operation, oldFile, newFile) =>
         {
             this.mainWindow.webContents.send(ChannelFileChanged, <FileChangeArgs>{
@@ -69,6 +72,27 @@ export class AGOGOS
         let processesData = await this.ipc.call<MapObject<ProcessNodeData>>(IPCRenderer.GetProcessData);
         this.processor = new AGOGOSProcessor(this.project.moduleManager, processesData);
         this.processor.run();
+    }
+    async openProgrm(path: string)
+    {
+        let program: AGOGOSProgram;
+        if (await promisify(fs.exists)(path))
+        {
+            program = JSON.parse((await promisify(fs.readFile)(path)).toString());
+            program.filePath = path;
+        }
+        else
+        {
+            program = {
+                projectPath: this.project.projectDirectory,
+                filePath: path,
+                processes: {},
+                connections: []
+            };
+            await promisify(fs.writeFile)(path, JSON.stringify(program));
+        }
+        await this.ipc.call(IPCRenderer.SendProgram, program);
+        return program;
     }
     onCompileStart()
     {

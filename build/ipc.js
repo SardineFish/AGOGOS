@@ -15,7 +15,9 @@ exports.ChannelStatusReady = "status-ready";
 exports.IPCRenderer = {
     GetProcess: "get-process-data",
     GetProcessData: "get-process-data-from-renderer",
-    SendCustomEditor: "send-custom-editor"
+    SendCustomEditor: "send-custom-editor",
+    GetProgram: "get-program",
+    SendProgram: "send-program"
 };
 async function waitIpcRenderer(channel, timeout = 500) {
     return new Promise((resolve, reject) => {

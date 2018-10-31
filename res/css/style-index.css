@@ -193,8 +193,10 @@ svg *{
     display: flex;
     user-select: none;
     flex-flow: column nowrap;
+    position: absolute;
     background: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 300px;
 }
 .process-node .node-header{
     background-color: #F8F8F8;
@@ -222,12 +224,12 @@ svg *{
     user-select: none;
 }
 .process-node .editor-content{
-    flex: 1 1;
     border: solid 1px rgba(0, 0, 0, 0.1);
     user-select: auto;
     padding: .2em .5em;
     font-size: inherit;
     border-radius: 2px;
+    width: 100%;
 }
 .process-node .editor-content:focus{
     border: solid 1px #64B5F6;
@@ -375,9 +377,60 @@ svg *{
     75%{content: "..."}
 }
 .editor-header-content{
-    flex: 1;
+    flex: 1 1;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
     justify-content: stretch;
+}
+.page-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+}
+.page-content {
+    flex: 1;
+}
+.editor-viewport {
+    height: 100%;
+    width: 100%;
+}
+.page-bar {
+    background-color: #e5e5e5;
+    display: flex;
+    flex-flow: row nowrap;
+}
+.page-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    flex-flow: row;
+}
+.page-label {
+    background-color: #fafafa;
+    padding: .5em 1em;
+    min-width: 10em;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: stretch;
+    align-items: center;
+}
+.page-name {
+    flex: 1;
+    margin-right: .5em;
+}
+.button-close-page {
+    background: #e88383;
+    display: flex;
+    height: 14px;
+    width: 14px;
+    border-radius: 100%;
+}
+.connections-wrapper {
+    z-index: 1000;
+    position: absolute;
 }
