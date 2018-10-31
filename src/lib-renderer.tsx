@@ -1,4 +1,4 @@
-import { EndPoint, StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, PropertyData, TypeData, AGOGOSProgramExtension } from "./lib";
+import { EndPoint, StatusOutput, ConsoleMessage, MapObject, ProcessNodeData, PropertyData, TypeData, AGOGOSProgramExtension, removeAt } from "./lib";
 import { AGOGOSProject, ProjectFile, AGOGOSProgram } from "./project";
 import { ipcRenderer, remote } from "electron";
 import { ChannelProjectSettings, ChannelStatusCompile, ChannelStatusReady, ProjectCompiled } from "./ipc";
@@ -196,10 +196,23 @@ class App extends React.Component<AppArgs, AppState>
     }
     openProgram(program:AGOGOSProgram)
     {
+        for (let i = 0; i < this.openedProgram.length; i++)
+        {
+            if (this.openedProgram[i].filePath === program.filePath)
+            {
+                (this.refs["page-container"] as PageContainer).openPage(i);   
+                return;
+            }
+        }
         (this.refs["page-container"] as PageContainer).addPage(path.basename(program.filePath), (
             <ProgramPage label={path.basename(program.filePath)} program={program}></ProgramPage>
         ));
         this.openedProgram.push(program);
+    }
+    onPageClose(idx)
+    {
+        removeAt(this.openedProgram, idx);
+        return true;
     }
     onProjectReady(projectFile: ProjectFile)
     {
@@ -314,7 +327,7 @@ class App extends React.Component<AppArgs, AppState>
                             </SplitPane>
                         </div>
                         <div id="mid" className="pane">
-                            <PageContainer ref="page-container"></PageContainer>
+                            <PageContainer ref="page-container" onPageClose={(idx)=>this.onPageClose(idx)}></PageContainer>
                         </div>
                     </SplitPane>
                 </main>

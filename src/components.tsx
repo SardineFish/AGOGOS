@@ -5,7 +5,7 @@ import linq from "linq";
 import { getKeys } from "./utility";
 import { getType, BuildinTypes } from "./meta-data";
 import { renderProcessNode, DragMoveEvent, ConnectLine, RenderConnectLine, ProcessEditor } from "./process-editor"
-import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject, MapObject, mapAsync } from "./lib";
+import { Vector2, vec2, Connection, EndPoint, ProcessNodeData, getUUID, toMapObject, MapObject, mapAsync, removeAt } from "./lib";
 import { IPCRenderer } from "./ipc";
 import { AGOGOSRenderer } from "./lib-renderer";
 import { AGOGOSProgram, ProcessLayout } from "./project";
@@ -135,11 +135,10 @@ export class ProgramPage extends EditorPage<ProgramPageProps, ProgramPageState>
     }
     componentWillReceiveProps(newProps: ProgramPageProps)
     {
-        this.state = {
+        this.setState({
             processes: newProps.program.processes,
             program: newProps.program
-            //connections: this.props.program.connections
-        };
+        });
     }
     async reload()
     {
@@ -649,7 +648,7 @@ export class ProcessSpace extends EditorPage<ProcessSpaceProps>
 }
 interface PageContainerProps
 {
-
+    onPageClose?: (idx: number) => boolean;
 }
 interface PageContainerState
 {
@@ -687,6 +686,27 @@ export class PageContainer extends React.Component<PageContainerProps, PageConta
             activePageIdx: idx
         });
     }
+    onClose(e: React.MouseEvent<HTMLElement>, idx: number)
+    {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.props.onPageClose && (!this.props.onPageClose(idx)))
+            return;
+        let labels = this.state.pageTitles;
+        let pages = this.state.pages;
+        let active = this.state.activePageIdx;
+        removeAt(pages, idx);
+        removeAt(labels, idx);
+        if (active >= pages.length)
+        {
+            active--;
+        }
+        this.setState({
+            activePageIdx: active, 
+            pages: pages,
+            pageTitles: labels,
+        });
+    }
     render()
     {
         return (
@@ -694,9 +714,9 @@ export class PageContainer extends React.Component<PageContainerProps, PageConta
                 <header className="page-bar">
                     <ul className="page-list">
                         {this.state.pageTitles.map((title, idx) => (
-                            <li className="page-label" key={idx} onClick={()=>this.openPage(idx)}>
+                            <li className={["page-label",this.state.activePageIdx===idx?"opened":""].join(" ")} key={idx} onClick={(e)=>this.openPage(idx)}>
                                 <span className="page-name">{title}</span>
-                                <span className="button-close-page"></span>
+                                <span className="button-close-page" onClick={(e)=>this.onClose(e, idx)}></span>
                             </li>
                         ))}
                     </ul>

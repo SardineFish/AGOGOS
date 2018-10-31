@@ -325,3 +325,13 @@ export interface SourceFile
     moduleName: string;
     compiledFile?: string;
 }
+export function removeAt<T>(list: T[], idx: number): T
+{
+    if (idx >= list.length)
+        return null;
+    let element = list[idx];
+    for (let i = idx; i < list.length - 1; i++)
+        list[i] = list[i + 1];
+    list.length--;
+    return element;
+}

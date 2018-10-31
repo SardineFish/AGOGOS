@@ -149,8 +149,18 @@ class App extends React.Component {
         PopupProjectMenu(e.parent.data);
     }
     openProgram(program) {
+        for (let i = 0; i < this.openedProgram.length; i++) {
+            if (this.openedProgram[i].filePath === program.filePath) {
+                this.refs["page-container"].openPage(i);
+                return;
+            }
+        }
         this.refs["page-container"].addPage(path_1.default.basename(program.filePath), (React.createElement(components_1.ProgramPage, { label: path_1.default.basename(program.filePath), program: program })));
         this.openedProgram.push(program);
+    }
+    onPageClose(idx) {
+        lib_1.removeAt(this.openedProgram, idx);
+        return true;
     }
     onProjectReady(projectFile) {
         let projectFileData = toProjectFileData(this.state.projectFile);
@@ -234,7 +244,7 @@ class App extends React.Component {
                                 React.createElement(react_tree_viewer_1.TreeViewer, { nodeData: this.state.dirData, tabSize: 10, root: true, dragable: true, onDragStart: (e) => this.onFileDragStart(e), onContextMenu: e => this.onProjectContextMenu(e), onExtend: (nodeData) => this.onFolderExtend(nodeData), onNodeDoubleClick: (e) => this.onFileNodeDoubleClick(e) })),
                             React.createElement(components_1.Pane, { id: "res-lib", header: "Library" }))),
                     React.createElement("div", { id: "mid", className: "pane" },
-                        React.createElement(components_1.PageContainer, { ref: "page-container" })))),
+                        React.createElement(components_1.PageContainer, { ref: "page-container", onPageClose: (idx) => this.onPageClose(idx) })))),
             React.createElement("footer", { id: "status-bar" },
                 React.createElement("span", { id: "agogos-console" },
                     this.state.consoleHistory.length > 0 ?

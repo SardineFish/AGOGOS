@@ -90,3 +90,4 @@ export interface SourceFile {
     moduleName: string;
     compiledFile?: string;
 }
+export declare function removeAt<T>(list: T[], idx: number): T;

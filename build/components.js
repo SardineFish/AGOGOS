@@ -68,11 +68,10 @@ class ProgramPage extends EditorPage {
         };
     }
     componentWillReceiveProps(newProps) {
-        this.state = {
+        this.setState({
             processes: newProps.program.processes,
             program: newProps.program
-            //connections: this.props.program.connections
-        };
+        });
     }
     async reload() {
         this.connections.forEach(cnn => {
@@ -484,12 +483,31 @@ class PageContainer extends react_1.default.Component {
             activePageIdx: idx
         });
     }
+    onClose(e, idx) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.props.onPageClose && (!this.props.onPageClose(idx)))
+            return;
+        let labels = this.state.pageTitles;
+        let pages = this.state.pages;
+        let active = this.state.activePageIdx;
+        lib_1.removeAt(pages, idx);
+        lib_1.removeAt(labels, idx);
+        if (active >= pages.length) {
+            active--;
+        }
+        this.setState({
+            activePageIdx: active,
+            pages: pages,
+            pageTitles: labels,
+        });
+    }
     render() {
         return (react_1.default.createElement("div", { className: "page-container" },
             react_1.default.createElement("header", { className: "page-bar" },
-                react_1.default.createElement("ul", { className: "page-list" }, this.state.pageTitles.map((title, idx) => (react_1.default.createElement("li", { className: "page-label", key: idx, onClick: () => this.openPage(idx) },
+                react_1.default.createElement("ul", { className: "page-list" }, this.state.pageTitles.map((title, idx) => (react_1.default.createElement("li", { className: ["page-label", this.state.activePageIdx === idx ? "opened" : ""].join(" "), key: idx, onClick: (e) => this.openPage(idx) },
                     react_1.default.createElement("span", { className: "page-name" }, title),
-                    react_1.default.createElement("span", { className: "button-close-page" })))))),
+                    react_1.default.createElement("span", { className: "button-close-page", onClick: (e) => this.onClose(e, idx) })))))),
             react_1.default.createElement("main", { className: "page-content" }, this.state.pages[this.state.activePageIdx])));
     }
 }

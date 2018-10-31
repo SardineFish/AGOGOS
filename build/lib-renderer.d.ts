@@ -51,6 +51,7 @@ declare class App extends React.Component<AppArgs, AppState> {
     onFolderExtend(nodeData: NodeData): NodeData;
     onProjectContextMenu(e: NodeMouseEvent): void;
     openProgram(program: AGOGOSProgram): void;
+    onPageClose(idx: any): boolean;
     onProjectReady(projectFile: ProjectFile): void;
     componentDidMount(): void;
     onFileDragStart(e: TreeNodeDragEvent): void;

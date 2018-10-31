@@ -218,4 +218,14 @@ function getElementType(typeName) {
     return typeName.substr(0, typeName.length - 2);
 }
 exports.getElementType = getElementType;
+function removeAt(list, idx) {
+    if (idx >= list.length)
+        return null;
+    let element = list[idx];
+    for (let i = idx; i < list.length - 1; i++)
+        list[i] = list[i + 1];
+    list.length--;
+    return element;
+}
+exports.removeAt = removeAt;
 //# sourceMappingURL=lib.js.map

@@ -399,9 +399,11 @@ svg *{
     width: 100%;
 }
 .page-bar {
-    background-color: #e5e5e5;
+    background-color: #E8E8E8;
     display: flex;
     flex-flow: row nowrap;
+    overflow-y: hidden;
+    user-select: none;
 }
 .page-list {
     padding: 0;
@@ -410,25 +412,36 @@ svg *{
     display: flex;
     flex-flow: row;
 }
+.page-label.opened {
+    background-color: #FAFAFA;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
 .page-label {
-    background-color: #fafafa;
+    background-color: #DDD;
     padding: .5em 1em;
     min-width: 10em;
     display: flex;
     flex-flow: row nowrap;
     justify-content: stretch;
     align-items: center;
+    cursor: pointer;
 }
 .page-name {
     flex: 1;
     margin-right: .5em;
 }
 .button-close-page {
+    opacity: 0;
     background: #e88383;
     display: flex;
     height: 14px;
     width: 14px;
     border-radius: 100%;
+    transition: opacity .2s;
+}
+.page-label:hover .button-close-page{
+    opacity: 1;
+
 }
 .connections-wrapper {
     z-index: 1000;

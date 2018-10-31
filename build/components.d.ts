@@ -94,6 +94,7 @@ export declare class ProcessSpace extends EditorPage<ProcessSpaceProps> {
     render(): JSX.Element;
 }
 interface PageContainerProps {
+    onPageClose?: (idx: number) => boolean;
 }
 interface PageContainerState {
     activePageIdx: number;
@@ -105,6 +106,7 @@ export declare class PageContainer extends React.Component<PageContainerProps, P
     currentIdx: number;
     addPage(title: string, page: any): void;
     openPage(idx: number): void;
+    onClose(e: React.MouseEvent<HTMLElement>, idx: number): void;
     render(): JSX.Element;
 }
 interface ProgressProps extends HTMLProps<HTMLSpanElement> {
